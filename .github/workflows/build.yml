@@ -15,11 +15,8 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - run: rustup update stable --no-self-update && rustup default stable
-      - name: Build without local paths inside the program
-        shell: pwsh
-        run: |
-          $env:RUSTFLAGS = "--remap-path-prefix=$env:USERPROFILE\.cargo=/cargo --remap-path-prefix=$env:USERPROFILE\.rustup=/rustup --remap-path-prefix=$env:GITHUB_WORKSPACE=/src"
-          cargo build --release --locked
+      # No path remapping here: these are the runner's paths, and remapped builds were flagged far more often by Defender.
+      - run: cargo build --release --locked
       - name: Test the app
         shell: pwsh
         run: ./ci/run-windows.ps1 -Bin target/release/forkbay.exe

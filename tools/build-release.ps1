@@ -1,4 +1,5 @@
-# Release build without any path of this computer inside the program, and checks the result.
+# Local build without any path of this computer inside the program, and checks the result.
+# Published releases come from CI: remapped builds were flagged far more often by Defender.
 $repo = Split-Path $PSScriptRoot -Parent
 $cargoHome = if ($env:CARGO_HOME) { $env:CARGO_HOME } else { Join-Path $env:USERPROFILE '.cargo' }
 $rustupHome = if ($env:RUSTUP_HOME) { $env:RUSTUP_HOME } else { Join-Path $env:USERPROFILE '.rustup' }
