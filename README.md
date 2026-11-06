@@ -19,9 +19,10 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **Updates:** compares each emulator with its latest release, and keeps the previous version. On Windows, downloads are also scanned with Microsoft Defender.
 - **Your own emulators:** add one from a GitHub repository or from a local program.
 - **Steam:** adds games to your library and leaves your other shortcuts alone.
-- **Covers (optional):** no key needed, thanks to Nintendo's public catalogue. A free SteamGridDB key adds Steam logos and banners.
+- **Covers (optional):** your own images, or SteamGridDB with your free key.
+- **Suggestions per game:** the community [wichforks](https://github.com/riyadhHDA/wichforks) guide, filtered by your graphics card. You choose, nothing changes on its own.
 - **Cloud saves (optional):** syncs before and after each game, with a choice of version when both sides changed.
-- **English and French:** follows your system language, and can be changed in the settings.
+- **Languages:** English and French, following your system language. [Adding one](locales/README.md) takes a single file.
 - **Updates of the tool itself** from GitHub releases, with an About page for the license and links.
 - **Dark theme by default**, with a light one.
 
@@ -63,6 +64,14 @@ On Windows, secrets are encrypted for your account. On Linux, they stay in a set
 - **Moving the folder:** on Windows, Steam shortcuts find a new drive letter on their own. After any other move, open the **Steam** page and click **Enregistrer**.
 - Emulation of these games is experimental and changes daily: a newer emulator can run a game worse. The previous version stays in `Files/Old Versions`.
 
+## Credits
+
+This tool stands on the work of the Eden, Eglantine, Lichii, Frizti, PokeDinner and Orchid projects, the [wichforks](https://github.com/riyadhHDA/wichforks) community guide (MIT) and SteamGridDB. The licenses of the bundled libraries are in [assets/THIRD-PARTY.txt](assets/THIRD-PARTY.txt) and on the About page.
+
+Bugs in the tool belong here, through its **Report a bug** page. Problems inside a game belong to the emulator's own project.
+
+This is an independent project, not affiliated with or endorsed by Nintendo. Nintendo Switch is a trademark of Nintendo.
+
 ## License
 
 GPL-3.0-or-later. See [LICENSE](LICENSE).
@@ -83,9 +92,10 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 - **Mises à jour :** compare chaque émulateur à sa dernière version et garde la précédente. Sous Windows, les téléchargements sont aussi analysés avec Microsoft Defender.
 - **Tes propres émulateurs :** ajoutes-en un depuis un dépôt GitHub ou depuis un programme local.
 - **Steam :** ajoute les jeux à ta bibliothèque sans toucher à tes autres raccourcis.
-- **Jaquettes (facultatif) :** aucune clé nécessaire, grâce au catalogue public de Nintendo. Une clé gratuite SteamGridDB ajoute des logos et bannières pour Steam.
+- **Jaquettes (facultatif) :** tes propres images, ou SteamGridDB avec ta clé gratuite.
+- **Conseils par jeu :** le guide communautaire [wichforks](https://github.com/riyadhHDA/wichforks), filtré selon ta carte graphique. C'est toi qui choisis, rien ne change tout seul.
 - **Sauvegardes dans le cloud (facultatif) :** synchronise avant et après chaque partie, et te laisse choisir si les deux versions ont changé.
-- **Anglais et français :** suit la langue de ton système, et se change dans les réglages.
+- **Langues :** anglais et français, selon la langue de ton système. [En ajouter une](locales/README.md) demande un seul fichier.
 - **Mise à jour de l'outil lui-même** depuis les versions GitHub, avec une page À propos pour la licence et les liens.
 - **Thème sombre par défaut**, avec un thème clair.
 
@@ -126,6 +136,14 @@ Sous Windows, les secrets sont chiffrés pour ton compte. Sous Linux, ils resten
 - **Linux :** les émulateurs sont lancés depuis leur AppImage, avec leurs dossiers dirigés vers les données partagées. Lichii par Frizti n'a pas de version Linux.
 - **Déplacer le dossier :** sous Windows, les raccourcis Steam retrouvent seuls une nouvelle lettre de disque. Après tout autre déplacement, ouvre la page **Steam** et clique sur **Enregistrer**.
 - L'émulation de ces jeux est expérimentale et change chaque jour : un émulateur plus récent peut moins bien faire tourner un jeu. La version précédente reste dans `Files/Old Versions`.
+
+## Remerciements
+
+Cet outil repose sur le travail des projets Eden, Eglantine, Lichii, Frizti, PokeDinner et Orchid, du guide communautaire [wichforks](https://github.com/riyadhHDA/wichforks) (MIT) et de SteamGridDB. Les licences des bibliothèques incluses sont dans [assets/THIRD-PARTY.txt](assets/THIRD-PARTY.txt) et sur la page À propos.
+
+Les bugs de l'outil se signalent ici, via sa page **Signaler un bug**. Les problèmes dans un jeu concernent le projet de l'émulateur.
+
+Ce projet est indépendant, sans lien avec Nintendo ni approbation de sa part. Nintendo Switch est une marque de Nintendo.
 
 ## Licence
 

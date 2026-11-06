@@ -297,8 +297,8 @@ pub fn sync(s: &Settings, resolve: &dyn Fn(u64, u64, &str) -> Choice) -> Result<
 }
 
 pub fn format_date(secs: u64) -> String {
-    let en = crate::i18n::is_en();
-    if secs == 0 { return (if en { "no save" } else { "aucune sauvegarde" }).into(); }
+    let en = !crate::i18n::is_fr();
+    if secs == 0 { return crate::i18n::t("aucune sauvegarde"); }
     // Civil date from days since 1970 (UTC offset from the system when available).
     let offset = local_offset();
     let t = secs as i64 + offset;
@@ -343,15 +343,11 @@ pub fn ask_conflict(local: u64, remote: u64, machine: &str, can_cancel: bool) ->
         Ok("cancel") => return Choice::Cancel,
         _ => {}
     }
-    let en = crate::i18n::is_en();
-    let (a, b, c) = if en { ("Keep the local version".to_string(), "Keep the remote version".to_string(), "Cancel".to_string()) } else { ("Garder la version locale".to_string(), "Garder la version distante".to_string(), "Annuler".to_string()) };
-    let text = if en {
-        format!("Both versions changed since the last exchange.\n\nLocal version (this PC): {}\nRemote version ({machine}): {}\n\nThe one you do not keep is replaced. If it is the local version, a copy stays in Save Backups.", format_date(local), format_date(remote))
-    } else {
-        format!("Les deux versions ont changé depuis le dernier échange.\n\nVersion locale (ce PC) : {}\nVersion distante ({machine}) : {}\n\nCelle que tu ne gardes pas est remplacée. Si c'est la version locale, une copie reste dans Save Backups.", format_date(local), format_date(remote))
-    };
+    use crate::i18n::t;
+    let (a, b, c) = (t("Garder la version locale"), t("Garder la version distante"), t("Annuler"));
+    let text = t(&format!("Les deux versions ont changé depuis le dernier échange.\n\nVersion locale (ce PC) : {}\nVersion distante ({machine}) : {}\n\nCelle que tu ne gardes pas est remplacée. Si c'est la version locale, une copie reste dans Save Backups.", format_date(local), format_date(remote)));
     let buttons = if can_cancel { rfd::MessageButtons::YesNoCancelCustom(a.clone(), b.clone(), c) } else { rfd::MessageButtons::OkCancelCustom(a.clone(), b.clone()) };
-    let r = rfd::MessageDialog::new().set_title(if en { "Switch 2 Manager: save conflict" } else { "Switch 2 Manager : conflit de sauvegarde" }).set_description(text).set_level(rfd::MessageLevel::Warning).set_buttons(buttons).show();
+    let r = rfd::MessageDialog::new().set_title(t("Switch 2 Manager : conflit de sauvegarde")).set_description(text).set_level(rfd::MessageLevel::Warning).set_buttons(buttons).show();
     match r {
         rfd::MessageDialogResult::Custom(t) if t == a => Choice::Local,
         rfd::MessageDialogResult::Custom(t) if t == b => Choice::Remote,

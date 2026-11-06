@@ -2,6 +2,7 @@
 #![cfg_attr(not(test), windows_subsystem = "windows")]
 mod art;
 mod cloud;
+mod compat;
 mod core;
 mod emu;
 mod i18n;
@@ -45,7 +46,7 @@ fn state() -> Result<Value> {
     let games: Vec<Value> = rom_files().iter().map(|f| json!({ "file": f, "name": display_name(f), "emu": game_emulator(&s, f), "cover": art::cover_uri(f) })).collect();
     let emus: Vec<Value> = emu::list().iter().map(|e| json!({ "name": e.name, "present": emu::find_exe(&root().join(&e.name)).is_some() })).collect();
     Ok(json!({
-        "setupDone": s.setup_done, "theme": s.theme, "language": i18n::current(), "languageSetting": s.language, "autoUpdateCheck": s.auto_update_check, "version": update::version(),
+        "setupDone": s.setup_done, "theme": s.theme, "language": i18n::current(), "languageSetting": s.language, "languages": i18n::languages(), "termsAccepted": s.terms_accepted >= 1, "autoUpdateCheck": s.auto_update_check, "version": update::version(),
         "dataLocation": s.data_location, "customDataPath": s.custom_data_path,
         "defaultEmulator": s.default_emulator, "dataPath": data.to_string_lossy(), "games": games, "emulators": emus,
         "keys": has_keys(&data), "firmware": firmware_count(&data),
@@ -73,7 +74,11 @@ fn pick(a: &Value) -> Option<PathBuf> {
 fn dispatch(cmd: &str, a: &Value) -> Result<Value> {
     let msg = |m: String| json!({ "message": i18n::t(&m) });
     Ok(match cmd {
-        "set_language" => { let mut s = load_settings(); s.language = s_arg(a, "language"); save_settings(&s)?; json!({ "language": i18n::resolve(&s.language) }) }
+        "set_language" => { let mut s = load_settings(); s.language = s_arg(a, "language"); save_settings(&s)?; i18n::page_locale() }
+        "locale" => i18n::page_locale(),
+        "accept_terms" => { let mut s = load_settings(); s.terms_accepted = 1; save_settings(&s)?; json!({}) }
+        "compat" => compat::recommendations()?,
+        "notices" => json!({ "text": include_str!("../assets/THIRD-PARTY.txt") }),
         "set_auto_update" => { let mut s = load_settings(); s.auto_update_check = a["enabled"].as_bool().unwrap_or(true); save_settings(&s)?; json!({}) }
         "about" => json!({ "version": update::version(), "license": include_str!("../LICENSE"), "repo": update::REPO_URL, "kofi": update::KOFI_URL }),
         "report_collect" => report::collect(&s_arg(a, "game"), a["log"].as_bool().unwrap_or(true))?,

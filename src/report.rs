@@ -72,6 +72,10 @@ fn system_info() -> (String, String, String, String) {
     (os, cpu, gpu, ram)
 }
 
+pub fn gpu_name() -> String {
+    system_info().2
+}
+
 fn tail(path: &Path, lines: usize) -> Option<String> {
     let bytes = fs::read(path).ok()?;
     let text = String::from_utf8_lossy(&bytes);

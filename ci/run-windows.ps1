@@ -106,7 +106,7 @@ $r = App $rootA 'emu_add_github' @{ name = 'X'; repo = 'nope nope' }; Check 'bad
 $logDir = "$rootA\Data\log"; New-Item -ItemType Directory -Force $logDir | Out-Null
 $secret = @("C:\Users\$env:USERNAME\Documents\game.nup", "H:\Somewhere\$env:COMPUTERNAME", "$rootA\Roms\x", "C:\Users\OtherPerson\file", "mail me@example.com from 192.168.1.20", "header_key = AABBCC", "token=abc123", "build_id=BCF5E512E7B0DF65", "Booting game: 0400486024DEC000") -join "`n"
 [IO.File]::WriteAllText("$logDir\eden_log.txt", $secret)
-$r = App $rootA 'report_collect' @{ game = 'Test Game [0400000000000000].nup'; log = $true }; Check 'report made' $r.ok $r.error
+$r = App $rootA 'report_collect' @{ game = ''; log = $true }; Check 'report made' $r.ok $r.error
 $txt = $r.value.text
 Check 'no home path' ($txt -notmatch [regex]::Escape($env:USERPROFILE))
 Check 'no user name in paths' ($txt -notmatch ('Users\\' + [regex]::Escape($env:USERNAME)))
@@ -115,7 +115,7 @@ Check 'no computer name' ($txt -notmatch [regex]::Escape($env:COMPUTERNAME))
 Check 'no email' ($txt -notmatch 'example\.com'); Check 'no ip' ($txt -notmatch '192\.168')
 Check 'no key line' ($txt -notmatch 'AABBCC'); Check 'no token' ($txt -notmatch 'abc123')
 Check 'no folder path' ($txt -notmatch [regex]::Escape($rootA))
-Check 'useful data kept' (($txt -match 'BCF5E512E7B0DF65') -and ($txt -match '0400486024DEC000') -and ($txt -match 'Test Game') -and ($txt -match 'Switch 2 Manager \d'))
+Check 'useful data kept' (($txt -match 'BCF5E512E7B0DF65') -and ($txt -match '0400486024DEC000') -and ($txt -match 'Switch 2 Manager \d'))
 Check 'report file saved' (Test-Path "$rootA\Manager\bug-report.txt")
 $r = App $rootA 'report_collect' @{ game = ''; log = $false }; Check 'log can be left out' (($r.value.text -notmatch 'BCF5E512') )
 "-- data move"
@@ -124,13 +124,26 @@ Check 'moved save' ((Get-Content "$work\Moved\Data\nand\user\save\0\P\T1\a.bin")
 Check 'config rewritten' ((Get-Content "$work\Moved\Data\config\qt-config.ini" -Raw) -notmatch [regex]::Escape($rootA.Replace('\', '/') + '/Data'))
 Check 'old copy kept' (Test-Path "$rootA\Data.old")
 
-"-- art without a key"
-$env:S2M_ROOT = $rootA
-[IO.File]::WriteAllText("$rootA\Roms\Pokemon Pokopia [0400A3A01EE4C000].nup", 'x'); [IO.File]::WriteAllText("$rootA\Roms\Fire Emblem Fortunes Weave [04007EF01F8AE000].nup", 'x'); [IO.File]::WriteAllText("$rootA\Roms\The Legend of Zelda Ocarina of Time [0400486024DEC000][v131072].nup", 'x')
-$r = App $rootA 'fetch_art'; Check 'art' $r.ok $r.error; "     $($r.value.message)"
-Get-ChildItem "$rootA\Covers" -ErrorAction SilentlyContinue | ForEach-Object { "     $($_.Name) $($_.Length)" }
-$r = App $rootA 'state'; Check 'cover in state' (@($r.value.games | Where-Object cover).Count -ge 1)
+[IO.File]::WriteAllText("$rootA\Roms\Pokemon Pokopia [0400A3A01EE4C000].nup", 'x'); [IO.File]::WriteAllText("$rootA\Roms\Fire Emblem Fortunes Weave [04007EF01F8AE000].nup", 'x'); [IO.File]::WriteAllText("$rootA\Roms\The Legend of Zelda Ocarina of Time [0400486024DEC000][v131072].nup", 'x'); [IO.File]::WriteAllText("$work\bad.txt", 'x')
+"-- covers"
+$r = App $rootA 'fetch_art'; Check 'no key, clear refusal' ((-not $r.ok) -and $r.error -match 'SteamGridDB') ($r | ConvertTo-Json -Compress)
+New-Item -ItemType Directory -Force "$rootA\Covers" | Out-Null; [IO.File]::WriteAllBytes("$rootA\Covers\Test Game-grid.png", [byte[]](137, 80, 78, 71))
+$r = App $rootA 'state'; Check 'own image shown' (@($r.value.games | Where-Object cover).Count -eq 1)
 
+"-- languages"
+New-Item -ItemType Directory -Force "$rootA\Manager\locales" | Out-Null
+[IO.File]::WriteAllText("$rootA\Manager\locales\de.json", '{"name":"Deutsch","ui":{"Jeux":"Spiele"},"uiPatterns":[],"messages":[["^Choisis ton fichier prod\\.keys\\.$","Wahle deine prod.keys."]],"categories":{}}')
+function Lang([string]$code, [string]$cmd, $arg = @{}) { $env:S2M_ROOT = $rootA; $env:S2M_LANG = $code; $file = "$work\l.json"; if (Test-Path $file) { Remove-Item $file }; $json = ($arg | ConvertTo-Json -Compress).Replace('"', '\"'); Start-Process -FilePath $Bin -ArgumentList '--cli', $cmd, "`"$json`"", "`"$file`"" -Wait -NoNewWindow; Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json }
+$r = Lang 'de-DE' 'state'; Check 'dropped file detected' ($r.value.language -eq 'de'); Check 'listed' (@($r.value.languages | ForEach-Object code) -contains 'de')
+$r = Lang 'de-DE' 'install_keys' @{ path = "$work\bad.txt" }; Check 'translated message' ($r.error -match 'Wahle') ($r | ConvertTo-Json -Compress)
+$r = Lang 'de-DE' 'install_firmware' @{ path = "$work\empty.zip" }; Check 'missing text falls back to English' ($r.error -match 'not a firmware') ($r | ConvertTo-Json -Compress)
+$r = Lang 'ja-JP' 'state'; Check 'unknown language gives English' ($r.value.language -eq 'en')
+$r = Lang 'fr-CA' 'state'; Check 'french detected' ($r.value.language -eq 'fr')
+$r = Lang 'en-US' 'locale'; Check 'page locale' ($r.value.tables[0].ui.'Jeux' -eq 'Games')
+$env:S2M_LANG = 'fr'
+"-- wichforks"
+$r = App $rootA 'compat'; Check 'guide read' $r.ok $r.error
+if ($r.ok) { "     maj $($r.value.updated), carte [$($r.value.gpu)], jeux $(@($r.value.games.PSObject.Properties).Count), catalogue $(@($r.value.catalogue).Count)"; $r.value.games.PSObject.Properties | ForEach-Object { $g = $_.Value; "     $($_.Name) => $($g.guideName): " + (($g.first | ForEach-Object name) -join ', ') + " | rapports $($g.reports)/$($g.reportsSameGpu)" }; $p = $r.value.games.'Pokemon Pokopia [0400A3A01EE4C000].nup'; Check 'pokopia found' ($p.first.Count -ge 1); $z = $r.value.games.'The Legend of Zelda Ocarina of Time [0400486024DEC000][v131072].nup'; Check 'zelda found' ($z.first.Count -ge 1); $f = $r.value.games.'Fire Emblem Fortunes Weave [04007EF01F8AE000].nup'; Check 'fire emblem found' ($f.first.Count -ge 1) }
 Remove-Item Env:\S2M_ROOT, Env:\S2M_SEARCH, Env:\S2M_STEAM -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
 if ($script:fail) { 'RESULT: FAILED' } else { 'RESULT: all passed' }

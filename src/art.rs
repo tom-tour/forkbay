@@ -1,6 +1,6 @@
-// Game art. Without a key: public Nintendo catalogue. With a free SteamGridDB key: Steam formats too.
+// Game art: the user's own images in the Covers folder, or SteamGridDB with their free key.
 use crate::core::*;
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, bail, Result};
 use base64::Engine;
 use serde_json::Value;
 use std::fs;
@@ -43,34 +43,6 @@ fn words(s: &str) -> Vec<String> {
     s.to_lowercase().chars().map(|c| match c { 'é' | 'è' | 'ê' => 'e', 'à' => 'a', c if c.is_alphanumeric() => c, _ => ' ' }).collect::<String>().split_whitespace().map(str::to_string).collect()
 }
 
-fn similarity(a: &str, b: &str) -> usize {
-    let (a, b) = (words(a), words(b));
-    let hit = a.iter().filter(|w| b.iter().any(|x| x.starts_with(w.as_str()) || w.starts_with(x.as_str()))).count();
-    if a.is_empty() { 0 } else { hit * 100 / a.len() }
-}
-
-fn nintendo(file: &str) -> Result<u32> {
-    let name = display_name(file);
-    let q: String = words(&name).join(" ");
-    let url = "https://searching.nintendo-europe.com/en/select";
-    let v: Value = agent().get(url).query("q", &q).query("fq", "type:GAME").query("rows", "20").query("wt", "json").query("fl", "title,image_url,image_url_sq_s,image_url_h2x1_s,image_url_h16x9_s,system_type").call()?.into_json()?;
-    let docs = v["response"]["docs"].as_array().cloned().unwrap_or_default();
-    let best = docs.iter().filter(|d| d["system_type"].as_array().is_some_and(|s| s.iter().any(|x| x.as_str().is_some_and(|t| t.starts_with("nintendoswitch2")))))
-        .max_by_key(|d| similarity(&name, d["title"].as_str().unwrap_or("")))
-        .filter(|d| similarity(&name, d["title"].as_str().unwrap_or("")) >= 60);
-    let Some(d) = best else { return Ok(0) };
-    let mut n = 0;
-    for (fields, kind) in [(&["image_url_sq_s"][..], "grid"), (&["image_url_h2x1_s", "image_url_h16x9_s", "image_url"][..], "wide")] {
-        if find_art(file, kind).is_none() {
-            if let Some(u) = fields.iter().find_map(|f| d[*f].as_str()) {
-                let u = if u.starts_with("//") { format!("https:{u}") } else { u.to_string() };
-                if save_image(&u, file, kind).is_ok() { n += 1; }
-            }
-        }
-    }
-    Ok(n)
-}
-
 fn steamgrid(key: &str, file: &str) -> Result<u32> {
     let get = |path: &str| -> Result<Value> {
         let v: Value = agent().get(&format!("https://www.steamgriddb.com/api/v2/{path}")).set("Authorization", &format!("Bearer {key}")).call()?.into_json()?;
@@ -92,13 +64,12 @@ fn steamgrid(key: &str, file: &str) -> Result<u32> {
 pub fn fetch_all() -> Result<String> {
     let s = load_settings();
     let key = unprotect(&s.steam_grid_key);
+    if key.is_empty() { bail!("Renseigne d'abord ta clé SteamGridDB dans Réglages."); }
     let (mut got, mut missing) = (0, vec![]);
     for file in rom_files() {
         crate::emit_status(&format!("Images : {}...", display_name(&file)));
-        let mut n = 0;
-        if !key.is_empty() { n += steamgrid(&key, &file).unwrap_or(0); }
-        n += nintendo(&file).unwrap_or(0);
-        got += n;
+        got += steamgrid(&key, &file)?;
+
         if find_art(&file, "grid").is_none() { missing.push(display_name(&file)); }
     }
     let mut msg = format!("{got} image(s) téléchargée(s).");
