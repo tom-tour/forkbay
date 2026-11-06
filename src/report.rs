@@ -39,7 +39,8 @@ pub fn sanitize(text: &str) -> String {
         }
     }
     out = Regex::new(r"[\w.+-]+@[\w-]+\.[\w.-]+").unwrap().replace_all(&out, "<email>").into_owned();
-    out = Regex::new(r"\b(?:\d{1,3}\.){3}\d{1,3}\b").unwrap().replace_all(&out, "<ip>").into_owned();
+    // A driver version looks like an address, and is needed to debug.
+    out = Regex::new(r"(driver\s+)?\b(?:\d{1,3}\.){3}\d{1,5}\b").unwrap().replace_all(&out, |c: &regex::Captures| if c.get(1).is_some() { c[0].to_string() } else { "<ip>".to_string() }).into_owned();
     // Lines that could carry a key or a token never stay.
     out = Regex::new(r"(?im)^.*(_key\b|prod\.keys\s*=|title\.keys\s*=|\btoken\b|\bsecret\b|\bpassword\b|refresh_token|client_secret|username=|nickname=).*$").unwrap().replace_all(&out, "<line removed>").into_owned();
     out
