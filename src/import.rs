@@ -78,8 +78,12 @@ fn category_info(src: &Path, c: &Cat) -> Option<Value> {
     if files == 0 && !has_sections {
         return None;
     }
-    let detail = if has_sections { "dans la configuration".to_string() } else if size > 1_048_576 { format!("{} fichier(s), {} Mo", files, size / 1_048_576) } else { format!("{files} fichier(s)") };
-    Some(json!({ "id": c.id, "label": c.label, "hint": c.hint, "detail": detail, "on": c.on }))
+    let en = crate::i18n::is_en();
+    let detail = if has_sections { (if en { "in the settings" } else { "dans la configuration" }).to_string() }
+        else if size > 1_048_576 { if en { format!("{} file(s), {} MB", files, size / 1_048_576) } else { format!("{} fichier(s), {} Mo", files, size / 1_048_576) } }
+        else if en { format!("{files} file(s)") } else { format!("{files} fichier(s)") };
+    let (label, hint) = crate::i18n::category(c.label, c.hint);
+    Some(json!({ "id": c.id, "label": label, "hint": hint, "detail": detail, "on": c.on }))
 }
 
 fn describe(path: &Path, name: &str) -> Option<Value> {

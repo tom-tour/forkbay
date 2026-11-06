@@ -297,7 +297,8 @@ pub fn sync(s: &Settings, resolve: &dyn Fn(u64, u64, &str) -> Choice) -> Result<
 }
 
 pub fn format_date(secs: u64) -> String {
-    if secs == 0 { return "aucune sauvegarde".into(); }
+    let en = crate::i18n::is_en();
+    if secs == 0 { return (if en { "no save" } else { "aucune sauvegarde" }).into(); }
     // Civil date from days since 1970 (UTC offset from the system when available).
     let offset = local_offset();
     let t = secs as i64 + offset;
@@ -311,6 +312,7 @@ pub fn format_date(secs: u64) -> String {
     let d = doy - (153 * mp + 2) / 5 + 1;
     let m = if mp < 10 { mp + 3 } else { mp - 9 };
     let y = yoe + era * 400 + if m <= 2 { 1 } else { 0 };
+    if en { return format!("{y}-{m:02}-{d:02} at {:02}:{:02}", rem / 3600, rem % 3600 / 60); }
     format!("{d:02}/{m:02}/{y} à {:02}:{:02}", rem / 3600, rem % 3600 / 60)
 }
 
@@ -341,10 +343,15 @@ pub fn ask_conflict(local: u64, remote: u64, machine: &str, can_cancel: bool) ->
         Ok("cancel") => return Choice::Cancel,
         _ => {}
     }
-    let (a, b, c) = ("Garder la version locale".to_string(), "Garder la version distante".to_string(), "Annuler".to_string());
-    let text = format!("Les deux versions ont changé depuis le dernier échange.\n\nVersion locale (ce PC) : {}\nVersion distante ({machine}) : {}\n\nCelle que tu ne gardes pas est remplacée. Si c'est la version locale, une copie reste dans Save Backups.", format_date(local), format_date(remote));
+    let en = crate::i18n::is_en();
+    let (a, b, c) = if en { ("Keep the local version".to_string(), "Keep the remote version".to_string(), "Cancel".to_string()) } else { ("Garder la version locale".to_string(), "Garder la version distante".to_string(), "Annuler".to_string()) };
+    let text = if en {
+        format!("Both versions changed since the last exchange.\n\nLocal version (this PC): {}\nRemote version ({machine}): {}\n\nThe one you do not keep is replaced. If it is the local version, a copy stays in Save Backups.", format_date(local), format_date(remote))
+    } else {
+        format!("Les deux versions ont changé depuis le dernier échange.\n\nVersion locale (ce PC) : {}\nVersion distante ({machine}) : {}\n\nCelle que tu ne gardes pas est remplacée. Si c'est la version locale, une copie reste dans Save Backups.", format_date(local), format_date(remote))
+    };
     let buttons = if can_cancel { rfd::MessageButtons::YesNoCancelCustom(a.clone(), b.clone(), c) } else { rfd::MessageButtons::OkCancelCustom(a.clone(), b.clone()) };
-    let r = rfd::MessageDialog::new().set_title("Switch 2 Manager : conflit de sauvegarde").set_description(text).set_level(rfd::MessageLevel::Warning).set_buttons(buttons).show();
+    let r = rfd::MessageDialog::new().set_title(if en { "Switch 2 Manager: save conflict" } else { "Switch 2 Manager : conflit de sauvegarde" }).set_description(text).set_level(rfd::MessageLevel::Warning).set_buttons(buttons).show();
     match r {
         rfd::MessageDialogResult::Custom(t) if t == a => Choice::Local,
         rfd::MessageDialogResult::Custom(t) if t == b => Choice::Remote,

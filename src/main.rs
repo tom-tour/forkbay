@@ -4,8 +4,10 @@ mod art;
 mod cloud;
 mod core;
 mod emu;
+mod i18n;
 mod import;
 mod steam;
+mod update;
 
 use crate::core::*;
 use anyhow::{anyhow, bail, Result};
@@ -29,7 +31,7 @@ fn to_js(script: String) {
 }
 
 pub fn emit_status(text: &str) {
-    to_js(format!("window.onStatus({})", json!(text)));
+    to_js(format!("window.onStatus({})", json!(i18n::t(text))));
 }
 
 fn s_arg(a: &Value, k: &str) -> String {
@@ -42,7 +44,8 @@ fn state() -> Result<Value> {
     let games: Vec<Value> = rom_files().iter().map(|f| json!({ "file": f, "name": display_name(f), "emu": game_emulator(&s, f), "cover": art::cover_uri(f) })).collect();
     let emus: Vec<Value> = emu::list().iter().map(|e| json!({ "name": e.name, "present": emu::find_exe(&root().join(&e.name)).is_some() })).collect();
     Ok(json!({
-        "setupDone": s.setup_done, "theme": s.theme, "dataLocation": s.data_location, "customDataPath": s.custom_data_path,
+        "setupDone": s.setup_done, "theme": s.theme, "language": i18n::current(), "languageSetting": s.language, "autoUpdateCheck": s.auto_update_check, "version": update::version(),
+        "dataLocation": s.data_location, "customDataPath": s.custom_data_path,
         "defaultEmulator": s.default_emulator, "dataPath": data.to_string_lossy(), "games": games, "emulators": emus,
         "keys": has_keys(&data), "firmware": firmware_count(&data),
         "keysFound": find_local_keys().map(|p| p.to_string_lossy().into_owned()), "firmwareFound": find_local_firmware().map(|p| p.to_string_lossy().into_owned()),
@@ -67,8 +70,20 @@ fn pick(a: &Value) -> Option<PathBuf> {
 }
 
 fn dispatch(cmd: &str, a: &Value) -> Result<Value> {
-    let msg = |m: String| json!({ "message": m });
+    let msg = |m: String| json!({ "message": i18n::t(&m) });
     Ok(match cmd {
+        "set_language" => { let mut s = load_settings(); s.language = s_arg(a, "language"); save_settings(&s)?; json!({ "language": i18n::resolve(&s.language) }) }
+        "set_auto_update" => { let mut s = load_settings(); s.auto_update_check = a["enabled"].as_bool().unwrap_or(true); save_settings(&s)?; json!({}) }
+        "about" => json!({ "version": update::version(), "license": include_str!("../LICENSE"), "repo": update::REPO_URL, "kofi": update::KOFI_URL }),
+        "update_check" => update::check()?,
+        "update_apply" => {
+            let message = update::apply()?;
+            if message.contains("redémarrage") && std::env::var("S2M_SELFTEST").is_err() {
+                std::process::Command::new(std::env::current_exe()?).spawn()?;
+                std::thread::spawn(|| { std::thread::sleep(std::time::Duration::from_millis(600)); std::process::exit(0); });
+            }
+            msg(message)
+        }
         "state" => {
             // Automated tests: proves that the page ran its script and reached the program.
             if let Ok(f) = std::env::var("S2M_SELFTEST") { let _ = std::fs::write(f, "page-loaded"); }
@@ -141,11 +156,11 @@ fn dispatch(cmd: &str, a: &Value) -> Result<Value> {
 }
 
 fn notify(text: &str) {
-    rfd::MessageDialog::new().set_title("Switch 2 Manager").set_description(text).set_level(rfd::MessageLevel::Warning).show();
+    rfd::MessageDialog::new().set_title("Switch 2 Manager").set_description(i18n::t(text)).set_level(rfd::MessageLevel::Warning).show();
 }
 
 fn confirm(text: &str) -> bool {
-    matches!(rfd::MessageDialog::new().set_title("Switch 2 Manager").set_description(text).set_buttons(rfd::MessageButtons::YesNo).show(), rfd::MessageDialogResult::Yes)
+    matches!(rfd::MessageDialog::new().set_title("Switch 2 Manager").set_description(i18n::t(text)).set_buttons(rfd::MessageButtons::YesNo).show(), rfd::MessageDialogResult::Yes)
 }
 
 /// Launches a game on its emulator, with cloud sync when enabled. No window of its own.
@@ -218,7 +233,7 @@ fn run_gui() -> Result<()> {
             let cmd = v["cmd"].as_str().unwrap_or("").to_string();
             let reply = match dispatch(&cmd, &v["args"]) {
                 Ok(r) => json!({ "ok": true, "value": r }),
-                Err(e) => json!({ "ok": false, "error": e.to_string() }),
+                Err(e) => json!({ "ok": false, "error": i18n::t(&e.to_string()) }),
             };
             to_js(format!("window.onReply({id},{reply})"));
         });
@@ -242,12 +257,13 @@ fn run_gui() -> Result<()> {
 }
 
 fn main() {
+    update::cleanup();
     let args: Vec<String> = std::env::args().skip(1).collect();
     let get = |flag: &str| args.iter().position(|a| a == flag).and_then(|i| args.get(i + 1)).map(String::as_str);
     if args.first().map(String::as_str) == Some("--cli") {
         // Test mode: --cli <command> <json> <output file>
         let a: Value = serde_json::from_str(args.get(2).map(String::as_str).unwrap_or("{}")).unwrap_or(Value::Null);
-        let out = match dispatch(args.get(1).map(String::as_str).unwrap_or(""), &a) { Ok(v) => json!({ "ok": true, "value": v }), Err(e) => json!({ "ok": false, "error": e.to_string() }) };
+        let out = match dispatch(args.get(1).map(String::as_str).unwrap_or(""), &a) { Ok(v) => json!({ "ok": true, "value": v }), Err(e) => json!({ "ok": false, "error": i18n::t(&e.to_string()) }) };
         if let Some(f) = args.get(3) { let _ = std::fs::write(f, out.to_string()); }
         return;
     }

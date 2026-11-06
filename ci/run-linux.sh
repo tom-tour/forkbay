@@ -4,12 +4,14 @@ set -u
 BIN="$(realpath "$1")"
 OUT="$(realpath -m "$2")"
 mkdir -p "$OUT"
+FAIL=0
 WORK="$(mktemp -d)"
 export S2M_ROOT="$WORK/Files"
 export HOME="$WORK/home"
+export S2M_LANG=fr
+if strings "$BIN" | grep -q "/home/runner"; then echo "FAIL local paths inside the program"; FAIL=1; else echo "ok   no local path inside the program"; fi
 mkdir -p "$S2M_ROOT/Roms" "$HOME"
 : > "$S2M_ROOT/Roms/Test Game [0400000000000000].nup"
-FAIL=0
 
 check() { # name, command, args, jq-free text expected in the result
     "$BIN" --cli "$2" "$3" "$WORK/r.json"
@@ -56,6 +58,12 @@ unset S2M_STEAM
 
 # Versions from the network
 check "emulator status" emu_status '{}' '"name":"Eglantine"'
+
+# Language
+S2M_LANG=en_US.UTF-8 "$BIN" --cli install_keys "{\"path\":\"$WORK/r.json\"}" "$WORK/en.json"
+grep -q "Choose your prod.keys" "$WORK/en.json" && echo "ok   english messages" || { echo "FAIL english: $(cat "$WORK/en.json")"; FAIL=1; }
+S2M_LANG=fr_FR.UTF-8 "$BIN" --cli state '{}' "$WORK/fr.json"
+grep -q '"language":"fr"' "$WORK/fr.json" && echo "ok   french detected" || { echo "FAIL french detection"; FAIL=1; }
 
 # Window on a virtual screen
 Xvfb :99 -screen 0 1280x860x24 >/dev/null 2>&1 &

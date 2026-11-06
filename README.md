@@ -21,6 +21,8 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **Steam:** adds games to your library and leaves your other shortcuts alone.
 - **Covers (optional):** no key needed, thanks to Nintendo's public catalogue. A free SteamGridDB key adds Steam logos and banners.
 - **Cloud saves (optional):** syncs before and after each game, with a choice of version when both sides changed.
+- **English and French:** follows your system language, and can be changed in the settings.
+- **Updates of the tool itself** from GitHub releases, with an About page for the license and links.
 - **Dark theme by default**, with a light one.
 
 ## What you need
@@ -34,7 +36,7 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 2. Run it and follow the guided setup.
 3. Put your games (`.nup`, `.nsp`, `.xci`) in `Files/Roms`.
 
-To build it yourself, run `cargo build --release`. On Linux, first install `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` and `libjavascriptcoregtk-4.1-dev`.
+To build it yourself, run `cargo build --release` (on Windows, `tools/build-release.ps1` also keeps your local paths out of the program). On Linux, first install `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` and `libjavascriptcoregtk-4.1-dev`.
 
 ## Adding an emulator
 
@@ -57,7 +59,6 @@ On Windows, secrets are encrypted for your account. On Linux, they stay in a set
 
 ## Limits
 
-- **The interface is in French.**
 - **Linux:** emulators are started from their AppImage, with their folders pointed at the shared data. Lichii by Frizti has no Linux build.
 - **Moving the folder:** on Windows, Steam shortcuts find a new drive letter on their own. After any other move, open the **Steam** page and click **Enregistrer**.
 - Emulation of these games is experimental and changes daily: a newer emulator can run a game worse. The previous version stays in `Files/Old Versions`.
@@ -84,6 +85,8 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 - **Steam :** ajoute les jeux à ta bibliothèque sans toucher à tes autres raccourcis.
 - **Jaquettes (facultatif) :** aucune clé nécessaire, grâce au catalogue public de Nintendo. Une clé gratuite SteamGridDB ajoute des logos et bannières pour Steam.
 - **Sauvegardes dans le cloud (facultatif) :** synchronise avant et après chaque partie, et te laisse choisir si les deux versions ont changé.
+- **Anglais et français :** suit la langue de ton système, et se change dans les réglages.
+- **Mise à jour de l'outil lui-même** depuis les versions GitHub, avec une page À propos pour la licence et les liens.
 - **Thème sombre par défaut**, avec un thème clair.
 
 ## Ce qu'il te faut
@@ -97,7 +100,7 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 2. Lance-le et suis l'installation guidée.
 3. Mets tes jeux (`.nup`, `.nsp`, `.xci`) dans `Files/Roms`.
 
-Pour le compiler toi-même : `cargo build --release`. Sous Linux, installe d'abord `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` et `libjavascriptcoregtk-4.1-dev`.
+Pour le compiler toi-même : `cargo build --release` (sous Windows, `tools/build-release.ps1` garde aussi tes chemins locaux hors du programme). Sous Linux, installe d'abord `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` et `libjavascriptcoregtk-4.1-dev`.
 
 ## Ajouter un émulateur
 
@@ -120,7 +123,6 @@ Sous Windows, les secrets sont chiffrés pour ton compte. Sous Linux, ils resten
 
 ## Limites
 
-- **L'interface est en français.**
 - **Linux :** les émulateurs sont lancés depuis leur AppImage, avec leurs dossiers dirigés vers les données partagées. Lichii par Frizti n'a pas de version Linux.
 - **Déplacer le dossier :** sous Windows, les raccourcis Steam retrouvent seuls une nouvelle lettre de disque. Après tout autre déplacement, ouvre la page **Steam** et clique sur **Enregistrer**.
 - L'émulation de ces jeux est expérimentale et change chaque jour : un émulateur plus récent peut moins bien faire tourner un jeu. La version précédente reste dans `Files/Old Versions`.

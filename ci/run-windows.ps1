@@ -9,7 +9,7 @@ New-Item -ItemType Directory -Force "$rootA\Roms", "$rootB\Roms", "$work\search"
 [IO.File]::WriteAllText("$rootB\Roms\Test Game [0400000000000000].nup", 'x')
 
 function App([string]$root, [string]$cmd, $arg = @{}) {
-    $env:S2M_ROOT = $root; $env:S2M_SEARCH = "$work\search"; $env:S2M_STEAM = "$work\steam"
+    $env:S2M_LANG = 'fr'; $env:S2M_ROOT = $root; $env:S2M_SEARCH = "$work\search"; $env:S2M_STEAM = "$work\steam"
     $file = "$work\r.json"
     if (Test-Path $file) { Remove-Item $file }
     $json = ($arg | ConvertTo-Json -Compress -Depth 5).Replace('"', '\"')

@@ -1,6 +1,6 @@
 [package]
 name = "switch-2-manager"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "One window for Switch 2 emulators: launch, update, share data, Steam and cloud saves"
 license = "GPL-3.0-or-later"
@@ -25,7 +25,7 @@ base64 = "0.22"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.56"
-windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security_Cryptography"] }
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Globalization", "Win32_Security_Cryptography"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 png = "0.18"

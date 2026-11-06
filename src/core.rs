@@ -25,6 +25,8 @@ pub struct Sync {
 pub struct Settings {
     pub setup_done: bool,
     pub theme: String,
+    pub language: String,
+    pub auto_update_check: bool,
     pub steam_grid_key: String,
     pub data_location: String,
     pub custom_data_path: String,
@@ -38,6 +40,8 @@ impl Default for Settings {
         Settings {
             setup_done: false,
             theme: "dark".into(),
+            language: "auto".into(),
+            auto_update_check: true,
             steam_grid_key: String::new(),
             data_location: "portable".into(),
             custom_data_path: String::new(),
