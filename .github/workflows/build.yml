@@ -35,7 +35,7 @@ jobs:
       - run: cargo build --release --locked
       - name: Test the app on a virtual screen
         run: |
-          sudo apt-get install -y xvfb imagemagick
+          sudo apt-get install -y xvfb imagemagick x11-utils dbus
           bash ci/run-linux.sh target/release/switch-2-manager screenshots
       - uses: actions/upload-artifact@v4
         if: always()

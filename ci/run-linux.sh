@@ -62,10 +62,16 @@ Xvfb :99 -screen 0 1280x860x24 >/dev/null 2>&1 &
 XVFB=$!
 sleep 2
 export DISPLAY=:99
-"$BIN" &
+export S2M_SELFTEST="$WORK/page.txt"
+dbus-run-session -- "$BIN" > "$OUT/stdout.txt" 2>&1 &
 APP=$!
-sleep 15
+sleep 25
+xwininfo -root -tree > "$OUT/windows.txt" 2>&1 || true
 import -window root "$OUT/first-run.png" || true
 if kill -0 "$APP" 2>/dev/null; then echo "ok   window still running"; else echo "FAIL window exited"; FAIL=1; fi
+if [ -f "$S2M_SELFTEST" ]; then echo "ok   page script reached the program"; else echo "FAIL page never loaded"; FAIL=1; fi
+if grep -q "Switch 2 Manager" "$OUT/windows.txt"; then echo "ok   window on screen"; else echo "FAIL no window on screen"; FAIL=1; fi
+COLORS=$(identify -format '%k' "$OUT/first-run.png" 2>/dev/null || echo 0)
+if [ "${COLORS:-0}" -gt 50 ]; then echo "ok   image has content ($COLORS colours)"; else echo "FAIL blank image ($COLORS colours)"; FAIL=1; fi
 kill "$APP" "$XVFB" 2>/dev/null
 exit $FAIL

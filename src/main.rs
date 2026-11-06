@@ -69,7 +69,12 @@ fn pick(a: &Value) -> Option<PathBuf> {
 fn dispatch(cmd: &str, a: &Value) -> Result<Value> {
     let msg = |m: String| json!({ "message": m });
     Ok(match cmd {
-        "state" => { repair_setup()?; state()? }
+        "state" => {
+            // Automated tests: proves that the page ran its script and reached the program.
+            if let Ok(f) = std::env::var("S2M_SELFTEST") { let _ = std::fs::write(f, "page-loaded"); }
+            repair_setup()?;
+            state()?
+        }
         "emu_status" => emu::status(),
         "emu_install" => msg(emu::install(&s_arg(a, "name"))?),
         "emu_add_github" => msg(emu::add_github(s_arg(a, "name").trim(), &s_arg(a, "repo"), s_arg(a, "filter").trim())?),
@@ -158,7 +163,7 @@ fn launch(game: Option<&str>, forced: Option<&str>) -> Result<()> {
     }
     let path = match game {
         Some(g) => {
-            let p = root().join(g.replace('\\', "/"));
+            let p = root().join(g.replace(['\\', '/'], std::path::MAIN_SEPARATOR_STR));
             if !p.is_file() { bail!("Jeu introuvable : {}", p.display()); }
             Some(p)
         }
