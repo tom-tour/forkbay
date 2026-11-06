@@ -1,6 +1,7 @@
 // Forkbay: one window for Switch 2 emulators, on Windows and Linux.
 #![cfg_attr(not(test), windows_subsystem = "windows")]
 mod art;
+mod backup;
 mod cloud;
 mod compat;
 mod core;
@@ -48,7 +49,7 @@ fn state() -> Result<Value> {
     let games: Vec<Value> = rom_files().iter().map(|f| json!({ "file": f, "name": display_name(f), "emu": game_emulator(&s, f), "cover": art::cover_uri(f) })).collect();
     let emus: Vec<Value> = emu::list().iter().map(|e| json!({ "name": e.name, "present": emu::find_exe(&root().join(&e.name)).is_some() })).collect();
     Ok(json!({
-        "setupDone": s.setup_done, "theme": s.theme, "mode": s.mode, "gradient": s.gradient, "customSurfaces": s.custom_surfaces, "userThemes": s.user_themes, "customColors": s.custom_colors, "fullscreen": FULLSCREEN.load(std::sync::atomic::Ordering::Relaxed), "padTest": std::env::var("FORKBAY_PADTEST").unwrap_or_default(), "language": i18n::current(), "languageSetting": s.language, "languages": i18n::languages(), "termsAccepted": s.terms_accepted >= 1, "autoUpdateCheck": s.auto_update_check, "version": update::version(),
+        "setupDone": s.setup_done, "theme": s.theme, "mode": s.mode, "gradient": s.gradient, "customSurfaces": s.custom_surfaces, "userThemes": s.user_themes, "customColors": s.custom_colors, "fullscreen": FULLSCREEN.load(std::sync::atomic::Ordering::Relaxed), "padTest": std::env::var("FORKBAY_PADTEST").unwrap_or_default(), "secTest": std::env::var("FORKBAY_SECTEST").is_ok(), "language": i18n::current(), "languageSetting": s.language, "languages": i18n::languages(), "termsAccepted": s.terms_accepted >= 1, "autoUpdateCheck": s.auto_update_check, "version": update::version(),
         "dataLocation": s.data_location, "customDataPath": s.custom_data_path,
         "defaultEmulator": s.default_emulator, "dataPath": data.to_string_lossy(), "games": games, "emulators": emus,
         "keys": has_keys(&data), "firmware": firmware_count(&data),
@@ -79,7 +80,7 @@ fn dispatch(cmd: &str, a: &Value) -> Result<Value> {
     let r = run_command(cmd, a);
     match &r {
         Err(e) => log::error(&format!("{cmd}: {e}")),
-        Ok(_) if ["emu_install", "import", "move_data", "cloud_sync", "steam_save", "update_apply", "install_keys", "install_firmware"].contains(&cmd) => log::info(&format!("{cmd}: ok")),
+        Ok(_) if ["emu_install", "import", "move_data", "cloud_sync", "steam_save", "update_apply", "install_keys", "install_firmware", "emu_rollback", "backup_restore"].contains(&cmd) => log::info(&format!("{cmd}: ok")),
         _ => {}
     }
     r
@@ -117,6 +118,11 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
         "emu_install" => msg(emu::install(&s_arg(a, "name"))?),
         "emu_add_github" => msg(emu::add_github(s_arg(a, "name").trim(), &s_arg(a, "repo"), s_arg(a, "filter").trim())?),
         "emu_add_local" => msg(emu::add_local(s_arg(a, "name").trim(), Path::new(&s_arg(a, "exe")))?),
+        "emu_rollback" => msg(emu::rollback(&s_arg(a, "name"), &s_arg(a, "version"))?),
+        "backup_list" => backup::list(),
+        "backup_now" => msg(backup::now()?),
+        "backup_restore" => msg(backup::restore(&s_arg(a, "name"))?),
+        "backup_set" => { backup::set(a["enabled"].as_bool(), a["keep"].as_u64())?; json!({}) }
         "emu_remove" => msg(emu::remove(&s_arg(a, "name"))?),
         "set_game_emu" => { let mut s = load_settings(); s.games.insert(s_arg(a, "file"), s_arg(a, "emu")); save_settings(&s)?; json!({}) }
         "set_default_emu" => { let mut s = load_settings(); s.default_emulator = s_arg(a, "emu"); save_settings(&s)?; json!({}) }
@@ -137,7 +143,6 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
         "selftest_crash" => { if std::env::var("FORKBAY_SELFTEST").is_ok() { panic!("test crash in {}", data_path().display()); } json!({}) }
         "quit" => std::process::exit(0),
         "finish_setup" => { let mut s = load_settings(); s.setup_done = true; save_settings(&s)?; json!({}) }
-        "reopen_setup" => { let mut s = load_settings(); s.setup_done = false; save_settings(&s)?; json!({}) }
         "play" => { std::process::Command::new(std::env::current_exe()?).arg("--launch").arg(format!("Roms/{}", s_arg(a, "file"))).spawn()?; json!({}) }
         "open_emulator" => { std::process::Command::new(std::env::current_exe()?).arg("--open").arg(s_arg(a, "name")).spawn()?; json!({}) }
         "sources" => import::sources(),
@@ -222,7 +227,14 @@ fn launch(game: Option<&str>, forced: Option<&str>) -> Result<()> {
         }
         None => None,
     };
-    let do_sync = s.sync.enabled && !emu::any_running();
+    let idle = !emu::any_running();
+    if idle {
+        if let Err(e) = backup::auto() {
+            log::error(&format!("automatic copy: {e}"));
+            if !confirm(&format!("Copie automatique impossible :\n{e}\n\nJouer quand même ?")) { return Ok(()); }
+        }
+    }
+    let do_sync = s.sync.enabled && idle;
     if do_sync {
         match cloud::sync(&s, &|l, d, m| cloud::ask_conflict(l, d, m, true)) {
             Ok("cancelled") => return Ok(()),
@@ -264,7 +276,12 @@ fn run_gui(fullscreen: bool) -> Result<()> {
     let _ = PROXY.set(event_loop.create_proxy());
     let window = WindowBuilder::new().with_title("Forkbay").with_inner_size(LogicalSize::new(1120.0, 760.0)).with_min_inner_size(LogicalSize::new(900.0, 600.0)).with_window_icon(window_icon()).with_fullscreen(fullscreen.then_some(tao::window::Fullscreen::Borderless(None))).build(&event_loop)?;
     let mut context = WebContext::new(Some(manager_dir().join("webview")));
-    let builder = WebViewBuilder::new_with_web_context(&mut context).with_html(HTML).with_devtools(false).with_ipc_handler(|req: wry::http::Request<String>| {
+    let builder = WebViewBuilder::new_with_web_context(&mut context).with_html(HTML).with_devtools(false).with_navigation_handler(|url| {
+        // The page is the only thing this window ever shows: links open in the browser.
+        let ok = url == "about:blank" || url.starts_with("data:text/html");
+        if !ok { log::error(&format!("navigation blocked: {url}")); }
+        ok
+    }).with_new_window_req_handler(|_, _| wry::NewWindowResponse::Deny).with_ipc_handler(|req: wry::http::Request<String>| {
         let body = req.body().clone();
         std::thread::spawn(move || {
             let v: Value = serde_json::from_str(&body).unwrap_or(Value::Null);
@@ -296,6 +313,11 @@ fn run_gui(fullscreen: bool) -> Result<()> {
 }
 
 fn main() {
+    if std::env::args().nth(1).as_deref() == Some("--find") {
+        // Steam launcher copy: it has no Files folder and must not create one.
+        steam::find_and_run();
+        return;
+    }
     log::install_panic_hook();
     update::cleanup();
     let args: Vec<String> = std::env::args().skip(1).collect();

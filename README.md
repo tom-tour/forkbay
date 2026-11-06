@@ -18,7 +18,8 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **One data folder:** every emulator uses the same saves, keys, firmware and settings.
 - **Portable or installed:** keep your data next to the tool, in your user folder, or anywhere you choose.
 - **One emulator per game:** pick it once, and Steam follows your choice.
-- **Updates:** compares each emulator with its latest release, and keeps the previous version. On Windows, downloads are also scanned with Microsoft Defender.
+- **Updates:** compares each emulator with its latest release, shows the release notes first, and keeps the previous version so you can roll back. On Windows, downloads are also scanned with Microsoft Defender.
+- **Automatic copies:** saves, profile and settings are copied before you play and before an emulator changes version, with or without the cloud. You can restore them from **Settings**.
 - **Your own emulators:** add one from a GitHub repository or from a local program.
 - **Steam:** adds games to your library and leaves your other shortcuts alone.
 - **Covers (optional):** your own images, or SteamGridDB with your free key.
@@ -38,7 +39,7 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 ## Getting started
 
 1. Put the program in the folder of your choice. It creates a `Files` folder next to itself.
-2. Run it and follow the guided setup.
+2. Run it and follow the guided setup. The program is not code-signed, so Windows SmartScreen may warn you the first time: choose **More info**, then **Run anyway**.
 3. Put your games (`.nup`, `.nsp`, `.xci`) in `Files/Roms`.
 
 To build it yourself, run `cargo build --release` (on Windows, `tools/build-release.ps1` also keeps your local paths out of the program). On Linux, first install `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` and `libjavascriptcoregtk-4.1-dev`.
@@ -65,14 +66,14 @@ On Windows, secrets are encrypted for your account. On Linux, they stay in a set
 ## Limits
 
 - **Linux:** emulators are launched from their AppImage, with their folders pointed at the shared data. Lichii by Frizti has no Linux build.
-- **Moving the folder:** on Windows, Steam shortcuts find a new drive letter on their own. After any other move, open the **Steam** page and click **Apply to Steam**.
+- **Moving the folder:** on Windows, Steam shortcuts find a new drive letter on their own, through a small copy of the program kept next to Steam's shortcut file (`forkbay-launcher.exe`). After any other move, open the **Steam** page and click **Apply to Steam**.
 - Emulation of these games is experimental and changes daily: a newer emulator can run a game worse. The previous version stays in `Files/Old Versions`.
 
 ## Credits
 
 This tool builds on the work of the Eden, Eglantine, Lichii, Frizti, PokeDinner and Orchid projects, the [wichforks](https://github.com/riyadhHDA/wichforks) community guide (MIT) and SteamGridDB. The licenses of the bundled libraries are in [assets/THIRD-PARTY.txt](assets/THIRD-PARTY.txt) and on the About page.
 
-Report bugs in the tool through its **Report a bug** page. Problems inside a game should go to the emulator's own project.
+Report bugs in the tool through its **Report a bug** page. Problems inside a game should go to the emulator's own project. For security problems, see [SECURITY.md](SECURITY.md). To help, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 This is an independent project, not affiliated with or endorsed by Nintendo. Nintendo Switch is a trademark of Nintendo.
 
@@ -93,7 +94,8 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 - **Un seul dossier de données :** tous les émulateurs utilisent les mêmes sauvegardes, clés, firmware et réglages.
 - **Portable ou installé :** tes données restent à côté de l'outil, dans ton dossier utilisateur, ou où tu veux.
 - **Un émulateur par jeu :** tu le choisis une fois, et Steam suit ce choix.
-- **Mises à jour :** compare chaque émulateur à sa dernière version et garde la précédente. Sous Windows, les téléchargements sont aussi analysés avec Microsoft Defender.
+- **Mises à jour :** compare chaque émulateur à sa dernière version, affiche d'abord les notes de version et garde la précédente pour pouvoir y revenir. Sous Windows, les téléchargements sont aussi analysés avec Microsoft Defender.
+- **Copies automatiques :** les sauvegardes, le profil et les réglages sont copiés avant de jouer et avant qu'un émulateur change de version, avec ou sans cloud. Tu peux les restaurer depuis **Réglages**.
 - **Tes propres émulateurs :** ajoutes-en un depuis un dépôt GitHub ou depuis un programme local.
 - **Steam :** ajoute les jeux à ta bibliothèque sans toucher à tes autres raccourcis.
 - **Jaquettes (facultatives) :** tes propres images, ou SteamGridDB avec ta clé gratuite.
@@ -113,7 +115,7 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 ## Pour commencer
 
 1. Place le programme dans le dossier de ton choix. Il crée un dossier `Files` à côté de lui.
-2. Lance-le et suis l'installation guidée.
+2. Lance-le et suis l'installation guidée. Le programme n'est pas signé : Windows SmartScreen peut afficher un avertissement la première fois. Choisis alors **Informations complémentaires**, puis **Exécuter quand même**.
 3. Mets tes jeux (`.nup`, `.nsp`, `.xci`) dans `Files/Roms`.
 
 Pour le compiler toi-même : `cargo build --release` (sous Windows, `tools/build-release.ps1` évite aussi d'inclure tes chemins locaux dans le programme). Sous Linux, installe d'abord `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` et `libjavascriptcoregtk-4.1-dev`.
@@ -140,14 +142,14 @@ Sous Windows, les secrets sont chiffrés pour ton compte. Sous Linux, ils resten
 ## Limites
 
 - **Linux :** les émulateurs sont lancés depuis leur AppImage, avec leurs dossiers redirigés vers les données partagées. Lichii par Frizti n'a pas de version Linux.
-- **Déplacer le dossier :** sous Windows, les raccourcis Steam retrouvent seuls une nouvelle lettre de disque. Après tout autre déplacement, ouvre la page **Steam** et clique sur **Enregistrer dans Steam**.
+- **Déplacer le dossier :** sous Windows, les raccourcis Steam retrouvent seuls une nouvelle lettre de disque, grâce à une petite copie du programme gardée à côté du fichier de raccourcis de Steam (`forkbay-launcher.exe`). Après tout autre déplacement, ouvre la page **Steam** et clique sur **Enregistrer dans Steam**.
 - L'émulation de ces jeux est expérimentale et change chaque jour : un émulateur plus récent peut moins bien faire tourner un jeu. La version précédente reste dans `Files/Old Versions`.
 
 ## Remerciements
 
 Cet outil repose sur le travail des projets Eden, Eglantine, Lichii, Frizti, PokeDinner et Orchid, du guide communautaire [wichforks](https://github.com/riyadhHDA/wichforks) (MIT) et de SteamGridDB. Les licences des bibliothèques incluses sont dans [assets/THIRD-PARTY.txt](assets/THIRD-PARTY.txt) et sur la page À propos.
 
-Les bugs de l'outil se signalent ici, via sa page **Signaler un bug**. Les problèmes dans un jeu concernent le projet de l'émulateur.
+Les bugs de l'outil se signalent ici, via sa page **Signaler un bug**. Les problèmes dans un jeu concernent le projet de l'émulateur. Pour les problèmes de sécurité, consulte [SECURITY.md](SECURITY.md). Pour participer, consulte [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Ce projet est indépendant : il n'est ni affilié à Nintendo, ni approuvé par Nintendo. Nintendo Switch est une marque de Nintendo.
 

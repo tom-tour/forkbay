@@ -15,7 +15,7 @@ const GOOGLE_SCOPE: &str = "https://www.googleapis.com/auth/drive.file";
 pub struct Meta { pub hash: String, pub saved_at: String, pub machine: String, pub id: String, pub token: String }
 
 /// Files synced, relative to Data, with forward slashes.
-fn sync_files(data: &Path) -> Vec<String> {
+pub fn sync_files(data: &Path) -> Vec<String> {
     let mut abs = vec![];
     for d in ["nand/user/save", "nand/system/save/8000000000000010"] { walk_files(&data.join(d), &mut abs); }
     for f in ["config/qt-config.ini", "config/sdl2-config.ini"] { let p = data.join(f); if p.is_file() { abs.push(p); } }
@@ -80,16 +80,21 @@ fn make_zip(data: &Path, out: &Path) -> Result<()> {
     Ok(())
 }
 
-fn backup_local(data: &Path, keep: u32) -> Result<PathBuf> {
-    let root_dir = root().join("Save Backups");
-    let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_secs();
-    let dest = root_dir.join(format!("auto-{stamp}"));
+pub fn copy_synced(data: &Path, dest: &Path) -> Result<()> {
     for rel in sync_files(data) {
         let to = dest.join(&rel);
         fs::create_dir_all(to.parent().unwrap())?;
         fs::copy(data.join(&rel), to)?;
     }
-    fs::create_dir_all(&dest)?;
+    fs::create_dir_all(dest)?;
+    Ok(())
+}
+
+fn backup_local(data: &Path, keep: u32) -> Result<PathBuf> {
+    let root_dir = root().join("Save Backups");
+    let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_secs();
+    let dest = root_dir.join(format!("auto-{stamp}"));
+    copy_synced(data, &dest)?;
     let mut old: Vec<PathBuf> = fs::read_dir(&root_dir)?.flatten().map(|e| e.path()).filter(|p| p.is_dir() && p.file_name().unwrap().to_string_lossy().starts_with("auto-")).collect();
     old.sort();
     let keep = keep.max(1) as usize;
@@ -97,7 +102,7 @@ fn backup_local(data: &Path, keep: u32) -> Result<PathBuf> {
     Ok(dest)
 }
 
-fn clear_synced(data: &Path) -> Result<()> {
+pub fn clear_synced(data: &Path) -> Result<()> {
     for rel in sync_files(data) { fs::remove_file(data.join(rel))?; }
     let _ = fs::remove_dir_all(data.join("nand/user/save"));
     fs::create_dir_all(data.join("nand/user/save"))?;
@@ -149,7 +154,9 @@ pub fn google_connect() -> Result<String> {
     let secret = unprotect(&s.sync.google_client_secret);
     if s.sync.google_client_id.is_empty() || secret.is_empty() { bail!("Renseigne d'abord l'identifiant et le secret du client OAuth."); }
     let b64 = base64::engine::general_purpose::URL_SAFE_NO_PAD;
-    let nonce = sha256_hex(format!("{:?}{}", std::time::SystemTime::now(), std::process::id()).as_bytes());
+    let mut seed = [0u8; 32];
+    getrandom::getrandom(&mut seed).map_err(|e| anyhow!("{e}"))?;
+    let nonce = sha256_hex(&seed);
     let verifier = nonce.clone() + &nonce[..20];
     use sha2::{Digest, Sha256};
     let challenge = b64.encode(Sha256::digest(verifier.as_bytes()));

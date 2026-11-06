@@ -137,7 +137,7 @@ $r = App $rootA 'report_collect' @{ game = ''; log = $false }; Check 'journal in
 $vv = "$work\steam\userdata\2\config\shortcuts.vdf"; New-Item -ItemType Directory -Force (Split-Path $vv) | Out-Null
 $r = App $rootA 'steam_save' @{ account = '2'; games = @('Test Game [0400000000000000].nup'); tool = $true }; Check 'tool saved' $r.ok $r.error
 $r = App $rootA 'steam_load' @{ account = '2' }; Check 'tool found' $r.value.tool; Check 'game kept' (@($r.value.managed).Count -eq 1); Check 'tool not listed as game' (@($r.value.managed) -notcontains 'Forkbay')
-$tx = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($vv)); Check 'tool entry name' ($tx -match 'AppName\x00Forkbay'); Check 'fullscreen flag' ($tx -match '--fullscreen')
+$tx = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($vv)); Check 'tool entry name' ($tx -match 'AppName\x00Forkbay'); Check 'fullscreen flag' ($tx -match '--fullscreen'); $lc = "$work\steam\userdata\2\config\forkbay-launcher.exe"; Check 'no powershell in shortcuts' ($tx -notmatch 'powershell'); Check 'launcher next to shortcuts' (Test-Path $lc); Check 'quoted game path' ($tx -match '--launch "Roms/Test Game'); $lv = "$work\launcher-version.txt"; Start-Process -FilePath $lc -ArgumentList '--find', "`"$($Bin.Substring(3))`"", '--version', "`"$lv`"" -Wait; Check 'launcher finds the program' (Test-Path $lv)
 $r = App $rootA 'steam_save' @{ account = '2'; games = @(); tool = $false }; $r = App $rootA 'steam_load' @{ account = '2' }; Check 'tool removed' (-not $r.value.tool)
 
 "-- themes"
@@ -173,6 +173,24 @@ $env:FORKBAY_LANG = 'fr'
 "-- wichforks"
 $r = App $rootA 'compat'; Check 'guide read' $r.ok $r.error
 if ($r.ok) { "     maj $($r.value.updated), carte [$($r.value.gpu)], jeux $(@($r.value.games.PSObject.Properties).Count), catalogue $(@($r.value.catalogue).Count)"; $r.value.games.PSObject.Properties | ForEach-Object { $g = $_.Value; "     $($_.Name) => $($g.guideName): " + (($g.first | ForEach-Object name) -join ', ') + " | rapports $($g.reports)/$($g.reportsSameGpu)" }; $p = $r.value.games.'Pokemon Pokopia [0400A3A01EE4C000].nup'; Check 'pokopia found' ($p.first.Count -ge 1); $z = $r.value.games.'The Legend of Zelda Ocarina of Time [0400486024DEC000][v131072].nup'; Check 'zelda found' ($z.first.Count -ge 1); $f = $r.value.games.'Fire Emblem Fortunes Weave [04007EF01F8AE000].nup'; Check 'fire emblem found' ($f.first.Count -ge 1) }
+"-- automatic copies and older versions"
+$rootC = "$work\C\Files"; $sc = "$rootC\Data\nand\user\save\0\P\T1\a.bin"; New-Item -ItemType Directory -Force (Split-Path $sc), "$rootC\Roms", "$work\fake" | Out-Null; [IO.File]::WriteAllText($sc, 'one')
+$r = App $rootC 'state'; $r = App $rootC 'backup_now'; Check 'copy made' ($r.value.message -match 'enregistr') ($r | ConvertTo-Json -Compress)
+$r = App $rootC 'backup_now'; Check 'unchanged data not copied again' ($r.value.message -match 'Rien')
+Copy-Item "$env:WINDIR\System32\hostname.exe" "$work\fake\fake.exe"; $r = App $rootC 'emu_add_local' @{ name = 'Fake'; exe = "$work\fake\fake.exe" }; Check 'test emulator added' $r.ok $r.error; $r = App $rootC 'set_default_emu' @{ emu = 'Fake' }; [IO.File]::WriteAllText("$rootC\Roms\Game [0400000000000000].nup", 'x'); $r = App $rootC 'set_game_emu' @{ file = 'Game [0400000000000000].nup'; emu = 'Fake' }
+function PlayC { $env:FORKBAY_ROOT = $rootC; Start-Process -FilePath $Bin -ArgumentList '--launch', '"Roms/Game [0400000000000000].nup"' -Wait }
+[IO.File]::WriteAllText($sc, 'two'); PlayC; $r = App $rootC 'backup_list'; Check 'copy before playing' (@($r.value.copies).Count -eq 2) ($r | ConvertTo-Json -Compress -Depth 4)
+PlayC; $r = App $rootC 'backup_list'; Check 'no copy when nothing changed' (@($r.value.copies).Count -eq 2)
+[IO.File]::WriteAllText($sc, 'three'); $first = @($r.value.copies)[-1].name; $r = App $rootC 'backup_restore' @{ name = $first }; Check 'restore' $r.ok $r.error; Check 'restored content' ((Get-Content $sc) -eq 'one')
+$r = App $rootC 'backup_list'; $n = @($r.value.copies)[0].name; Check 'state kept before restore' ((Get-Content "$rootC\Save Backups\$n\nand\user\save\0\P\T1\a.bin") -eq 'three')
+$r = App $rootC 'backup_restore' @{ name = '..\..\Data' }; Check 'bad copy name refused' (-not $r.ok)
+$r = App $rootC 'backup_set' @{ enabled = $false }; [IO.File]::WriteAllText($sc, 'four'); $before = @((App $rootC 'backup_list').value.copies).Count; PlayC; Check 'option can be turned off' (@((App $rootC 'backup_list').value.copies).Count -eq $before)
+$of = "$rootC\Old Versions\Fake v1"; New-Item -ItemType Directory -Force $of, "$rootC\Old Versions\Lichii Upstream v9" | Out-Null; foreach ($d in $of, "$rootC\Old Versions\Lichii Upstream v9") { Copy-Item "$work\fake\fake.exe" "$d\fake.exe"; [IO.File]::WriteAllText("$d\exe.txt", 'fake.exe'); [IO.File]::WriteAllText("$d\version.txt", 'v1') }; [IO.File]::WriteAllText("$rootC\Fake\version.txt", 'v2')
+$r = App $rootC 'emu_status'; $fk = @($r.value) | Where-Object name -eq 'Fake'; Check 'older version listed' (@($fk.old) -contains 'Fake v1'); $li = @($r.value) | Where-Object name -eq 'Lichii'; Check 'other emulator not mixed in' (@($li.old).Count -eq 0)
+$r = App $rootC 'emu_rollback' @{ name = 'Fake'; version = '..\..\Data' }; Check 'bad version refused' (-not $r.ok)
+$r = App $rootC 'emu_rollback' @{ name = 'Fake'; version = 'Fake v1' }; Check 'rollback' $r.ok $r.error; Check 'older version active' ((Get-Content "$rootC\Fake\version.txt") -eq 'v1'); Check 'newer version kept' (Test-Path "$rootC\Old Versions\Fake v2\fake.exe"); Check 'data link back' ((Get-Item "$rootC\Fake\user" -Force).Attributes -match 'ReparsePoint'); Check 'no link in the kept version' (-not (Test-Path "$rootC\Old Versions\Fake v2\user"))
+"-- window protection"
+$env:FORKBAY_ROOT = $rootC; $env:FORKBAY_SELFTEST = "$work\sec.txt"; $env:FORKBAY_SECTEST = '1'; $w = Start-Process -FilePath $Bin -PassThru; $sec = ''; for ($i = 0; $i -lt 40 -and $sec -notmatch 'nav=blocked'; $i++) { Start-Sleep -Milliseconds 750; if (Test-Path "$work\sec.txt") { $sec = Get-Content "$work\sec.txt" -Raw } }; Stop-Process -Id $w.Id -Force -ErrorAction SilentlyContinue; Remove-Item Env:\FORKBAY_SELFTEST, Env:\FORKBAY_SECTEST; Check 'page cannot reach or navigate to the web' ($sec -match 'csp=blocked nav=blocked') $sec
 Remove-Item Env:\FORKBAY_ROOT, Env:\FORKBAY_SEARCH, Env:\FORKBAY_STEAM -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
 if ($script:fail) { 'RESULT: FAILED' } else { 'RESULT: all passed' }

@@ -1,6 +1,6 @@
 [package]
 name = "forkbay"
-version = "0.6.1"
+version = "0.7.0"
 edition = "2021"
 description = "Switch 2 emulator manager: launch, update, share data, Steam and cloud saves"
 license = "GPL-3.0-or-later"
@@ -22,10 +22,11 @@ ureq = { version = "2", features = ["json"] }
 zip = { version = "2", default-features = false, features = ["deflate"] }
 sha2 = "0.10"
 base64 = "0.22"
+getrandom = "0.2"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.56"
-windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Globalization", "Win32_Security_Cryptography"] }
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Globalization", "Win32_Security_Cryptography", "Win32_UI_Shell"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 png = "0.18"

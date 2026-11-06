@@ -30,6 +30,7 @@ pub struct Release {
     pub digest: String,
     pub page: String,
     pub asset: String,
+    pub notes: String,
 }
 
 fn user_file() -> PathBuf {
@@ -128,6 +129,7 @@ pub fn latest(e: &Emu) -> Result<Release> {
                 digest: a["digest"].as_str().unwrap_or("").into(),
                 page: r["html_url"].as_str().unwrap_or("").into(),
                 asset: a["name"].as_str().unwrap_or("").into(),
+                notes: r["body"].as_str().unwrap_or("").chars().take(4000).collect(),
             });
         }
     }
@@ -140,13 +142,14 @@ pub fn status() -> Value {
         let present = find_exe(&folder).is_some();
         let inst = installed(&e.name);
         let local = e.source == "local";
-        let mut row = json!({ "name": e.name, "about": e.about, "present": present, "installed": inst, "latest": "", "date": "", "size": 0, "page": page_url(e), "upToDate": false, "error": "", "user": e.user, "local": local });
+        let mut row = json!({ "name": e.name, "about": e.about, "present": present, "installed": inst, "latest": "", "date": "", "size": 0, "page": page_url(e), "upToDate": false, "error": "", "user": e.user, "local": local, "notes": "", "old": old_versions(&e.name) });
         if !local {
             match latest(e) {
                 Ok(l) => {
                     row["latest"] = json!(l.tag);
                     row["date"] = json!(l.date.get(..10).unwrap_or(""));
                     row["size"] = json!(l.size);
+                    row["notes"] = json!(l.notes);
                     if !l.page.is_empty() { row["page"] = json!(l.page); }
                     row["upToDate"] = json!(present && inst == l.tag);
                 }
@@ -191,6 +194,12 @@ pub fn install(name: &str) -> Result<String> {
     let inst = installed(&e.name);
     if present && inst == rel.tag {
         return Ok(format!("{name} est déjà à jour ({inst})."));
+    }
+    if !rel.url.starts_with("https://") {
+        bail!("Adresse refusée.");
+    }
+    if present {
+        crate::backup::auto()?;
     }
     let parent = root().join("_update");
     let work = parent.join(&e.name);
@@ -240,23 +249,7 @@ pub fn install(name: &str) -> Result<String> {
     }
     let label = if inst.is_empty() { "inconnue".to_string() } else { inst };
     if folder.exists() {
-        // The link goes first: an old version must never point at the data.
-        let link = folder.join("user");
-        if let Ok(m) = fs::symlink_metadata(&link) {
-            if !is_link(&m) {
-                bail!("{} est un dossier normal alors qu'un lien est attendu : installation annulée.", link.display());
-            }
-            remove_link(&link)?;
-        }
-        let old_root = root().join("Old Versions");
-        fs::create_dir_all(&old_root)?;
-        let mut old = old_root.join(format!("{} {label}", e.name));
-        let mut n = 2;
-        while old.exists() {
-            old = old_root.join(format!("{} {label} ({n})", e.name));
-            n += 1;
-        }
-        fs::rename(&folder, &old)?;
+        let old = retire(&folder, &e.name, &label)?;
         if let Err(err) = move_dir(&new_dir, &folder, &work) {
             fs::rename(&old, &folder)?;
             set_emulator_link(&folder, &data_path())?;
@@ -271,6 +264,67 @@ pub fn install(name: &str) -> Result<String> {
     let _ = fs::remove_dir_all(&work);
     let _ = fs::remove_dir(&parent);
     Ok(if present { format!("{name} : {label} -> {} (vérifié : {checked}). Ancienne version gardée dans Old Versions.", rel.tag) } else { format!("{name} {} installé (vérifié : {checked}).", rel.tag) })
+}
+
+/// Moves an emulator to Old Versions, and returns where it went.
+fn retire(folder: &Path, name: &str, label: &str) -> Result<PathBuf> {
+    // The link goes first: an old version must never point at the data.
+    let link = folder.join("user");
+    if let Ok(m) = fs::symlink_metadata(&link) {
+        if !is_link(&m) {
+            bail!("{} est un dossier normal alors qu'un lien est attendu : installation annulée.", link.display());
+        }
+        remove_link(&link)?;
+    }
+    let old_root = root().join("Old Versions");
+    fs::create_dir_all(&old_root)?;
+    let mut old = old_root.join(format!("{name} {label}"));
+    let mut n = 2;
+    while old.exists() {
+        old = old_root.join(format!("{name} {label} ({n})"));
+        n += 1;
+    }
+    fs::rename(folder, &old)?;
+    Ok(old)
+}
+
+/// Versions of this emulator kept in Old Versions, newest name first.
+pub fn old_versions(name: &str) -> Vec<String> {
+    let names: Vec<String> = list().into_iter().map(|e| e.name).collect();
+    let mut found: Vec<String> = fs::read_dir(root().join("Old Versions")).map(|rd| rd.flatten().filter(|e| find_exe(&e.path()).is_some()).map(|e| e.file_name().to_string_lossy().into_owned()).collect()).unwrap_or_default();
+    // "Lichii Upstream 1.0" belongs to Lichii Upstream, not to Lichii.
+    found.retain(|d| names.iter().filter(|n| d.starts_with(&format!("{n} "))).max_by_key(|n| n.len()).is_some_and(|n| n == name));
+    found.sort();
+    found.reverse();
+    found
+}
+
+/// Puts a version from Old Versions back, and keeps the current one there.
+pub fn rollback(name: &str, version: &str) -> Result<String> {
+    if any_running() {
+        bail!("Ferme les émulateurs avant de changer de version.");
+    }
+    if !old_versions(name).iter().any(|v| v == version) {
+        bail!("Cette version n'existe plus.");
+    }
+    let old = root().join("Old Versions").join(version);
+    if fs::symlink_metadata(old.join("user")).is_ok_and(|m| !is_link(&m)) {
+        bail!("{} est un dossier normal alors qu'un lien est attendu : installation annulée.", old.join("user").display());
+    }
+    crate::backup::auto()?;
+    let folder = root().join(name);
+    let label = match installed(name).as_str() { "" => "inconnue".to_string(), v => v.to_string() };
+    let parked = if folder.exists() { Some(retire(&folder, name, &label)?) } else { None };
+    if let Err(err) = fs::rename(&old, &folder) {
+        if let Some(p) = parked {
+            fs::rename(p, &folder)?;
+            set_emulator_link(&folder, &data_path())?;
+        }
+        return Err(err.into());
+    }
+    set_emulator_link(&folder, &data_path())?;
+    let now = match installed(name).as_str() { "" => "inconnue".to_string(), v => v.to_string() };
+    Ok(format!("{name} : version précédente rétablie ({now}). L'autre version reste dans Old Versions."))
 }
 
 fn move_dir(from: &Path, to: &Path, work: &Path) -> Result<()> {

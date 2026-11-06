@@ -39,6 +39,8 @@ pub struct Settings {
     pub default_emulator: String,
     pub games: BTreeMap<String, String>,
     pub sync: Sync,
+    pub auto_backup: bool,
+    pub backup_keep: u32,
 }
 
 impl Default for Settings {
@@ -60,6 +62,8 @@ impl Default for Settings {
             default_emulator: "Lichii".into(),
             games: BTreeMap::new(),
             sync: Sync { provider: "folder".into(), keep_backups: 10, ..Default::default() },
+            auto_backup: true,
+            backup_keep: 10,
         }
     }
 }
@@ -486,10 +490,21 @@ pub fn agent() -> ureq::Agent {
     ureq::AgentBuilder::new().user_agent("Forkbay").timeout_read(std::time::Duration::from_secs(120)).timeout_connect(std::time::Duration::from_secs(20)).build()
 }
 
+/// Opens an address or a file with the system's default program.
 pub fn open_external(target: &str) {
-    if cfg!(windows) {
-        let _ = command("cmd").args(["/c", "start", ""]).arg(target).spawn();
-    } else {
+    // Never through cmd: it would run whatever follows an & in an address.
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::UI::Shell::ShellExecuteW;
+        let wide = |s: &str| s.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
+        let (verb, file) = (wide("open"), wide(target));
+        let code = unsafe { ShellExecuteW(std::ptr::null_mut(), verb.as_ptr(), file.as_ptr(), std::ptr::null(), std::ptr::null(), 1) } as isize;
+        if code <= 32 {
+            crate::log::error(&format!("could not open a link or file: code {code}"));
+        }
+    }
+    #[cfg(not(windows))]
+    {
         let _ = command("xdg-open").arg(target).spawn();
     }
 }

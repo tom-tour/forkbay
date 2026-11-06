@@ -248,7 +248,28 @@
   "Importer un thème": "Import a theme",
   "Exporter ce thème": "Export this theme",
   "Retirer ce thème": "Remove this theme",
-  "Thème importé.": "Theme imported."
+  "Thème importé.": "Theme imported.",
+  "Notes de version": "Release notes",
+  "Aucune note pour cette version.": "No notes for this version.",
+  "L'ancienne version reste dans Old Versions, et une copie de tes sauvegardes est faite avant.": "The previous version stays in Old Versions, and your saves are copied first.",
+  "Installer cette version": "Install this version",
+  "Annuler": "Cancel",
+  "Revenir en arrière": "Roll back",
+  "Revenir à une ancienne version": "Go back to an older version",
+  "La version actuelle reste dans Old Versions, et une copie de tes sauvegardes est faite avant.": "The current version stays in Old Versions, and your saves are copied first.",
+  "Rétablir": "Restore",
+  "Changement de version...": "Changing version...",
+  "Copies automatiques": "Automatic copies",
+  "Avant de jouer et avant de changer de version d'un émulateur, l'outil copie tes sauvegardes, ton profil et tes réglages dans Save Backups, si quelque chose a changé. Les clés et le firmware ne sont pas copiés.": "Before you play and before an emulator changes version, the tool copies your saves, profile and settings to Save Backups if anything changed. Keys and firmware are not copied.",
+  "Faire ces copies automatiquement": "Make these copies automatically",
+  "Copies à garder": "Copies to keep",
+  "Copier maintenant": "Copy now",
+  "Avant le cloud": "Before cloud sync",
+  "Copie automatique": "Automatic copy",
+  "Restaurer": "Restore",
+  "Confirmer la restauration": "Confirm restore",
+  "Aucune copie pour l'instant.": "No copies yet.",
+  "Restauration...": "Restoring..."
  },
  "uiPatterns": [
   [
@@ -764,6 +785,46 @@
   [
    "^Dossier de Forkbay introuvable\\. Branche le disque, ou ouvre Forkbay depuis son nouvel emplacement et clique sur Enregistrer dans Steam\\.$",
    "Forkbay folder not found. Plug in the drive, or open Forkbay from its new location and click Apply to Steam."
+  ],
+  [
+   "(?s)^Copie automatique impossible :\\n(.*)\\n\\nJouer quand même \\?$",
+   "Could not make the automatic copy:\n$1\n\nPlay anyway?"
+  ],
+  [
+   "^Copie enregistrée dans Save Backups\\.$",
+   "Copy saved to Save Backups."
+  ],
+  [
+   "^Rien n'a changé depuis la dernière copie\\.$",
+   "Nothing changed since the last copy."
+  ],
+  [
+   "^Ferme les émulateurs avant de restaurer\\.$",
+   "Close the emulators before restoring."
+  ],
+  [
+   "^Cette copie n'existe plus\\.$",
+   "This copy no longer exists."
+  ],
+  [
+   "^Copie restaurée\\. L'état précédent est gardé dans Save Backups\\.$",
+   "Copy restored. The previous state is kept in Save Backups."
+  ],
+  [
+   "^Ferme les émulateurs avant de changer de version\\.$",
+   "Close the emulators before changing version."
+  ],
+  [
+   "^Cette version n'existe plus\\.$",
+   "This version no longer exists."
+  ],
+  [
+   "^(.+) : version précédente rétablie \\((.+)\\)\\. L'autre version reste dans Old Versions\\.$",
+   "$1: previous version restored ($2). The other version stays in Old Versions."
+  ],
+  [
+   "^Somme de contrôle absente : mise à jour refusée\\.$",
+   "No checksum available: update rejected."
   ]
  ],
  "categories": {

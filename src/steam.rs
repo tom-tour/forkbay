@@ -94,16 +94,56 @@ fn is_tool(e: &Node) -> bool {
 }
 
 pub fn managed_game(e: &Node) -> Option<String> {
-    let re = Regex::new(r"--launch '((?:[^']|'')+)'").unwrap();
-    re.captures(&text_field(e, "LaunchOptions")).map(|c| c[1].replace("''", "'"))
+    let re = Regex::new(r#"--launch (?:'((?:[^']|'')+)'|"([^"]+)")"#).unwrap();
+    re.captures(&text_field(e, "LaunchOptions")).and_then(|c| c.get(1).map(|m| m.as_str().replace("''", "'")).or_else(|| c.get(2).map(|m| m.as_str().to_string())))
 }
 
-// Shown by the PowerShell finder, inside a single-quoted string.
-fn missing_msg() -> String {
-    crate::i18n::t("Dossier de Forkbay introuvable. Branche le disque, ou ouvre Forkbay depuis son nouvel emplacement et clique sur Enregistrer dans Steam.").replace('\'', "''")
+fn game_rel(file: &str) -> String { if cfg!(windows) { format!("Roms/{file}") } else { format!("Roms/{file}").replace('\'', "''") } }
+
+const LAUNCHER: &str = "forkbay-launcher.exe";
+
+// Steam keeps its shortcuts on this PC, so the small finder stays next to them.
+fn prepare_launcher(vdf: &Path) -> Result<PathBuf> {
+    if !cfg!(windows) {
+        return Ok(exe_path());
+    }
+    let dir = vdf.parent().ok_or_else(|| anyhow::anyhow!("Steam introuvable sur ce PC."))?;
+    fs::create_dir_all(dir)?;
+    let target = dir.join(LAUNCHER);
+    let me = exe_path();
+    if target.is_file() && sha256_file(&target)? == sha256_file(&me)? {
+        return Ok(target);
+    }
+    let tmp = target.with_extension("exe.tmp");
+    fs::copy(&me, &tmp)?;
+    // A copy in use still works: it only has to find the program.
+    if fs::rename(&tmp, &target).is_err() {
+        let _ = fs::remove_file(&tmp);
+        if !target.is_file() {
+            bail!("Copie impossible : {}", target.display());
+        }
+    }
+    Ok(target)
 }
 
-fn game_rel(file: &str) -> String { format!("Roms/{file}").replace('\'', "''") }
+/// Started by Steam on Windows: looks for the program on every drive, then waits for it.
+pub fn find_and_run() {
+    let args: Vec<String> = std::env::args().skip(2).collect();
+    let Some(rel) = args.first() else { return };
+    for letter in 'A'..='Z' {
+        let p = PathBuf::from(format!("{letter}:\\{rel}"));
+        if p.is_file() {
+            let mut c = std::process::Command::new(&p);
+            c.args(&args[1..]);
+            if let Some(d) = p.parent() { c.current_dir(d); }
+            if let Ok(mut child) = c.spawn() {
+                let _ = child.wait();
+                return;
+            }
+        }
+    }
+    rfd::MessageDialog::new().set_title("Forkbay").set_description(crate::i18n::t("Dossier de Forkbay introuvable. Branche le disque, ou ouvre Forkbay depuis son nouvel emplacement et clique sur Enregistrer dans Steam.")).set_level(rfd::MessageLevel::Warning).show();
+}
 
 fn exe_path() -> PathBuf { std::env::current_exe().unwrap_or_default() }
 
@@ -112,34 +152,25 @@ fn relative_exe() -> String {
     match p.find(":\\") { Some(i) => p[i + 2..].to_string(), None => p }
 }
 
-fn powershell() -> String {
-    PathBuf::from(std::env::var_os("WINDIR").unwrap_or_else(|| "C:\\Windows".into())).join("System32\\WindowsPowerShell\\v1.0\\powershell.exe").to_string_lossy().into_owned()
-}
-
-// On Windows the drive letter is not stored: the command looks for it on launch.
-fn exe_and_options(file: &str) -> (String, String) {
+// On Windows the drive letter is not stored: the launcher looks for it each time.
+fn exe_and_options(file: &str, launcher: &Path) -> (String, String) {
     if cfg!(windows) {
-        let rel = relative_exe().replace('\'', "''");
-        let msg = missing_msg();
-        let opts = format!("-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command \"foreach($d in Get-PSDrive -PSProvider FileSystem){{$s=$d.Root+'{rel}';if(Test-Path -LiteralPath $s){{& $s --launch '{}' | Out-Null;exit}}}};Add-Type -AssemblyName System.Windows.Forms;[void][Windows.Forms.MessageBox]::Show('{msg}')\"", game_rel(file));
-        (format!("\"{}\"", powershell()), opts)
+        (format!("\"{}\"", launcher.display()), format!("--find \"{}\" --launch \"{}\"", relative_exe(), game_rel(file)))
     } else {
-        (format!("\"{}\"", exe_path().display()), format!("--launch '{}'", game_rel(file)))
+        (format!("\"{}\"", launcher.display()), format!("--launch '{}'", game_rel(file)))
     }
 }
 
-fn tool_exe_and_options() -> (String, String) {
+fn tool_exe_and_options(launcher: &Path) -> (String, String) {
     if cfg!(windows) {
-        let rel = relative_exe().replace('\'', "''");
-        let msg = missing_msg();
-        (format!("\"{}\"", powershell()), format!("-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command \"foreach($d in Get-PSDrive -PSProvider FileSystem){{$s=$d.Root+'{rel}';if(Test-Path -LiteralPath $s){{& $s {TOOL_FLAG} | Out-Null;exit}}}};Add-Type -AssemblyName System.Windows.Forms;[void][Windows.Forms.MessageBox]::Show('{msg}')\""))
+        (format!("\"{}\"", launcher.display()), format!("--find \"{}\" {TOOL_FLAG}", relative_exe()))
     } else {
-        (format!("\"{}\"", exe_path().display()), TOOL_FLAG.to_string())
+        (format!("\"{}\"", launcher.display()), TOOL_FLAG.to_string())
     }
 }
 
 fn is_current(e: &Node) -> bool {
-    if cfg!(windows) { text_field(e, "LaunchOptions").contains(&format!("'{}'", relative_exe().replace('\'', "''"))) } else { text_field(e, "Exe") == format!("\"{}\"", exe_path().display()) }
+    if cfg!(windows) { text_field(e, "LaunchOptions").contains(&format!("--find \"{}\"", relative_exe())) && Path::new(text_field(e, "Exe").trim_matches('"')).is_file() } else { text_field(e, "Exe") == format!("\"{}\"", exe_path().display()) }
 }
 
 fn crc32(data: &[u8]) -> u32 {
@@ -157,13 +188,13 @@ fn icon_for(file: &str) -> String {
     crate::emu::find_exe(&root().join(emu)).map(|p| p.to_string_lossy().into_owned()).unwrap_or_default()
 }
 
-fn new_entry(file: &str) -> Node {
-    let (exe, opts) = exe_and_options(file);
+fn new_entry(file: &str, launcher: &Path) -> Node {
+    let (exe, opts) = exe_and_options(file, launcher);
     build_entry(display_name(file), exe, opts, icon_for(file))
 }
 
-fn tool_entry() -> Node {
-    let (exe, opts) = tool_exe_and_options();
+fn tool_entry(launcher: &Path) -> Node {
+    let (exe, opts) = tool_exe_and_options(launcher);
     build_entry("Forkbay".to_string(), exe, opts, exe_path().to_string_lossy().into_owned())
 }
 
@@ -182,13 +213,14 @@ fn build_entry(name: String, exe: String, opts: String, icon: String) -> Node {
 /// Adds, removes and refreshes this tool's games. Other shortcuts do not change.
 pub fn save_shortcuts(path: &Path, wanted: &[String], tool: bool) -> Result<()> {
     let entries = read_shortcuts(path)?;
+    let launcher = prepare_launcher(path)?;
     let mut result = vec![];
     let mut done: Vec<String> = vec![];
     let mut tool_done = false;
     for mut e in entries {
         if is_tool(&e) {
             if !tool { continue; }
-            let (exe, opts) = tool_exe_and_options();
+            let (exe, opts) = tool_exe_and_options(&launcher);
             set_text(&mut e, "Exe", &exe);
             set_text(&mut e, "LaunchOptions", &opts);
             set_text(&mut e, "icon", &exe_path().to_string_lossy());
@@ -199,15 +231,15 @@ pub fn save_shortcuts(path: &Path, wanted: &[String], tool: bool) -> Result<()> 
         let Some(game) = managed_game(&e) else { result.push(e); continue };
         let file = game.trim_start_matches("Roms/").trim_start_matches("Roms\\").to_string();
         if !wanted.contains(&file) { continue; }
-        let (exe, opts) = exe_and_options(&file);
+        let (exe, opts) = exe_and_options(&file, &launcher);
         set_text(&mut e, "Exe", &exe);
         set_text(&mut e, "LaunchOptions", &opts);
         set_text(&mut e, "icon", &icon_for(&file));
         result.push(e);
         done.push(file);
     }
-    for f in wanted { if !done.contains(f) { result.push(new_entry(f)); } }
-    if tool && !tool_done { result.push(tool_entry()); }
+    for f in wanted { if !done.contains(f) { result.push(new_entry(f, &launcher)); } }
+    if tool && !tool_done { result.push(tool_entry(&launcher)); }
     for (i, e) in result.iter_mut().enumerate() { e.key = i.to_string(); }
     let mut bytes = vec![];
     write_map(&mut bytes, &[Node { key: "shortcuts".into(), val: Val::Map(result) }]);

@@ -36,7 +36,7 @@ pub fn check() -> Result<Value> {
     let current = version();
     let Some(r) = release()? else { return Ok(json!({ "current": current, "latest": "", "available": false, "published": false })) };
     let tag = r["tag_name"].as_str().unwrap_or("");
-    Ok(json!({ "current": current, "latest": tag, "available": newer(tag, current), "published": true, "page": r["html_url"] }))
+    Ok(json!({ "current": current, "latest": tag, "available": newer(tag, current), "published": true, "page": r["html_url"], "notes": r["body"].as_str().unwrap_or("").chars().take(4000).collect::<String>() }))
 }
 
 /// Old copy of the program left by the last update.
@@ -62,6 +62,11 @@ pub fn apply() -> Result<String> {
     let asset = r["assets"].as_array().into_iter().flatten().find(|a| a["name"].as_str() == Some(ASSET)).ok_or_else(|| anyhow!("Version de l'outil introuvable pour ce système."))?;
     let url = asset["browser_download_url"].as_str().unwrap_or("");
     let size = asset["size"].as_u64().unwrap_or(0);
+    // The tool replaces itself: nothing unverifiable is accepted. Tests may use a local server.
+    if !url.starts_with("https://") && std::env::var("FORKBAY_UPDATE_API").is_err() {
+        bail!("Adresse refusée.");
+    }
+    let digest = asset["digest"].as_str().and_then(|d| d.strip_prefix("sha256:")).ok_or_else(|| anyhow!("Somme de contrôle absente : mise à jour refusée."))?;
     let exe = std::env::current_exe()?;
     let new = PathBuf::from(format!("{}.new", exe.display()));
     let result = (|| -> Result<()> {
@@ -83,10 +88,8 @@ pub fn apply() -> Result<String> {
         if size > 0 && fs::metadata(&new)?.len() != size {
             bail!("Téléchargement incomplet : taille différente.");
         }
-        if let Some(d) = asset["digest"].as_str().and_then(|d| d.strip_prefix("sha256:")) {
-            if !sha256_file(&new)?.eq_ignore_ascii_case(d) {
-                bail!("Somme de contrôle incorrecte : fichier refusé.");
-            }
+        if !sha256_file(&new)?.eq_ignore_ascii_case(digest) {
+            bail!("Somme de contrôle incorrecte : fichier refusé.");
         }
         #[cfg(unix)]
         {

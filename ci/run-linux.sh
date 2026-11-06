@@ -78,6 +78,7 @@ XVFB=$!
 sleep 2
 export DISPLAY=:99
 export FORKBAY_SELFTEST="$WORK/page.txt"
+export FORKBAY_SECTEST=1
 dbus-run-session -- "$BIN" > "$OUT/stdout.txt" 2>&1 &
 APP=$!
 sleep 25
@@ -85,6 +86,7 @@ xwininfo -root -tree > "$OUT/windows.txt" 2>&1 || true
 import -window root "$OUT/first-run.png" || true
 if kill -0 "$APP" 2>/dev/null; then echo "ok   window still running"; else echo "FAIL window exited"; FAIL=1; fi
 if [ -f "$FORKBAY_SELFTEST" ]; then echo "ok   page script reached the program"; else echo "FAIL page never loaded"; FAIL=1; fi
+if grep -q "csp=blocked nav=blocked" "$FORKBAY_SELFTEST" 2>/dev/null; then echo "ok   page cannot reach or navigate to the web"; else echo "FAIL page protection: $(cat "$FORKBAY_SELFTEST" 2>/dev/null)"; FAIL=1; fi
 if grep -q "Forkbay" "$OUT/windows.txt"; then echo "ok   window on screen"; else echo "FAIL no window on screen"; FAIL=1; fi
 COLORS=$(identify -format '%k' "$OUT/first-run.png" 2>/dev/null || echo 0)
 if [ "${COLORS:-0}" -gt 50 ]; then echo "ok   image has content ($COLORS colours)"; else echo "FAIL blank image ($COLORS colours)"; FAIL=1; fi
