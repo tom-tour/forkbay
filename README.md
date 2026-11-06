@@ -1,46 +1,44 @@
+<img src="assets/icon.png" width="64" alt="" align="right">
+
 # Switch 2 Manager
 
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/tom_t)
 [![License: GPL v3+](https://img.shields.io/badge/License-GPLv3+-blue.svg)](LICENSE)
 
-One window for your Switch 2 emulators on Windows: launch games, keep emulators up to date, share one data folder between them, add games to Steam and sync your saves. No install, nothing to compile: it runs on the PowerShell and .NET that ship with Windows 10 and 11.
+One window for your Switch 2 emulators on Windows and Linux: launch games, keep emulators up to date, share one data folder between them, add games to Steam and sync your saves. It is a single small program, written in Rust.
 
 **[Français](#français)**
 
 ## What it does
 
+- **Guided setup:** imports what already exists on your PC, walks you through your keys and firmware, then installs an emulator.
+- **Choose what you import:** keys, firmware, saves, profiles, controllers, network, graphics, per-game settings, mods, shader cache, screenshots, virtual SD card.
 - **One data folder:** every emulator uses the same saves, keys, firmware and settings.
-- **Portable or installed:** keep your data next to the tool (nothing on `C:`, ideal on an external drive), in AppData, or in a folder you choose.
-- **One emulator per game:** pick it once, and launchers and Steam follow your choice.
-- **Updates:** compares each emulator with its latest release, then installs it after checking the download and scanning it with Microsoft Defender. The previous version is kept.
-- **Your own emulators:** add one from a GitHub repository or from a local `.exe`.
-- **Steam:** adds games to your library, leaves your other shortcuts alone, and survives a drive letter change.
+- **Portable or installed:** keep your data next to the tool, in your user folder, or anywhere you choose.
+- **One emulator per game:** pick it once, and Steam follows your choice.
+- **Updates:** compares each emulator with its latest release, and keeps the previous version. On Windows, downloads are also scanned with Microsoft Defender.
+- **Your own emulators:** add one from a GitHub repository or from a local program.
+- **Steam:** adds games to your library and leaves your other shortcuts alone.
+- **Covers (optional):** no key needed, thanks to Nintendo's public catalogue. A free SteamGridDB key adds Steam logos and banners.
 - **Cloud saves (optional):** syncs before and after each game, with a choice of version when both sides changed.
-- **Game art:** covers and banners from SteamGridDB, for the tool and for Steam.
-- **First run:** finds existing emulator data on your PC and offers to import it.
+- **Dark theme by default**, with a light one.
 
 ## What you need
 
-- Windows 10 or 11.
+- Windows 10 or 11 (WebView2, included in current versions), or Linux with WebKitGTK 4.1.
 - Your own keys, firmware and games, dumped from your own console. **None of them are provided here, and they must never be shared or committed.**
 
 ## Getting started
 
-1. Copy `Switch 2 Manager.bat` and the `Files` folder wherever you like.
-2. Put your games (`.nup`, `.nsp`, `.xci`) in `Files\Roms`.
-3. Put `prod.keys` and `title.keys` in a folder inside `Files`, and your `Firmware*.zip` directly in `Files`.
-4. Run `Switch 2 Manager.bat` and follow the first-run screen.
+1. Put the program in the folder of your choice. It creates a `Files` folder next to itself.
+2. Run it and follow the guided setup.
+3. Put your games (`.nup`, `.nsp`, `.xci`) in `Files/Roms`.
 
-If Windows blocks the scripts of a downloaded copy, right-click the zip, choose **Properties**, tick **Unblock**, then extract it again.
+To build it yourself, run `cargo build --release`. On Linux, first install `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` and `libjavascriptcoregtk-4.1-dev`.
 
 ## Adding an emulator
 
-Open **Émulateurs**, then **Ajouter un émulateur**:
-
-- **From GitHub:** give it a name and its `owner/project`. The tool checks that a Windows release exists. The optional filter is a regular expression that picks the file to download.
-- **From a local `.exe`:** the folder is copied into `Files`. It has no update check.
-
-Only add sources you trust: an emulator is a program that runs on your PC. The built-in list is in `Files/Manager/emulators.json`.
+Open **Émulateurs**, then **Ajouter un émulateur**. From GitHub, give it a name and its `owner/project`: the tool checks that a usable release exists. Only add sources you trust: an emulator is a program that runs on your PC. The built-in list is in `emulators.json`.
 
 ## Cloud saves
 
@@ -48,27 +46,21 @@ Saves, the user profile and settings are synced. **Keys and firmware are never s
 
 | Before playing | What happens |
 |---|---|
-| Only the cloud changed | The local version is replaced, after a backup in `Files\Save Backups` |
+| Only the cloud changed | The local version is replaced, after a backup in `Files/Save Backups` |
 | Only this PC changed | The local version is uploaded |
 | Both changed | You see both dates and choose, or cancel the launch |
-
-Two options:
 
 - **Synced folder:** a Google Drive for desktop, OneDrive, Dropbox or NAS folder. No API needed.
 - **Google Drive API:** create a project on [console.cloud.google.com](https://console.cloud.google.com), enable the Google Drive API, set the consent screen to External and **publish it** (otherwise the sign-in expires after 7 days), then create an OAuth client of type *Desktop app* and paste its ID and secret into the **Cloud** page. The tool only asks for the `drive.file` scope, so it only sees the files it created.
 
-Secrets are encrypted for your Windows account, so another PC has to sign in again.
-
-## Game art
-
-Get a free API key from your [SteamGridDB](https://www.steamgriddb.com) preferences and paste it into **Réglages**. You can also drop your own images into `Files\Covers`, named like `Game Name-grid.png` (`grid`, `wide`, `hero`, `logo` or `icon`).
+On Windows, secrets are encrypted for your account. On Linux, they stay in a settings file readable only by you.
 
 ## Limits
 
-- **Windows only:** the interface uses WPF, and the shared folder uses NTFS junctions.
 - **The interface is in French.**
-- **Moving the folder:** Steam shortcuts find a new drive letter on their own. After moving to another path, open the **Steam** page and click **Enregistrer**.
-- Emulation of these games is experimental and changes daily: a newer emulator can run a game worse. Your previous version stays in `Files\Old Versions`.
+- **Linux:** emulators are started from their AppImage, with their folders pointed at the shared data. Lichii by Frizti has no Linux build.
+- **Moving the folder:** on Windows, Steam shortcuts find a new drive letter on their own. After any other move, open the **Steam** page and click **Enregistrer**.
+- Emulation of these games is experimental and changes daily: a newer emulator can run a game worse. The previous version stays in `Files/Old Versions`.
 
 ## License
 
@@ -78,42 +70,38 @@ GPL-3.0-or-later. See [LICENSE](LICENSE).
 
 # Français
 
-Une seule fenêtre pour tes émulateurs Switch 2 sous Windows : lancer les jeux, garder les émulateurs à jour, partager un seul dossier de données, ajouter les jeux à Steam et synchroniser tes sauvegardes. Rien à installer ni à compiler : l'outil utilise le PowerShell et le .NET fournis avec Windows 10 et 11.
+Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer les jeux, garder les émulateurs à jour, partager un seul dossier de données, ajouter les jeux à Steam et synchroniser tes sauvegardes. C'est un seul petit programme, écrit en Rust.
 
 ## Ce que fait l'outil
 
+- **Installation guidée :** importe ce qui existe déjà sur ton PC, t'accompagne pour tes clés et ton firmware, puis installe un émulateur.
+- **Tu choisis ce que tu importes :** clés, firmware, sauvegardes, profils, manettes, réseau, graphismes, réglages par jeu, mods, cache de shaders, captures d'écran, carte SD virtuelle.
 - **Un seul dossier de données :** tous les émulateurs utilisent les mêmes sauvegardes, clés, firmware et réglages.
-- **Portable ou installé :** tes données restent à côté de l'outil (rien sur `C:`, idéal sur un disque externe), dans AppData, ou dans le dossier de ton choix.
-- **Un émulateur par jeu :** tu le choisis une fois, et les lanceurs et Steam suivent ce choix.
-- **Mises à jour :** compare chaque émulateur à sa dernière version, puis l'installe après avoir vérifié le téléchargement et l'avoir analysé avec Microsoft Defender. La version précédente est gardée.
-- **Tes propres émulateurs :** ajoutes-en un depuis un dépôt GitHub ou depuis un `.exe` local.
-- **Steam :** ajoute les jeux à ta bibliothèque, ne touche pas à tes autres raccourcis et résiste à un changement de lettre de disque.
+- **Portable ou installé :** tes données restent à côté de l'outil, dans ton dossier utilisateur, ou où tu veux.
+- **Un émulateur par jeu :** tu le choisis une fois, et Steam suit ce choix.
+- **Mises à jour :** compare chaque émulateur à sa dernière version et garde la précédente. Sous Windows, les téléchargements sont aussi analysés avec Microsoft Defender.
+- **Tes propres émulateurs :** ajoutes-en un depuis un dépôt GitHub ou depuis un programme local.
+- **Steam :** ajoute les jeux à ta bibliothèque sans toucher à tes autres raccourcis.
+- **Jaquettes (facultatif) :** aucune clé nécessaire, grâce au catalogue public de Nintendo. Une clé gratuite SteamGridDB ajoute des logos et bannières pour Steam.
 - **Sauvegardes dans le cloud (facultatif) :** synchronise avant et après chaque partie, et te laisse choisir si les deux versions ont changé.
-- **Images des jeux :** jaquettes et bannières depuis SteamGridDB, pour l'outil et pour Steam.
-- **Premier lancement :** cherche les données d'émulateurs déjà présentes sur ton PC et propose de les importer.
+- **Thème sombre par défaut**, avec un thème clair.
 
 ## Ce qu'il te faut
 
-- Windows 10 ou 11.
+- Windows 10 ou 11 (WebView2, inclus dans les versions à jour), ou Linux avec WebKitGTK 4.1.
 - Tes propres clés, firmware et jeux, extraits de ta propre console. **Rien de tout cela n'est fourni ici, et il ne faut jamais les partager ni les ajouter au dépôt.**
 
 ## Pour commencer
 
-1. Copie `Switch 2 Manager.bat` et le dossier `Files` où tu veux.
-2. Mets tes jeux (`.nup`, `.nsp`, `.xci`) dans `Files\Roms`.
-3. Mets `prod.keys` et `title.keys` dans un dossier à l'intérieur de `Files`, et ton `Firmware*.zip` directement dans `Files`.
-4. Lance `Switch 2 Manager.bat` et suis l'écran de premier lancement.
+1. Place le programme dans le dossier de ton choix. Il crée un dossier `Files` à côté de lui.
+2. Lance-le et suis l'installation guidée.
+3. Mets tes jeux (`.nup`, `.nsp`, `.xci`) dans `Files/Roms`.
 
-Si Windows bloque les scripts d'une copie téléchargée, fais un clic droit sur le zip, choisis **Propriétés**, coche **Débloquer**, puis extrais-le de nouveau.
+Pour le compiler toi-même : `cargo build --release`. Sous Linux, installe d'abord `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` et `libjavascriptcoregtk-4.1-dev`.
 
 ## Ajouter un émulateur
 
-Ouvre **Émulateurs**, puis **Ajouter un émulateur** :
-
-- **Depuis GitHub :** donne-lui un nom et son `propriétaire/projet`. L'outil vérifie qu'une version Windows existe. Le filtre facultatif est une expression régulière qui choisit le fichier à télécharger.
-- **Depuis un `.exe` local :** le dossier est copié dans `Files`. Ses mises à jour restent manuelles.
-
-N'ajoute que des sources de confiance : un émulateur est un programme qui s'exécute sur ton PC. La liste fournie se trouve dans `Files/Manager/emulators.json`.
+Ouvre **Émulateurs**, puis **Ajouter un émulateur**. Depuis GitHub, donne-lui un nom et son `propriétaire/projet` : l'outil vérifie qu'une version utilisable existe. N'ajoute que des sources de confiance : un émulateur est un programme qui s'exécute sur ton PC. La liste fournie se trouve dans `emulators.json`.
 
 ## Sauvegardes dans le cloud
 
@@ -121,27 +109,21 @@ Les sauvegardes, le profil utilisateur et les réglages sont synchronisés. **Le
 
 | Avant de jouer | Ce qui se passe |
 |---|---|
-| Seul le cloud a changé | La version locale est remplacée, après une copie dans `Files\Save Backups` |
+| Seul le cloud a changé | La version locale est remplacée, après une copie dans `Files/Save Backups` |
 | Seul ce PC a changé | La version locale est envoyée |
 | Les deux ont changé | Tu vois les deux dates et tu choisis, ou tu annules le lancement |
-
-Deux possibilités :
 
 - **Dossier synchronisé :** un dossier Google Drive pour ordinateur, OneDrive, Dropbox ou NAS. Aucune API nécessaire.
 - **API Google Drive :** crée un projet sur [console.cloud.google.com](https://console.cloud.google.com), active Google Drive API, règle l'écran de consentement sur Externe et **publie-le** (sinon la connexion expire après 7 jours), puis crée un client OAuth de type *Application de bureau* et colle son identifiant et son secret dans la page **Cloud**. L'outil demande seulement l'accès `drive.file` : il ne voit que les fichiers qu'il a créés.
 
-Les secrets sont chiffrés pour ton compte Windows : un autre PC devra se reconnecter.
-
-## Images des jeux
-
-Récupère une clé API gratuite dans tes préférences [SteamGridDB](https://www.steamgriddb.com) et colle-la dans **Réglages**. Tu peux aussi déposer tes images dans `Files\Covers`, sous la forme `Nom du jeu-grid.png` (`grid`, `wide`, `hero`, `logo` ou `icon`).
+Sous Windows, les secrets sont chiffrés pour ton compte. Sous Linux, ils restent dans un fichier de réglages lisible par toi seul.
 
 ## Limites
 
-- **Windows uniquement :** l'interface utilise WPF, et le dossier partagé des liens NTFS.
 - **L'interface est en français.**
-- **Déplacer le dossier :** les raccourcis Steam retrouvent seuls une nouvelle lettre de disque. Après un déplacement vers un autre chemin, ouvre la page **Steam** et clique sur **Enregistrer**.
-- L'émulation de ces jeux est expérimentale et change chaque jour : un émulateur plus récent peut moins bien faire tourner un jeu. La version précédente reste dans `Files\Old Versions`.
+- **Linux :** les émulateurs sont lancés depuis leur AppImage, avec leurs dossiers dirigés vers les données partagées. Lichii par Frizti n'a pas de version Linux.
+- **Déplacer le dossier :** sous Windows, les raccourcis Steam retrouvent seuls une nouvelle lettre de disque. Après tout autre déplacement, ouvre la page **Steam** et clique sur **Enregistrer**.
+- L'émulation de ces jeux est expérimentale et change chaque jour : un émulateur plus récent peut moins bien faire tourner un jeu. La version précédente reste dans `Files/Old Versions`.
 
 ## Licence
 

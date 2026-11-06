@@ -1,4 +1,12 @@
-*.ps1 text eol=crlf
-*.bat text eol=crlf
-*.json text eol=crlf
+*.rs text eol=lf
+*.html text eol=lf
 *.md text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.rc text eol=crlf
+*.manifest text eol=crlf
+*.png binary
+*.ico binary
