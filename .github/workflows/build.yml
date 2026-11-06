@@ -24,7 +24,7 @@ jobs:
         shell: pwsh
         run: ./ci/run-windows.ps1 -Bin target/release/forkbay.exe
       - run: Copy-Item target/release/forkbay.exe forkbay-windows-x86_64.exe
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: forkbay-windows
           path: forkbay-windows-x86_64.exe
@@ -47,7 +47,7 @@ jobs:
         run: |
           sudo apt-get install -y xvfb imagemagick x11-utils dbus
           bash ci/run-linux.sh target/release/forkbay screenshots
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: screenshots-linux
@@ -58,7 +58,7 @@ jobs:
           cp target/release/forkbay README.md LICENSE dist/forkbay/
           tar -C dist -czf forkbay-linux-x86_64.tar.gz forkbay
           cp target/release/forkbay forkbay-linux-x86_64
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: forkbay-linux
           path: |
