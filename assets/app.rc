@@ -17,8 +17,8 @@ BEGIN
       VALUE "FileDescription", "Forkbay - Switch 2 emulator manager"
       VALUE "InternalName", "Forkbay"
       VALUE "ProductName", "Forkbay"
-      VALUE "FileVersion", "0.7.3"
-      VALUE "ProductVersion", "0.7.3"
+      VALUE "FileVersion", "0.7.4"
+      VALUE "ProductVersion", "0.7.4"
       VALUE "OriginalFilename", "Forkbay.exe"
       VALUE "LegalCopyright", "Copyright (C) 2026 tom-tour. GPL-3.0-or-later."
     END
