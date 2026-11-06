@@ -42,7 +42,7 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 2. Run it and follow the guided setup. The program is not code-signed, so Windows SmartScreen may warn you the first time: choose **More info**, then **Run anyway**.
 3. Put your games (`.nup`, `.nsp`, `.xci`) in `Files/Roms`.
 
-To build it yourself, run `cargo build --release` (on Windows, `tools/build-release.ps1` also keeps your local paths out of the program). On Linux, first install `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` and `libjavascriptcoregtk-4.1-dev`.
+To build it yourself, run `cargo build --release`. On Windows, `tools/build-release.ps1` also keeps your local paths out of the program, but Defender flagged builds made this way far more often. On Linux, first install `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` and `libjavascriptcoregtk-4.1-dev`.
 
 ## Adding an emulator
 
@@ -63,9 +63,24 @@ Saves, the user profile and settings are synced. **Keys and firmware are never s
 
 On Windows, secrets are encrypted for your account. On Linux, they stay in a settings file readable only by you.
 
+## What goes online
+
+There is no account, no analytics and no tracking. As with any web request, the services below can see your IP address.
+
+- **At startup:** the tool downloads the wichforks guide from GitHub and, unless you turn off **Check at startup**, looks for a new version of itself on GitHub.
+- **Emulators:** it asks each emulator's source for its latest version (GitHub or `git.eden-emu.dev`), and downloads a release when you ask it to.
+- **Only if you set them up:** SteamGridDB for covers, and Google Drive for cloud saves.
+- **Bug reports:** you see the full text first, and it is only sent if you submit it in your browser.
+
 ## Antivirus warnings
 
 The program is new and not code-signed, so an antivirus can flag it by mistake, sometimes only after it has been running for a while. This has happened with Microsoft Defender. Every release is built by GitHub Actions from this repository, and its SHA-256 checksum is shown on the release page. If you are in doubt, build it yourself. Please do not disable your antivirus: report the false positive to its vendor and tell us in an issue.
+
+## Uninstalling
+
+1. On the **Steam** page, untick your games and the shortcut to the tool, then click **Apply to Steam**. On Windows, also delete `forkbay-launcher.exe` next to Steam's shortcut file (`userdata/<account>/config`).
+2. **Copy your saves somewhere safe:** they are in your data folder, which is `Files/Data` unless you chose another location.
+3. Delete the program and its `Files` folder, and your data folder if it is elsewhere.
 
 ## Limits
 
@@ -122,7 +137,7 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 2. Lance-le et suis l'installation guidée. Le programme n'est pas signé : Windows SmartScreen peut afficher un avertissement la première fois. Choisis alors **Informations complémentaires**, puis **Exécuter quand même**.
 3. Mets tes jeux (`.nup`, `.nsp`, `.xci`) dans `Files/Roms`.
 
-Pour le compiler toi-même : `cargo build --release` (sous Windows, `tools/build-release.ps1` évite aussi d'inclure tes chemins locaux dans le programme). Sous Linux, installe d'abord `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` et `libjavascriptcoregtk-4.1-dev`.
+Pour le compiler toi-même : `cargo build --release`. Sous Windows, `tools/build-release.ps1` évite aussi d'inclure tes chemins locaux dans le programme, mais Defender a signalé bien plus souvent les versions compilées ainsi. Sous Linux, installe d'abord `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` et `libjavascriptcoregtk-4.1-dev`.
 
 ## Ajouter un émulateur
 
@@ -143,9 +158,24 @@ Les sauvegardes, le profil utilisateur et les réglages sont synchronisés. **Le
 
 Sous Windows, les secrets sont chiffrés pour ton compte. Sous Linux, ils restent dans un fichier de réglages lisible par toi seul.
 
+## Ce qui passe par Internet
+
+Il n'y a ni compte, ni statistiques, ni pistage. Comme pour toute requête web, les services ci-dessous peuvent voir ton adresse IP.
+
+- **Au démarrage :** l'outil télécharge le guide wichforks depuis GitHub et, sauf si tu désactives **Vérifier au démarrage**, cherche une nouvelle version de lui-même sur GitHub.
+- **Émulateurs :** il demande à la source de chaque émulateur sa dernière version (GitHub ou `git.eden-emu.dev`), et télécharge une version quand tu le lui demandes.
+- **Seulement si tu les configures :** SteamGridDB pour les jaquettes, et Google Drive pour les sauvegardes dans le cloud.
+- **Rapports de bug :** tu vois d'abord tout le texte, et il n'est envoyé que si tu le soumets dans ton navigateur.
+
 ## Alertes d'antivirus
 
 Le programme est récent et n'est pas signé : un antivirus peut le signaler par erreur, parfois seulement après un moment d'utilisation. C'est déjà arrivé avec Microsoft Defender. Chaque version est compilée par GitHub Actions depuis ce dépôt, et sa somme de contrôle SHA-256 est affichée sur la page de la version. En cas de doute, compile-le toi-même. Ne désactive pas ton antivirus : signale la fausse alerte à son éditeur et préviens-nous dans un ticket.
+
+## Désinstaller
+
+1. Sur la page **Steam**, décoche tes jeux et le raccourci vers l'outil, puis clique sur **Enregistrer dans Steam**. Sous Windows, supprime aussi `forkbay-launcher.exe`, à côté du fichier de raccourcis de Steam (`userdata/<compte>/config`).
+2. **Mets tes sauvegardes en lieu sûr :** elles sont dans ton dossier de données, `Files/Data` sauf si tu as choisi un autre emplacement.
+3. Supprime le programme et son dossier `Files`, ainsi que ton dossier de données s'il est ailleurs.
 
 ## Limites
 
