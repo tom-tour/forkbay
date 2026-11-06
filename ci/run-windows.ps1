@@ -1,5 +1,7 @@
 # Runs the core commands of a Windows build on throwaway folders.
 param([string]$Bin)
+# Some checks expect a command to fail: failures are counted, they do not stop the script.
+$ErrorActionPreference = 'Continue'
 $Bin = (Resolve-Path -LiteralPath $Bin).Path
 $work = Join-Path ([IO.Path]::GetTempPath()) ('forkbay-' + [guid]::NewGuid().ToString('N'))
 $script:fail = 0
