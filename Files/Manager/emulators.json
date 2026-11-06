@@ -1,0 +1,7 @@
+[
+  { "Name": "Lichii", "Exe": "lichii.exe", "Source": "github", "Repo": "Frizti/Lichii", "Tag": "^frizti-", "Asset": "(?i)^(?!.*(symbols|debug)).*windows.*\\.zip$", "About": "Fork Frizti : le plus polyvalent" },
+  { "Name": "Eglantine", "Exe": "eglantine.exe", "Source": "github", "Repo": "Djihads80/Eglantine", "Tag": "^daily-", "Asset": "^eglantine-windows-x86_64-pgo\\.zip$", "About": "Build quotidienne officielle" },
+  { "Name": "PokeDinner", "Exe": "eglantine.exe", "Source": "forgejo", "Base": "https://git.eden-emu.dev", "Repo": "Franseven/PokeDinner-a-Eglantine-Fork", "Tag": ".", "Asset": "(?i)^(.*win.*|\\d+\\.\\d+\\.\\d+)\\.zip$", "About": "Fork centré sur Pokopia" },
+  { "Name": "Lichii Upstream", "Exe": "lichii.exe", "Source": "github", "Repo": "zortos293/Lichii", "Tag": "^build-", "Asset": "(?i)^lichii-windows-x86_64\\.zip$", "About": "Projet Lichii d'origine, sorties fréquentes" },
+  { "Name": "Orchid", "Exe": "", "Source": "github", "Repo": "MythosOfs/Orchid", "Tag": "^v", "Asset": "(?i)^orchid-.*windows-x86_64\\.zip$", "About": "Correctifs visuels pour Zelda" }
+]

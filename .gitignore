@@ -1,0 +1,16 @@
+# Personal data: must never be committed
+*.keys
+*.nca
+*.nup
+*.nsp
+*.xci
+*.rar
+Firmware*.zip
+Files/*
+!Files/Launcher.ps1
+!Files/Manager/
+Files/Manager/settings.json
+Files/Manager/user-emulators.json
+Files/Manager/_ui/
+Files/Manager/_work/
+*.tmp
