@@ -13,12 +13,13 @@ Anything left out falls back to English, so a partial translation works.
 
 | Section | Content |
 |---|---|
-| `ui` | Text of the window: `"French text": "translation"` |
+| `ui` | Window text: `"French text": "translation"` |
 | `uiPatterns` | Window text with a changing part: `["pattern", "translation with $1"]`. An optional third item maps words inside `$1`. |
-| `messages` | Messages from the program, same form. Keep `$1`, `$2` and leave the pattern untouched. |
+| `messages` | Messages from the program, same form. Keep `$1`, `$2`, etc., and leave the pattern untouched. |
 | `categories` | Import categories: `"French label": ["label", "hint"]` |
 | `importWords` | Lowercase category names used in the import summary |
+| `importHeading` | Heading of the import summary |
 
-The window lets you check your work: **Settings** lists every language found, and the program reports how many texts each one covers.
+The app lets you check your work: **Settings** lists every language found, and the program reports how many strings each one covers.
 
-French is written in the code itself, so it has no file here.
+French is built into the code, so it has no file here.

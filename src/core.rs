@@ -264,7 +264,7 @@ pub fn set_emulator_link(folder: &Path, data: &Path) -> Result<()> {
     let link = folder.join("user");
     if let Ok(meta) = fs::symlink_metadata(&link) {
         if !is_link(&meta) {
-            bail!("{} est un vrai dossier : déplace son contenu dans Data, puis supprime-le.", link.display());
+            bail!("{} est un dossier normal alors qu'un lien est attendu : déplace son contenu dans Data, puis supprime-le.", link.display());
         }
         if fs::canonicalize(&link).ok() == fs::canonicalize(data).ok() && fs::canonicalize(data).is_ok() {
             return Ok(());
@@ -328,12 +328,12 @@ pub fn install_keys(path: &Path) -> Result<String> {
     let dir = data.join("keys");
     fs::copy(path, dir.join("prod.keys"))?;
     let title = path.with_file_name("title.keys");
-    let mut extra = "";
+    let mut done = "prod.keys installé.";
     if title.is_file() {
         fs::copy(&title, dir.join("title.keys"))?;
-        extra = " et title.keys";
+        done = "prod.keys et title.keys installés.";
     }
-    Ok(format!("prod.keys{extra} installé."))
+    Ok(done.to_string())
 }
 
 /// Installs firmware from a zip or a folder of .nca files. Refuses anything else.

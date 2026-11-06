@@ -69,7 +69,7 @@ pub fn read_shortcuts(path: &Path) -> Result<Vec<Node>> {
     }
     let mut check = vec![];
     write_map(&mut check, &root);
-    if check != bytes { bail!("Relecture différente de l'original : fichier non modifié."); }
+    if check != bytes { bail!("Impossible de réécrire ce fichier à l'identique : il n'a pas été modifié."); }
     match root.remove(0).val { Val::Map(m) => Ok(m), _ => bail!("Format de shortcuts.vdf inattendu.") }
 }
 
@@ -98,6 +98,11 @@ pub fn managed_game(e: &Node) -> Option<String> {
     re.captures(&text_field(e, "LaunchOptions")).map(|c| c[1].replace("''", "'"))
 }
 
+// Shown by the PowerShell finder, inside a single-quoted string.
+fn missing_msg() -> String {
+    crate::i18n::t("Dossier de Forkbay introuvable. Branche le disque, ou ouvre Forkbay depuis son nouvel emplacement et clique sur Enregistrer dans Steam.").replace('\'', "''")
+}
+
 fn game_rel(file: &str) -> String { format!("Roms/{file}").replace('\'', "''") }
 
 fn exe_path() -> PathBuf { std::env::current_exe().unwrap_or_default() }
@@ -115,7 +120,7 @@ fn powershell() -> String {
 fn exe_and_options(file: &str) -> (String, String) {
     if cfg!(windows) {
         let rel = relative_exe().replace('\'', "''");
-        let msg = "Dossier de Forkbay introuvable. Branche le disque, ou ouvre Forkbay depuis son nouvel emplacement et enregistre Steam.";
+        let msg = missing_msg();
         let opts = format!("-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command \"foreach($d in Get-PSDrive -PSProvider FileSystem){{$s=$d.Root+'{rel}';if(Test-Path -LiteralPath $s){{& $s --launch '{}' | Out-Null;exit}}}};Add-Type -AssemblyName System.Windows.Forms;[void][Windows.Forms.MessageBox]::Show('{msg}')\"", game_rel(file));
         (format!("\"{}\"", powershell()), opts)
     } else {
@@ -126,7 +131,7 @@ fn exe_and_options(file: &str) -> (String, String) {
 fn tool_exe_and_options() -> (String, String) {
     if cfg!(windows) {
         let rel = relative_exe().replace('\'', "''");
-        let msg = "Dossier de Forkbay introuvable. Branche le disque, ou ouvre Forkbay depuis son nouvel emplacement et enregistre Steam.";
+        let msg = missing_msg();
         (format!("\"{}\"", powershell()), format!("-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command \"foreach($d in Get-PSDrive -PSProvider FileSystem){{$s=$d.Root+'{rel}';if(Test-Path -LiteralPath $s){{& $s {TOOL_FLAG} | Out-Null;exit}}}};Add-Type -AssemblyName System.Windows.Forms;[void][Windows.Forms.MessageBox]::Show('{msg}')\""))
     } else {
         (format!("\"{}\"", exe_path().display()), TOOL_FLAG.to_string())

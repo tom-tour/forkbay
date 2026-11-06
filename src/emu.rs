@@ -205,9 +205,9 @@ pub fn install(name: &str) -> Result<String> {
     let mut checked = "taille";
     if let Some(d) = rel.digest.strip_prefix("sha256:") {
         if !sha256_file(&file)?.eq_ignore_ascii_case(d) {
-            bail!("Condensat différent : fichier refusé.");
+            bail!("Somme de contrôle incorrecte : fichier refusé.");
         }
-        checked = "condensat SHA-256";
+        checked = "somme de contrôle SHA-256";
     }
     let (new_dir, exe_name) = if file.extension().is_some_and(|x| x.eq_ignore_ascii_case("zip")) {
         let extract = work.join("x");
@@ -218,7 +218,7 @@ pub fn install(name: &str) -> Result<String> {
         let best = exes.into_iter().filter(|p| p.extension().is_some_and(|x| x.eq_ignore_ascii_case("exe")))
             .filter(|p| !tool.is_match(&p.file_stem().unwrap_or_default().to_string_lossy()))
             .max_by_key(|p| p.metadata().map(|m| m.len()).unwrap_or(0))
-            .ok_or_else(|| anyhow!("Aucun exécutable d'émulateur dans l'archive."))?;
+            .ok_or_else(|| anyhow!("Aucun programme d'émulateur dans l'archive."))?;
         (best.parent().unwrap().to_path_buf(), best.file_name().unwrap().to_string_lossy().into_owned())
     } else {
         #[cfg(unix)]
@@ -244,7 +244,7 @@ pub fn install(name: &str) -> Result<String> {
         let link = folder.join("user");
         if let Ok(m) = fs::symlink_metadata(&link) {
             if !is_link(&m) {
-                bail!("{} est un vrai dossier : installation annulée.", link.display());
+                bail!("{} est un dossier normal alors qu'un lien est attendu : installation annulée.", link.display());
             }
             remove_link(&link)?;
         }

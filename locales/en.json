@@ -2,21 +2,21 @@
  "name": "English",
  "ui": {
   "Signaler un bug": "Report a bug",
-  "Rien n'est envoyé sans ton accord : tu vois d'abord tout le texte, et c'est toi qui valides sur GitHub.": "Nothing is sent without your approval: you see all the text first, and you confirm on GitHub.",
+  "Rien n'est envoyé sans ton accord : tu vois d'abord tout le texte, et c'est toi qui valides sur GitHub.": "Nothing is sent without your approval: you see the full text first, and you submit it yourself on GitHub.",
   "Que s'est-il passé ?": "What happened?",
   "Ce que tu attendais, et ce que tu as vu à la place.": "What you expected, and what you saw instead.",
-  "Comment le reproduire ?": "How to reproduce it?",
-  "Inclure le log de l'émulateur": "Include the emulator log",
-  "Préparer le rapport": "Prepare the report",
+  "Comment reproduire le problème ?": "Steps to reproduce",
+  "Inclure le journal de l'émulateur": "Include emulator log",
+  "Préparer le rapport": "Prepare report",
   "Ce qui sera envoyé": "What will be sent",
-  "Chemins, noms, adresses et clés sont retirés automatiquement. Relis ce texte, tu peux le modifier. Il ne contient jamais de clés, de firmware ni de jeu.": "Paths, names, addresses and keys are removed automatically. Read this text, you can edit it. It never contains keys, firmware or games.",
-  "Ouvrir le ticket sur GitHub": "Open the issue on GitHub",
+  "Chemins, noms, adresses et clés sont retirés automatiquement. Relis ce texte, tu peux le modifier. Il ne contient jamais de clés, de firmware ni de jeu.": "Paths, names, addresses and keys are removed automatically. Review this text and edit it if needed. It never contains keys, firmware or games.",
+  "Ouvrir le ticket sur GitHub": "Open issue on GitHub",
   "Copier": "Copy",
-  "Ouvrir le fichier": "Open the file",
+  "Ouvrir le fichier": "Open file",
   "Il te faut un compte GitHub : ton pseudo sera visible sur le ticket.": "You need a GitHub account: your username will be visible on the issue.",
   "Préparation du rapport...": "Preparing the report...",
   "Rapport prêt : relis-le avant de l'envoyer.": "Report ready: read it before sending.",
-  "Rapport trop long pour l'adresse : ajoute le fichier bug-report.txt au ticket.": "Report too long for the address: attach the bug-report.txt file to the issue.",
+  "Rapport trop long pour être prérempli : ajoute le fichier bug-report.txt au ticket.": "Report too long to fit in the link: attach bug-report.txt to the issue.",
   "Vérifie le ticket dans ton navigateur, puis valide-le.": "Check the issue in your browser, then submit it.",
   "Rapport copié.": "Report copied.",
   "Prêt.": "Ready.",
@@ -27,16 +27,16 @@
   "Réglages": "Settings",
   "À propos": "About",
   "Manager": "Manager",
-  "Choisis l'émulateur de chaque jeu, puis lance-le. Le choix est retenu.": "Choose the emulator of each game, then start it. Your choice is remembered.",
+  "Choisis l'émulateur de chaque jeu, puis lance-le. Le choix est retenu.": "Choose an emulator for each game, then launch the game. Your choice is remembered.",
   "Dossier des jeux": "Games folder",
-  "Récupérer les jaquettes": "Get covers",
+  "Récupérer les jaquettes": "Download covers",
   "Jouer": "Play",
-  "Aucun jeu : place tes fichiers .nup, .nsp ou .xci dans le dossier des jeux.": "No games: put your .nup, .nsp or .xci files in the games folder.",
-  "L'ancienne version reste dans Old Versions. Tes données ne changent pas.": "The previous version stays in Old Versions. Your data does not change.",
+  "Aucun jeu : place tes fichiers .nup, .nsp ou .xci dans le dossier des jeux.": "No games found: put your .nup, .nsp or .xci files in the games folder.",
+  "Après une mise à jour, l'ancienne version reste dans Old Versions. Tes données ne changent pas.": "After an update, the previous version stays in Old Versions. Your data does not change.",
   "Actualiser": "Refresh",
   "Ajouter un émulateur": "Add an emulator",
   "Nom": "Name",
-  "Dépôt GitHub (propriétaire/projet ou adresse)": "GitHub repository (owner/project or address)",
+  "Dépôt GitHub (propriétaire/projet ou adresse)": "GitHub repository (owner/repo or link)",
   "Filtre du fichier à télécharger (facultatif, expression régulière)": "Filter for the file to download (optional, regular expression)",
   "Ajouter depuis GitHub": "Add from GitHub",
   "Ajouter un programme local": "Add a local program",
@@ -51,25 +51,25 @@
   "Mettre à jour": "Update",
   "Installer": "Install",
   "Ouvrir": "Open",
-  "Notes": "Notes",
+  "Versions": "Releases",
   "Retirer": "Remove",
-  "Tes autres raccourcis ne changent pas. Après un déplacement du dossier, clique simplement sur Enregistrer.": "Your other shortcuts do not change. After moving the folder, simply click Save.",
+  "Tes autres raccourcis ne changent pas. Après un déplacement du dossier de Forkbay, clique simplement sur Enregistrer dans Steam.": "Your other shortcuts do not change. After moving the Forkbay folder, simply click Apply to Steam.",
   "Compte Steam": "Steam account",
   "Jeux dans Steam": "Games in Steam",
-  "Enregistrer dans Steam": "Save to Steam",
+  "Enregistrer dans Steam": "Apply to Steam",
   "Steam introuvable sur ce PC.": "Steam not found on this PC.",
   "Aucun jeu.": "No games.",
-  "Steam sera fermé puis rouvert si nécessaire : quitte d'abord un jeu Steam en cours. Les jaquettes récupérées sont aussi copiées.": "Steam is closed and reopened when needed: first quit any running Steam game. Downloaded covers are copied too.",
-  "Optionnel. Sauvegardes, profil et réglages seulement : les clés et le firmware ne sont jamais envoyés.": "Optional. Saves, profile and settings only: keys and firmware are never sent.",
-  "Synchroniser avant et après chaque partie": "Sync before and after each game",
-  "Si le cloud est plus récent, la version locale est remplacée automatiquement, avec une copie de secours. Si les deux ont changé, l'outil affiche les dates et te laisse choisir.": "If the cloud is newer, the local version is replaced automatically, with a backup. If both changed, the tool shows the dates and lets you choose.",
-  "Dossier synchronisé": "Synced folder",
-  "Le plus simple": "The simplest",
-  "Google Drive pour ordinateur, OneDrive, Dropbox ou NAS. Aucune API.": "Google Drive for desktop, OneDrive, Dropbox or NAS. No API.",
+  "Steam sera fermé puis rouvert si nécessaire : quitte d'abord tout jeu Steam en cours. Les jaquettes récupérées sont aussi copiées.": "Steam will close and reopen if needed: quit any running Steam game first. Downloaded covers are copied too.",
+  "Facultatif. Sauvegardes, profil et réglages seulement : les clés et le firmware ne sont jamais envoyés.": "Optional. Saves, profile and settings only: keys and firmware are never sent.",
+  "Synchroniser avant et après chaque partie": "Sync before and after each play session",
+  "Si le cloud est plus récent, la version locale est remplacée automatiquement, avec une copie de secours. Si les deux ont changé, l'outil affiche les dates et te laisse choisir.": "If the cloud is newer, the local version is replaced automatically, after making a backup. If both changed, the tool shows the dates and lets you choose.",
+  "Dossier synchronisé": "Sync folder",
+  "Le plus simple": "Easiest option",
+  "Google Drive pour ordinateur, OneDrive, Dropbox ou un NAS. Aucune API à configurer.": "Google Drive for desktop, OneDrive, Dropbox or a NAS. No API needed.",
   "API Google Drive": "Google Drive API",
   "L'outil ne voit que les fichiers qu'il a créés.": "The tool only sees the files it created.",
-  "Sur console.cloud.google.com, crée un projet et active Google Drive API.": "On console.cloud.google.com, create a project and enable the Google Drive API.",
-  "Écran de consentement : type Externe, puis publie l'application (sinon la connexion expire après 7 jours).": "Consent screen: type External, then publish the app (otherwise the sign-in expires after 7 days).",
+  "Sur console.cloud.google.com, crée un projet et active l'API Google Drive.": "On console.cloud.google.com, create a project and enable the Google Drive API.",
+  "Écran de consentement : type Externe, puis publie l'application (sinon la connexion expire après 7 jours).": "Consent screen: set the type to External, then publish the app (otherwise sign-in expires after 7 days).",
   "Crée un client OAuth de type Application de bureau, puis colle son identifiant et son secret ici.": "Create an OAuth client of type Desktop app, then paste its ID and secret here.",
   "Identifiant client": "Client ID",
   "Secret client ": "Client secret ",
@@ -84,8 +84,8 @@
   "Dossier": "Folder",
   "Réglages du cloud enregistrés.": "Cloud settings saved.",
   "Synchronisation...": "Syncing...",
-  "Termine la connexion dans ton navigateur...": "Finish signing in with your browser...",
-  "Où vivent tes données, et les options de l'outil.": "Where your data lives, and the options of the tool.",
+  "Termine la connexion dans ton navigateur...": "Finish signing in in your browser...",
+  "L'emplacement de tes données et les options de l'outil.": "Where your data lives, and the tool's options.",
   "Langue": "Language",
   "Automatique (langue du système)": "Automatic (system language)",
   "Emplacement des données": "Data location",
@@ -93,58 +93,58 @@
   "Installé : sur ce PC": "Installed: on this PC",
   "Autre dossier": "Other folder",
   "Dossier personnalisé": "Custom folder",
-  "Déplacer les données": "Move the data",
+  "Déplacer les données": "Move data",
   "Déplacement des données...": "Moving the data...",
   "Émulateur par défaut": "Default emulator",
   "Jaquettes": "Covers",
-  "Clé SteamGridDB ": "SteamGridDB key ",
-  "Clé SteamGridDB": "SteamGridDB key",
+  "Clé SteamGridDB ": "SteamGridDB API key ",
+  "Clé SteamGridDB": "SteamGridDB API key",
   "Enregistrée": "Saved",
-  "Enregistrer la clé": "Save the key",
+  "Enregistrer la clé": "Save key",
   "Dossier Covers": "Covers folder",
-  "Clé enregistrée.": "Key saved.",
-  "Récupération des jaquettes...": "Getting covers...",
+  "Clé enregistrée.": "API key saved.",
+  "Récupération des jaquettes...": "Downloading covers...",
   "Langue du système.": "System language.",
   "Langue enregistrée.": "Language saved.",
-  "Forkbay, un logiciel libre.": "Forkbay, free software.",
+  "Forkbay, un logiciel libre.": "Forkbay is free software.",
   "Version": "Version",
   "Mises à jour de l'outil": "Tool updates",
   "Vérifie sur GitHub si une nouvelle version existe.": "Checks GitHub for a new version.",
   "Vérifier": "Check",
-  "Installer la mise à jour": "Install the update",
+  "Installer la mise à jour": "Install update",
   "Vérifier au démarrage": "Check at startup",
   "Liens": "Links",
   "Page GitHub": "GitHub page",
   "Soutenir sur Ko-fi": "Support on Ko-fi",
   "Licence": "License",
   "GPL-3.0-or-later. Tu peux utiliser, étudier, modifier et partager ce logiciel selon ses termes. Il est fourni sans aucune garantie.": "GPL-3.0-or-later. You may use, study, change and share this software under its terms. It comes with no warranty.",
-  "Lire la licence": "Read the license",
-  "Aucune version publiée pour l'instant.": "No version published yet.",
+  "Lire la licence": "View license",
+  "Aucune version publiée pour l'instant.": "No release published yet.",
   "Préparation de la mise à jour...": "Preparing the update...",
   "Bienvenue": "Welcome",
-  "Quelques minutes pour tout préparer. Tout reste modifiable ensuite.": "A few minutes to get everything ready. You can change it all later.",
-  "On va, dans l'ordre :": "Here is what comes next:",
-  "récupérer ce qui existe déjà sur ce PC, si tu le souhaites ;": "import what already exists on this PC, if you wish;",
-  "vérifier tes clés et ton firmware ;": "check your keys and firmware;",
-  "choisir où ranger tes données ;": "choose where your data goes;",
-  "installer un émulateur et trouver tes jeux ;": "install an emulator and find your games;",
-  "proposer les options : jaquettes et cloud.": "offer the options: covers and cloud.",
+  "Quelques minutes pour tout préparer. Tout reste modifiable ensuite.": "It only takes a few minutes to get everything ready. You can change it all later.",
+  "On va, dans l'ordre :": "Here is what we will do:",
+  "importer ce qui existe déjà sur ce PC, si tu le souhaites ;": "import anything already on this PC, if you wish",
+  "vérifier tes clés et ton firmware ;": "check your keys and firmware",
+  "choisir où ranger tes données ;": "choose where your data goes",
+  "installer un émulateur et trouver tes jeux ;": "install an emulator and find your games",
+  "te proposer les options : jaquettes et cloud.": "set up optional extras: covers and cloud.",
   "Cet outil ne fournit ni clés, ni firmware, ni jeux : ils doivent venir de ta propre console.": "This tool provides no keys, firmware or games: they must come from your own console.",
   "Commencer": "Start",
   "Continuer": "Continue",
   "Retour": "Back",
   "Terminer": "Finish",
   "Tout est prêt. Bonne partie !": "All set. Have fun!",
-  "Importer ce qui existe déjà": "Import what already exists",
-  "Coche ce que tu veux récupérer. La source n'est jamais modifiée et les fichiers déjà présents ne sont pas écrasés.": "Check what you want to import. The source is never changed and existing files are not overwritten.",
+  "Importer ce qui existe déjà": "Import existing data",
+  "Coche ce que tu veux importer. Le dossier d'origine n'est jamais modifié et les fichiers déjà présents ne sont pas écrasés.": "Select what you want to import. The original folder is never changed and existing files are not overwritten.",
   "Recherche...": "Searching...",
   "Choisir un autre dossier": "Choose another folder",
   "Rien trouvé automatiquement sur ce PC.": "Nothing found automatically on this PC.",
-  "Importer la sélection": "Import the selection",
-  "Coche au moins une catégorie.": "Check at least one category.",
+  "Importer la sélection": "Import selected",
+  "Coche au moins une catégorie.": "Select at least one category.",
   "Import en cours...": "Importing...",
   "Clés et firmware": "Keys and firmware",
-  "Les émulateurs en ont besoin pour lancer tes jeux.": "Emulators need them to start your games.",
+  "Les émulateurs en ont besoin pour lancer tes jeux.": "Emulators need them to run your games.",
   "Clés": "Keys",
   "Installées": "Installed",
   "Manquantes": "Missing",
@@ -152,73 +152,72 @@
   "Manquant": "Missing",
   "Il faut ton fichier ": "You need your ",
   "prod.keys": "prod.keys",
-  ", issu de ta propre console. Un fichier title.keys placé à côté sera copié aussi.": " file, from your own console. A title.keys file next to it is copied too.",
+  ", issu de ta propre console. Un fichier title.keys placé à côté sera copié aussi.": " file, dumped from your own console. A title.keys file next to it is copied too.",
   "Installer ce fichier": "Install this file",
-  "Choisir mon prod.keys": "Choose my prod.keys",
+  "Choisir mon prod.keys": "Choose prod.keys",
   "Il faut le firmware de ta console : une archive .zip ou un dossier contenant des fichiers .nca.": "You need your console's firmware: a .zip archive or a folder containing .nca files.",
   "Installer ce firmware": "Install this firmware",
   "Choisir un .zip": "Choose a .zip",
   "Choisir un dossier": "Choose a folder",
-  "Tu peux continuer sans, mais aucun jeu ne démarrera tant qu'ils manquent.": "You can continue without them, but no game will start while they are missing.",
+  "Tu peux continuer sans, mais aucun jeu ne démarrera tant que les clés et le firmware ne seront pas installés.": "You can continue without them, but no game will start until the keys and firmware are installed.",
   "Installation des clés...": "Installing the keys...",
   "Installation du firmware...": "Installing the firmware...",
   "Où ranger tes données ?": "Where should your data go?",
   "Portable": "Portable",
-  "À côté de l'outil, rien sur le disque système. Idéal sur un disque externe.": "Next to the tool, nothing on the system drive. Ideal on an external drive.",
+  "À côté de l'outil, rien sur le disque système. Idéal sur un disque externe.": "Next to the tool, nothing on the system drive. Ideal for an external drive.",
   "Installé": "Installed",
   "Sur ce PC, dans le dossier de ton compte.": "On this PC, in your account folder.",
   "Émulateur": "Emulator",
   "Tu peux en installer d'autres plus tard.": "You can install others later.",
   "Aucun émulateur installé": "No emulator installed",
-  "Lichii est le plus polyvalent sous Windows, à essayer en premier.": "Lichii is the most versatile on Windows, try it first.",
+  "Lichii est le plus polyvalent sous Windows, à essayer en premier.": "Lichii is the most versatile on Windows: try it first.",
   "Installer Lichii": "Install Lichii",
   "Tes jeux": "Your games",
   "Place tes fichiers .nup, .nsp ou .xci dans le dossier des jeux.": "Put your .nup, .nsp or .xci files in the games folder.",
-  "Ouvrir le dossier": "Open the folder",
+  "Ouvrir le dossier": "Open folder",
   "Options": "Options",
-  "Dernière étape. Ces deux options sont facultatives, et disponibles plus tard.": "Last step. Both options are optional and available later.",
+  "Dernière étape. Ces deux options sont facultatives et restent disponibles plus tard.": "Last step. Both of these are optional, and you can set them up later.",
   "Cloud": "Cloud",
   "Retrouve tes sauvegardes sur un autre PC. À configurer quand tu veux, depuis la page Cloud.": "Keep your saves in sync across PCs. Set it up whenever you like, from the Cloud page.",
-  "Configurer le cloud maintenant": "Set up the cloud now",
+  "Configurer le cloud": "Set up the cloud",
   "Dossier de synchronisation": "Sync folder",
   "Dossier des données": "Data folder",
   "Programme de l'émulateur": "Emulator program",
   "Ton fichier prod.keys": "Your prod.keys file",
   "Archive": "Archive",
-  "Donne d'abord un nom à cet émulateur.": "First give this emulator a name.",
+  "Donne d'abord un nom à cet émulateur.": "Give this emulator a name first.",
   "Vérification du dépôt...": "Checking the repository...",
   "Copie...": "Copying...",
-  "Lancement...": "Starting...",
-  "Enregistrement dans Steam...": "Saving to Steam...",
+  "Lancement...": "Launching...",
+  "Enregistrement dans Steam...": "Applying to Steam...",
   "Choisis un dossier.": "Choose a folder.",
   "L'installation guidée t'aide à tout préparer.": "The guided setup helps you get everything ready.",
-  "Ouvrir l'installation guidée": "Open guided setup",
   "Installation guidée": "Guided setup",
   "Reprendre les étapes d'installation et d'import.": "Go through the setup and import steps again.",
-  "Pour ajouter une langue, dépose un fichier dans Manager/locales. Le mode d'emploi est dans le dossier locales du projet.": "To add a language, drop a file in Manager/locales. The instructions are in the locales folder of the project.",
-  "Jaquettes (facultatif)": "Covers (optional)",
-  "Dépose tes propres images dans le dossier Covers, sous la forme « Nom du jeu-grid.png », ou récupère-les depuis SteamGridDB avec ta clé gratuite : jaquette, bannière, logo et icône, pour l'outil et pour Steam.": "Drop your own images in the Covers folder, named like “Game Name-grid.png”, or get them from SteamGridDB with your free key: cover, banner, logo and icon, for the tool and for Steam.",
+  "Pour ajouter une langue, dépose un fichier dans Manager/locales. Le mode d'emploi est dans le dossier locales du projet.": "To add a language, drop a file in Manager/locales. The instructions are in the project's locales folder.",
+  "Jaquettes (facultatives)": "Covers (optional)",
+  "Dépose tes propres images dans le dossier Covers, sous le nom « Nom du jeu-grid.png », ou récupère-les depuis SteamGridDB avec ta clé gratuite : jaquette, bannière, logo et icône, pour l'outil et pour Steam.": "Drop your own images in the Covers folder, named like “Game Name-grid.png”, or download them from SteamGridDB with your free key: cover, banner, logo and icon, for the tool and for Steam.",
   "Avec une clé gratuite SteamGridDB (Preferences, puis API sur leur site), l'outil récupère les images de tes jeux. Sinon, dépose les tiennes dans le dossier Covers.": "With a free SteamGridDB key (Preferences, then API on their site), the tool gets images for your games. Otherwise, drop your own in the Covers folder.",
-  "Récupérer": "Get",
+  "Récupérer": "Download",
   "Je confirme que mes clés, mon firmware et mes jeux viennent de ma propre console, et que j'utilise cet outil sous ma responsabilité.": "I confirm that my keys, firmware and games come from my own console, and that I use this tool at my own risk.",
-  "Cet outil ne fournit aucun de ces fichiers. Il n'est lié à aucun fabricant de consoles et est fourni sans garantie.": "This tool provides none of these files. It is not linked to any console maker and comes with no warranty.",
+  "Cet outil ne fournit aucun de ces fichiers. Il n'est lié à aucun fabricant de consoles et il est fourni sans garantie.": "This tool provides none of these files. It is not affiliated with any console maker and comes with no warranty.",
   "Pour les bugs de l'outil uniquement": "For bugs in the tool only",
-  "Installation, import, mises à jour, Steam, cloud, fenêtre. Un plantage ou un problème d'image dans un jeu vient de l'émulateur : consulte son projet, depuis le bouton Notes de la page Émulateurs.": "Setup, import, updates, Steam, cloud, the window. A crash or a graphics problem in a game comes from the emulator: see its project, from the Notes button on the Emulators page.",
-  "Utile si l'outil n'arrive pas à lancer un émulateur. Les 200 dernières lignes, nettoyées.": "Useful if the tool cannot start an emulator. The last 200 lines, cleaned.",
+  "Installation, import, mises à jour, Steam, cloud, fenêtre. Un plantage ou un problème d'image dans un jeu vient de l'émulateur : consulte son projet, depuis le bouton Versions de la page Émulateurs.": "Setup, import, updates, Steam, cloud, the window. A crash or a graphics problem in a game is caused by the emulator: check its project, using the Releases button on the Emulators page.",
+  "Utile si l'outil n'arrive pas à lancer un émulateur. Les 200 dernières lignes, anonymisées.": "Useful if the tool cannot start an emulator. The last 200 lines, with personal details removed.",
   "Remerciements": "Thanks",
   "Cet outil n'existerait pas sans les projets Eden, Eglantine, Lichii, Frizti, PokeDinner et Orchid, le guide communautaire wichforks, SteamGridDB et les bibliothèques libres qu'il utilise.": "This tool would not exist without the Eden, Eglantine, Lichii, Frizti, PokeDinner and Orchid projects, the wichforks community guide, SteamGridDB and the open source libraries it uses.",
   "Licences des bibliothèques": "Library licenses",
-  "Cet outil ne fournit ni clés, ni firmware, ni jeux : ils doivent venir de ta propre console. Il n'est lié à aucun fabricant de consoles.": "This tool provides no keys, firmware or games: they must come from your own console. It is not linked to any console maker.",
+  "Cet outil ne fournit ni clés, ni firmware, ni jeux : ils doivent venir de ta propre console. Il n'est lié à aucun fabricant de consoles.": "This tool provides no keys, firmware or games: they must come from your own console. It is not affiliated with any console maker.",
   "Utiliser": "Use",
   "Ajouter": "Add",
   "Conseillé : ": "Suggested: ",
   "Autres pistes : ": "Also try: ",
   "Émulateur changé pour ce jeu.": "Emulator changed for this game.",
-  "Attention : le guide ne cite pas ce choix pour ton système ou ta carte graphique.": "Careful: the guide does not list this choice for your system or graphics card.",
-  "Catalogue de la communauté": "Community catalogue",
-  "Voir le guide": "See the guide",
-  "Ce sont des retours de joueurs, sans garantie.": "These are player reports, with no guarantee.",
-  "Tous les émulateurs du guide sont déjà dans ta liste.": "Every emulator of the guide is already in your list.",
+  "Attention : le guide ne cite pas ce choix pour ton système ou ta carte graphique.": "Warning: the guide does not list this choice for your system or graphics card.",
+  "Catalogue de la communauté": "Community catalog",
+  "Voir le guide": "View guide",
+  "Ce sont des retours de joueurs, sans garantie.": "These are player reports, not guarantees.",
+  "Tous les émulateurs du guide sont déjà dans ta liste.": "Every emulator in the guide is already in your list.",
   "Français": "Français",
   "English": "English",
   "Apparence": "Appearance",
@@ -230,9 +229,9 @@
   "Accent": "Accent",
   "Quitter Forkbay": "Quit Forkbay",
   "Forkbay lui-même": "Forkbay itself",
-  "Un raccourci de l'outil dans Steam, en plein écran, pratique à la manette.": "A shortcut to the tool in Steam, full screen, handy with a controller.",
-  "Le journal d'erreurs de Forkbay est toujours inclus, nettoyé lui aussi.": "Forkbay's error journal is always included, cleaned as well.",
-  "Ouvrir le journal": "Open the journal",
+  "Un raccourci vers l'outil dans Steam, en plein écran, pratique à la manette.": "A shortcut to the tool in Steam, full screen, handy with a controller.",
+  "Le journal d'erreurs de Forkbay est toujours inclus, anonymisé lui aussi.": "Forkbay's error log is always included, with personal details removed too.",
+  "Ouvrir le journal": "Open log",
   "Mode": "Mode",
   "Thème": "Theme",
   "Aurore": "Aurora",
@@ -243,7 +242,7 @@
   "Graphite": "Graphite",
   "Dégradés": "Gradients",
   "Accent 2": "Accent 2",
-  "Remplacer aussi le fond et le texte du mode": "Also replace the mode's background and text",
+  "Personnaliser aussi le fond et le texte": "Also customize the background and text",
   "Nom du thème": "Theme name",
   "Mon thème": "My theme",
   "Importer un thème": "Import a theme",
@@ -273,8 +272,8 @@
    "Current: $1"
   ],
   [
-   "^Sauvegardes, clés et configuration\\. Actuel : (.+)$",
-   "Saves, keys and settings. Current: $1"
+   "^Sauvegardes, clés et réglages\\. Emplacement actuel : (.+)$",
+   "Saves, keys and settings. Current location: $1"
   ],
   [
    "^Version (.+) disponible\\.$",
@@ -293,8 +292,8 @@
    "Install $1"
   ],
   [
-   "^(\\d+) raccourci\\(s\\) pointent vers un ancien emplacement : clique sur Enregistrer pour les réparer\\.$",
-   "$1 shortcut(s) point to an old location: click Save to repair them."
+   "^(\\d+) raccourci\\(s\\) pointe\\(nt\\) vers un ancien emplacement : clique sur Enregistrer dans Steam pour les réparer\\.$",
+   "$1 shortcut(s) point to an old location: click Apply to Steam to fix them."
   ],
   [
    "^Il manque (.+)\\.$",
@@ -307,32 +306,36 @@
   ],
   [
    "^(.*) · Installée : (.*?)( · Disponible : (.*))?$",
-   "$1 · Installed: $2 · Available: $4",
+   "$1 · Installed: $2$3",
    {
     "Fork Frizti : le plus polyvalent": "Frizti fork: the most versatile",
-    "Build quotidienne officielle": "Official daily build",
     "Fork centré sur Pokopia": "Fork focused on Pokopia",
     "Projet Lichii d'origine, sorties fréquentes": "Original Lichii project, frequent releases",
     "Correctifs visuels pour Zelda": "Visual fixes for Zelda",
     "Ajouté depuis": "Added from",
     "Copie locale": "Local copy",
     "version inconnue": "unknown version",
-    "aucune": "none"
+    "aucune": "none",
+    "Version quotidienne officielle": "Official daily build",
+    " · Disponible : ": " · Available: "
    }
   ],
   [
-   "^(\\d+) rapport\\(s\\) de joueurs, dont (\\d+) avec ta marque de carte graphique\\.$",
-   "$1 player report(s), $2 with your graphics card brand."
+   "^(\\d+) retour\\(s\\) de joueurs, dont (\\d+) avec ta marque de carte graphique\\.$",
+   "$1 player report(s), $2 from players with your graphics card brand."
   ],
   [
    "^Guide wichforks(.*?)(, copie hors ligne)?\\. Ce sont.*$",
-   "wichforks guide$1. These are player reports, with no guarantee."
+   "wichforks guide$1$2. These are player reports, not guarantees.",
+   {
+    ", copie hors ligne": ", offline copy"
+   }
   ]
  ],
  "messages": [
   [
-   "^(.+) est un vrai dossier : déplace son contenu dans Data, puis supprime-le\\.$",
-   "$1 is a real folder: move its content to Data, then delete it."
+   "^(.+) est un dossier normal alors qu'un lien est attendu : déplace son contenu dans Data, puis supprime-le\\.$",
+   "$1 is a regular folder, not a link: move its contents to Data, then delete it."
   ],
   [
    "^Impossible de créer le lien : (.+)$",
@@ -355,7 +358,7 @@
    "This does not look like a key file."
   ],
   [
-   "^prod\\.keys et title\\.keys installé\\.$",
+   "^prod\\.keys et title\\.keys installés\\.$",
    "prod.keys and title.keys installed."
   ],
   [
@@ -368,7 +371,7 @@
   ],
   [
    "^Aucun fichier \\.nca trouvé : ce n'est pas un firmware\\.$",
-   "No .nca file found: this is not a firmware."
+   "No .nca file found: this is not firmware."
   ],
   [
    "^Firmware installé : (\\d+) fichiers\\.$",
@@ -396,7 +399,7 @@
   ],
   [
    "^Réseau : (.+)$",
-   "Network: $1"
+   "Network error: $1"
   ],
   [
    "^Pas de version pour ce système\\.$",
@@ -408,7 +411,7 @@
   ],
   [
    "^Téléchargement : (.+)$",
-   "Download: $1"
+   "Download failed: $1"
   ],
   [
    "^(.+) : téléchargement (\\d+) %$",
@@ -424,7 +427,7 @@
   ],
   [
    "^(.+) est une copie locale : elle se met à jour à la main\\.$",
-   "$1 is a local copy: update it by hand."
+   "$1 is a local copy: update it manually."
   ],
   [
    "^Ferme les émulateurs avant d'installer\\.$",
@@ -436,26 +439,26 @@
   ],
   [
    "^Téléchargement incomplet : taille différente\\.$",
-   "Incomplete download: the size differs."
+   "Incomplete download: the file size does not match."
   ],
   [
-   "^Condensat différent : fichier refusé\\.$",
-   "Checksum mismatch: file refused."
+   "^Somme de contrôle incorrecte : fichier refusé\\.$",
+   "Checksum mismatch: file rejected."
   ],
   [
-   "^Aucun exécutable d'émulateur dans l'archive\\.$",
+   "^Aucun programme d'émulateur dans l'archive\\.$",
    "No emulator program in the archive."
   ],
   [
    "^Defender signale une menace : installation annulée\\.$",
-   "Defender reports a threat: installation cancelled."
+   "Defender reports a threat: installation canceled."
   ],
   [
-   "^(.+) est un vrai dossier : installation annulée\\.$",
-   "$1 is a real folder: installation cancelled."
+   "^(.+) est un dossier normal alors qu'un lien est attendu : installation annulée\\.$",
+   "$1 is a regular folder, not a link: installation canceled."
   ],
   [
-   "^(.+) : (.+) -> (.+) \\(vérifié : condensat SHA-256\\)\\. Ancienne version gardée dans Old Versions\\.$",
+   "^(.+) : (.+) -> (.+) \\(vérifié : somme de contrôle SHA-256\\)\\. Ancienne version gardée dans Old Versions\\.$",
    "$1: $2 -> $3 (verified: SHA-256 checksum). Previous version kept in Old Versions."
   ],
   [
@@ -463,7 +466,7 @@
    "$1: $2 -> $3 (verified: size). Previous version kept in Old Versions."
   ],
   [
-   "^(.+) (\\S+) installé \\(vérifié : condensat SHA-256\\)\\.$",
+   "^(.+) (\\S+) installé \\(vérifié : somme de contrôle SHA-256\\)\\.$",
    "$1 $2 installed (verified: SHA-256 checksum)."
   ],
   [
@@ -472,11 +475,11 @@
   ],
   [
    "^Nom invalide : lettres, chiffres, espaces, points et tirets seulement\\.$",
-   "Invalid name: letters, digits, spaces, dots and dashes only."
+   "Invalid name: letters, digits, spaces, periods and hyphens only."
   ],
   [
    "^Un émulateur s'appelle déjà (.+)\\.$",
-   "An emulator is already called $1."
+   "An emulator named $1 already exists."
   ],
   [
    "^Ce nom est réservé : (.+)\\.$",
@@ -484,7 +487,7 @@
   ],
   [
    "^Dépôt invalide : écris propriétaire/projet, ou colle son adresse GitHub\\.$",
-   "Invalid repository: write owner/project, or paste its GitHub address."
+   "Invalid repository: enter owner/repo, or paste its GitHub link."
   ],
   [
    "^Filtre invalide\\.$",
@@ -492,7 +495,7 @@
   ],
   [
    "^Aucune version utilisable sur (.+) : (.+)$",
-   "No usable version on $1: $2"
+   "No usable release on $1: $2"
   ],
   [
    "^(.+) ajouté : dernière version (.+)\\. Clique sur Installer\\.$",
@@ -508,7 +511,7 @@
   ],
   [
    "^(.+) ajouté\\. Ses mises à jour restent à faire à la main\\.$",
-   "$1 added. Update it by hand."
+   "$1 added. Update it manually."
   ],
   [
    "^(.+) retiré de la liste\\. Son dossier est conservé\\.$",
@@ -532,7 +535,7 @@
   ],
   [
    "^Aucune donnée d'émulateur reconnue dans ce dossier\\.$",
-   "No emulator data recognised in this folder."
+   "No emulator data recognized in this folder."
   ],
   [
    "^Ferme les émulateurs avant d'importer\\.$",
@@ -551,8 +554,8 @@
    "Unexpected shortcuts.vdf format."
   ],
   [
-   "^Relecture différente de l'original : fichier non modifié\\.$",
-   "Read-back differs from the original: file left unchanged."
+   "^Impossible de réécrire ce fichier à l'identique : il n'a pas été modifié\\.$",
+   "Could not rewrite this file identically: it was left unchanged."
   ],
   [
    "^Steam introuvable sur ce PC\\.$",
@@ -564,7 +567,7 @@
   ],
   [
    "^Enregistré : (\\d+) jeu\\(x\\) dans Steam, (\\d+) image\\(s\\)\\.$",
-   "Saved: $1 game(s) in Steam, $2 image(s)."
+   "Applied to Steam: $1 game(s), $2 image(s)."
   ],
   [
    "^Images : (.+)\\.\\.\\.$",
@@ -572,19 +575,19 @@
   ],
   [
    "^(\\d+) image\\(s\\) téléchargée\\(s\\)\\. Sans jaquette : (.+)\\.$",
-   "$1 image(s) downloaded. No cover: $2."
+   "$1 image(s) downloaded. No cover found for: $2."
   ],
   [
    "^(\\d+) image\\(s\\) téléchargée\\(s\\)\\.$",
    "$1 image(s) downloaded."
   ],
   [
-   "^Remplacement annulé, version locale restaurée : contenu différent de la version distante$",
-   "Replacement cancelled, local version restored: content differs from the remote version"
+   "^Remplacement annulé, version locale restaurée : contenu différent de la version du cloud$",
+   "Replacement canceled, local version restored: content differs from the cloud version"
   ],
   [
    "^Remplacement annulé, version locale restaurée : (.+)$",
-   "Replacement cancelled, local version restored: $1"
+   "Replacement canceled, local version restored: $1"
   ],
   [
    "^Aucun dossier de synchronisation choisi\\.$",
@@ -595,44 +598,44 @@
    "Sync folder not found: $1"
   ],
   [
-   "^Compte Google non connecté sur ce PC : clique sur Connecter dans Cloud\\.$",
-   "Google account not connected on this PC: click Connect in Cloud."
+   "^Compte Google non connecté sur ce PC : clique sur Connecter mon compte Google dans la page Cloud\\.$",
+   "Google account not connected on this PC: click Connect my Google account on the Cloud page."
   ],
   [
-   "^Google n'a pas donné de jeton\\.$",
-   "Google gave no token."
+   "^Google n'a pas renvoyé de jeton\\.$",
+   "Google returned no token."
   ],
   [
    "^Renseigne d'abord l'identifiant et le secret du client OAuth\\.$",
-   "First enter the OAuth client ID and secret."
+   "Enter the OAuth client ID and secret first."
   ],
   [
    "^Connexion Google non terminée après 5 minutes\\.$",
-   "Google sign-in not finished after 5 minutes."
+   "Google sign-in timed out after 5 minutes."
   ],
   [
    "^Réponse Google non reconnue : connexion refusée\\.$",
-   "Unrecognised Google response: sign-in refused."
+   "Unrecognized Google response: sign-in rejected."
   ],
   [
    "^Connexion refusée par Google\\.$",
-   "Sign-in refused by Google."
+   "Sign-in rejected by Google."
   ],
   [
    "^Google n'a pas renvoyé de jeton durable\\.$",
-   "Google returned no lasting token."
+   "Google returned no refresh token."
   ],
   [
    "^Compte Google connecté\\.$",
    "Google account connected."
   ],
   [
-   "^Fichier distant introuvable$",
-   "Remote file not found"
+   "^Fichier introuvable dans le cloud$",
+   "Cloud file not found"
   ],
   [
    "^Un émulateur est ouvert : synchronisation impossible pour l'instant\\.$",
-   "An emulator is open: cannot sync for now."
+   "An emulator is running: cannot sync right now."
   ],
   [
    "^Choisis un dossier de synchronisation existant\\.$",
@@ -644,31 +647,31 @@
   ],
   [
    "^Version locale envoyée dans le cloud\\.$",
-   "Local version sent to the cloud."
+   "Local version uploaded to the cloud."
   ],
   [
-   "^Version distante installée\\. Une copie de la version locale est dans Save Backups\\.$",
-   "Remote version installed. A copy of the local version is in Save Backups."
+   "^Version du cloud installée\\. Une copie de la version locale est dans Save Backups\\.$",
+   "Cloud version installed. A copy of the local version is in Save Backups."
   ],
   [
    "^Synchronisation annulée : rien n'a changé\\.$",
-   "Sync cancelled: nothing changed."
+   "Sync canceled: nothing changed."
   ],
   [
    "^Jeu introuvable : (.+)$",
    "Game not found: $1"
   ],
   [
-   "(?s)^Vérification du cloud impossible :\\n(.*)\\n\\nJouer quand même \\? Les versions seront comparées au prochain échange\\.$",
-   "Could not check the cloud:\n$1\n\nPlay anyway? Versions will be compared at the next exchange."
+   "(?s)^Vérification du cloud impossible :\\n(.*)\\n\\nJouer quand même \\? Les versions seront comparées à la prochaine synchronisation\\.$",
+   "Could not check the cloud:\n$1\n\nPlay anyway? Versions will be compared at the next sync."
   ],
   [
-   "(?s)^Envoi vers le cloud impossible :\\n(.*)\\n\\nTa partie est bien gardée sur ce PC et sera envoyée au prochain échange\\.$",
-   "Could not send to the cloud:\n$1\n\nYour game is safe on this PC and will be sent at the next exchange."
+   "(?s)^Envoi vers le cloud impossible :\\n(.*)\\n\\nTa sauvegarde reste bien sur ce PC et sera envoyée à la prochaine synchronisation\\.$",
+   "Could not upload to the cloud:\n$1\n\nYour save is safe on this PC and will be uploaded at the next sync."
   ],
   [
    "^Aucune version publiée pour l'instant\\.$",
-   "No version published yet."
+   "No release published yet."
   ],
   [
    "^Version de l'outil introuvable pour ce système\\.$",
@@ -691,15 +694,15 @@
    "Unknown command: $1"
   ],
   [
-   "^Renseigne d'abord ta clé SteamGridDB dans Réglages\\.$",
-   "First enter your SteamGridDB key in Settings."
+   "^Renseigne d'abord ta clé SteamGridDB dans la page Réglages\\.$",
+   "Enter your SteamGridDB key in Settings first."
   ],
   [
    "^aucune sauvegarde$",
    "no save"
   ],
   [
-   "^dans la configuration$",
+   "^dans les réglages$",
    "in the settings"
   ],
   [
@@ -715,8 +718,8 @@
    "Keep the local version"
   ],
   [
-   "^Garder la version distante$",
-   "Keep the remote version"
+   "^Garder la version du cloud$",
+   "Keep the cloud version"
   ],
   [
    "^Annuler$",
@@ -727,8 +730,8 @@
    "Forkbay: save conflict"
   ],
   [
-   "(?s)^Les deux versions ont changé depuis le dernier échange\\.\\n\\nVersion locale \\(ce PC\\) : (.*)\\nVersion distante \\((.*)\\) : (.*)\\n\\nCelle que tu ne gardes pas.*$",
-   "Both versions changed since the last exchange.\n\nLocal version (this PC): $1\nRemote version ($2): $3\n\nThe one you do not keep is replaced. If it is the local version, a copy stays in Save Backups."
+   "(?s)^Les deux versions ont changé depuis la dernière synchronisation\\.\\n\\nVersion locale \\(ce PC\\) : (.*)\\nVersion du cloud \\((.*)\\) : (.*)\\n\\nCelle que tu ne gardes pas.*$",
+   "Both versions changed since the last sync.\n\nLocal version (this PC): $1\nCloud version ($2): $3\n\nThe one you do not keep is replaced. If it is the local version, a copy stays in Save Backups."
   ],
   [
    "^Ce thème n'a pas de nom valide\\.$",
@@ -736,7 +739,7 @@
   ],
   [
    "^Ce fichier ne contient pas de couleurs valides\\.$",
-   "This file contains no valid colours."
+   "This file contains no valid colors."
   ],
   [
    "^Ce fichier ne ressemble pas à un thème Forkbay\\.$",
@@ -745,6 +748,22 @@
   [
    "^Thème exporté : (.+)$",
    "Theme exported: $1"
+  ],
+  [
+   "^Fichier introuvable : (.+)$",
+   "File not found: $1"
+  ],
+  [
+   "^Adresse refusée\\.$",
+   "URL rejected."
+  ],
+  [
+   "^Type inconnu : (.+)$",
+   "Unknown type: $1"
+  ],
+  [
+   "^Dossier de Forkbay introuvable\\. Branche le disque, ou ouvre Forkbay depuis son nouvel emplacement et clique sur Enregistrer dans Steam\\.$",
+   "Forkbay folder not found. Plug in the drive, or open Forkbay from its new location and click Apply to Steam."
   ]
  ],
  "categories": {
@@ -766,7 +785,7 @@
   ],
   "Manettes": [
    "Controllers",
-   "Buttons and ports"
+   "Button mappings and ports"
   ],
   "Réseau": [
    "Network",
@@ -774,7 +793,7 @@
   ],
   "Graphismes et audio": [
    "Graphics and audio",
-   "Rendering, processor, sound"
+   "Rendering, CPU, sound"
   ],
   "Réglages par jeu": [
    "Per-game settings",
@@ -786,7 +805,7 @@
   ],
   "Cache de shaders": [
    "Shader cache",
-   "Avoids some stutter, may not work on another emulator"
+   "Reduces stuttering; may not work with other emulators"
   ],
   "Captures d'écran": [
    "Screenshots",

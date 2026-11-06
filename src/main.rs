@@ -177,7 +177,7 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
             msg(match r {
                 "none" => "Déjà synchronisé : les deux versions sont identiques.",
                 "uploaded" => "Version locale envoyée dans le cloud.",
-                "downloaded" => "Version distante installée. Une copie de la version locale est dans Save Backups.",
+                "downloaded" => "Version du cloud installée. Une copie de la version locale est dans Save Backups.",
                 _ => "Synchronisation annulée : rien n'a changé.",
             }.to_string())
         }
@@ -228,14 +228,14 @@ fn launch(game: Option<&str>, forced: Option<&str>) -> Result<()> {
             Ok("cancelled") => return Ok(()),
             Ok(_) => {}
             Err(e) => {
-                if !confirm(&format!("Vérification du cloud impossible :\n{e}\n\nJouer quand même ? Les versions seront comparées au prochain échange.")) { return Ok(()); }
+                if !confirm(&format!("Vérification du cloud impossible :\n{e}\n\nJouer quand même ? Les versions seront comparées à la prochaine synchronisation.")) { return Ok(()); }
             }
         }
     }
     emu::run(&emu_name, path.as_deref())?;
     if do_sync {
         if let Err(e) = cloud::sync(&load_settings(), &|l, d, m| cloud::ask_conflict(l, d, m, false)) {
-            notify(&format!("Envoi vers le cloud impossible :\n{e}\n\nTa partie est bien gardée sur ce PC et sera envoyée au prochain échange."));
+            notify(&format!("Envoi vers le cloud impossible :\n{e}\n\nTa sauvegarde reste bien sur ce PC et sera envoyée à la prochaine synchronisation."));
         }
     }
     Ok(())

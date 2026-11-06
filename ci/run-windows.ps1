@@ -72,14 +72,14 @@ $r = App $rootA 'cloud_sync'; Check 'local change sent' ($r.value.message -match
 $env:FORKBAY_CONFLICT = 'cancel'
 $r = App $rootB 'cloud_sync'; Check 'first exchange asks, cancel keeps local' ($r.value.message -match 'annul') ($r | ConvertTo-Json -Compress)
 $env:FORKBAY_CONFLICT = 'remote'
-$r = App $rootB 'cloud_sync'; Check 'choose remote' ($r.value.message -match 'distante') ($r | ConvertTo-Json -Compress)
+$r = App $rootB 'cloud_sync'; Check 'choose remote' ($r.value.message -match 'du cloud') ($r | ConvertTo-Json -Compress)
 Check 'B received the save' ((Get-Content "$rootB\Data\nand\user\save\0\P\T1\a.bin") -eq 'played-on-A')
 Check 'B paths are its own' ((Get-Content "$rootB\Data\config\qt-config.ini" -Raw) -notmatch '__LOCAL__')
 Check 'B backup made' (@(Get-ChildItem "$rootB\Save Backups" -Directory).Count -ge 1)
 Remove-Item Env:\FORKBAY_CONFLICT
 $r = App $rootB 'cloud_sync'; Check 'B now identical' ($r.value.message -match 'identiques') ($r | ConvertTo-Json -Compress)
 [IO.File]::WriteAllText($s, 'A-again'); $r = App $rootA 'cloud_sync'; Check 'A sends' ($r.value.message -match 'envoy')
-$r = App $rootB 'cloud_sync'; Check 'B replaced automatically' ($r.value.message -match 'distante') ($r | ConvertTo-Json -Compress)
+$r = App $rootB 'cloud_sync'; Check 'B replaced automatically' ($r.value.message -match 'du cloud') ($r | ConvertTo-Json -Compress)
 Check 'B content' ((Get-Content "$rootB\Data\nand\user\save\0\P\T1\a.bin") -eq 'A-again')
 $sb = "$rootB\Data\nand\user\save\0\P\T1\a.bin"; [IO.File]::WriteAllText($s, 'A-3'); [IO.File]::WriteAllText($sb, 'B-3'); $r = App $rootA 'cloud_sync'
 $env:FORKBAY_CONFLICT = 'local'; $r = App $rootB 'cloud_sync'; Check 'conflict keep local' ($r.value.message -match 'envoy') ($r | ConvertTo-Json -Compress); Remove-Item Env:\FORKBAY_CONFLICT

@@ -64,7 +64,7 @@ fn steamgrid(key: &str, file: &str) -> Result<u32> {
 pub fn fetch_all() -> Result<String> {
     let s = load_settings();
     let key = unprotect(&s.steam_grid_key);
-    if key.is_empty() { bail!("Renseigne d'abord ta clé SteamGridDB dans Réglages."); }
+    if key.is_empty() { bail!("Renseigne d'abord ta clé SteamGridDB dans la page Réglages."); }
     let (mut got, mut missing) = (0, vec![]);
     for file in rom_files() {
         crate::emit_status(&format!("Images : {}...", display_name(&file)));

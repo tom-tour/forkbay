@@ -19,10 +19,10 @@ struct Cat {
 
 const CATS: [Cat; 12] = [
     Cat { id: "keys", label: "Clés", hint: "prod.keys et title.keys", dirs: &["keys"], sections: &[], on: true },
-    Cat { id: "firmware", label: "Firmware", hint: "Micrologiciel de la console", dirs: &["nand/system/Contents/registered"], sections: &[], on: true },
-    Cat { id: "saves", label: "Sauvegardes", hint: "Parties de tes jeux", dirs: &["nand/user/save"], sections: &[], on: true },
+    Cat { id: "firmware", label: "Firmware", hint: "Logiciel système de la console", dirs: &["nand/system/Contents/registered"], sections: &[], on: true },
+    Cat { id: "saves", label: "Sauvegardes", hint: "Ta progression dans tes jeux", dirs: &["nand/user/save"], sections: &[], on: true },
     Cat { id: "profiles", label: "Profils", hint: "Comptes utilisateur et avatars", dirs: &["nand/system/save/8000000000000010"], sections: &[], on: true },
-    Cat { id: "controls", label: "Manettes", hint: "Touches et ports", dirs: &[], sections: &["Controls"], on: true },
+    Cat { id: "controls", label: "Manettes", hint: "Boutons et ports", dirs: &[], sections: &["Controls"], on: true },
     Cat { id: "network", label: "Réseau", hint: "Réseau, compte en ligne, multijoueur", dirs: &[], sections: &["Network", "WebService", "Multiplayer"], on: false },
     Cat { id: "graphics", label: "Graphismes et audio", hint: "Rendu, processeur, son", dirs: &[], sections: &["Renderer", "Core", "Cpu", "Audio"], on: false },
     Cat { id: "gamecfg", label: "Réglages par jeu", hint: "Fichiers config/custom", dirs: &["config/custom"], sections: &[], on: false },
@@ -79,7 +79,7 @@ fn category_info(src: &Path, c: &Cat) -> Option<Value> {
         return None;
     }
     use crate::i18n::t;
-    let detail = if has_sections { t("dans la configuration") }
+    let detail = if has_sections { t("dans les réglages") }
         else if size > 1_048_576 { t(&format!("{} fichier(s), {} Mo", files, size / 1_048_576)) }
         else { t(&format!("{files} fichier(s)")) };
     let (label, hint) = crate::i18n::category(c.label, c.hint);

@@ -22,13 +22,13 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **Your own emulators:** add one from a GitHub repository or from a local program.
 - **Steam:** adds games to your library and leaves your other shortcuts alone.
 - **Covers (optional):** your own images, or SteamGridDB with your free key.
-- **Suggestions per game:** the community [wichforks](https://github.com/riyadhHDA/wichforks) guide, filtered by your graphics card. You choose, nothing changes on its own.
-- **Cloud saves (optional):** syncs before and after each game, with a choice of version when both sides changed.
+- **Per-game suggestions:** the [wichforks](https://github.com/riyadhHDA/wichforks) community guide, filtered by your graphics card. You choose; nothing changes on its own.
+- **Cloud saves (optional):** syncs before and after each play session, with a choice of version when both sides changed.
 - **Languages:** English and French, following your system language. [Adding one](locales/README.md) takes a single file.
-- **Updates of the tool itself** from GitHub releases, with an About page for the license and links.
-- **Themes:** a dark, light or black mode with a theme on top, gradients on or off, your own colours, and themes you can import and export.
+- **Self-updates** from GitHub releases, with an About page for the license and links.
+- **Themes:** a dark, light or black mode with a theme on top, gradients on or off, your own colors, and themes you can import and export.
 - **Controller support**, and a Steam shortcut to the tool itself, full screen.
-- **An error journal** that keeps out paths, names and secrets.
+- **An error log** that leaves out paths, names and secrets.
 
 ## What you need
 
@@ -45,7 +45,7 @@ To build it yourself, run `cargo build --release` (on Windows, `tools/build-rele
 
 ## Adding an emulator
 
-Open **Émulateurs**, then **Ajouter un émulateur**. From GitHub, give it a name and its `owner/project`: the tool checks that a usable release exists. Only add sources you trust: an emulator is a program that runs on your PC. The built-in list is in `emulators.json`.
+Open **Emulators**, then **Add an emulator**. For a GitHub emulator, give it a name and its `owner/repo`: the tool checks that a usable release exists. Only add sources you trust: an emulator is a program that runs on your PC. The built-in list is in `emulators.json`.
 
 ## Cloud saves
 
@@ -53,26 +53,26 @@ Saves, the user profile and settings are synced. **Keys and firmware are never s
 
 | Before playing | What happens |
 |---|---|
-| Only the cloud changed | The local version is replaced, after a backup in `Files/Save Backups` |
+| Only the cloud changed | The local version is replaced, after a backup to `Files/Save Backups` |
 | Only this PC changed | The local version is uploaded |
 | Both changed | You see both dates and choose, or cancel the launch |
 
-- **Synced folder:** a Google Drive for desktop, OneDrive, Dropbox or NAS folder. No API needed.
+- **Sync folder:** a Google Drive for desktop, OneDrive, Dropbox or NAS folder. No API needed.
 - **Google Drive API:** create a project on [console.cloud.google.com](https://console.cloud.google.com), enable the Google Drive API, set the consent screen to External and **publish it** (otherwise the sign-in expires after 7 days), then create an OAuth client of type *Desktop app* and paste its ID and secret into the **Cloud** page. The tool only asks for the `drive.file` scope, so it only sees the files it created.
 
 On Windows, secrets are encrypted for your account. On Linux, they stay in a settings file readable only by you.
 
 ## Limits
 
-- **Linux:** emulators are started from their AppImage, with their folders pointed at the shared data. Lichii by Frizti has no Linux build.
-- **Moving the folder:** on Windows, Steam shortcuts find a new drive letter on their own. After any other move, open the **Steam** page and click **Enregistrer**.
+- **Linux:** emulators are launched from their AppImage, with their folders pointed at the shared data. Lichii by Frizti has no Linux build.
+- **Moving the folder:** on Windows, Steam shortcuts find a new drive letter on their own. After any other move, open the **Steam** page and click **Apply to Steam**.
 - Emulation of these games is experimental and changes daily: a newer emulator can run a game worse. The previous version stays in `Files/Old Versions`.
 
 ## Credits
 
-This tool stands on the work of the Eden, Eglantine, Lichii, Frizti, PokeDinner and Orchid projects, the [wichforks](https://github.com/riyadhHDA/wichforks) community guide (MIT) and SteamGridDB. The licenses of the bundled libraries are in [assets/THIRD-PARTY.txt](assets/THIRD-PARTY.txt) and on the About page.
+This tool builds on the work of the Eden, Eglantine, Lichii, Frizti, PokeDinner and Orchid projects, the [wichforks](https://github.com/riyadhHDA/wichforks) community guide (MIT) and SteamGridDB. The licenses of the bundled libraries are in [assets/THIRD-PARTY.txt](assets/THIRD-PARTY.txt) and on the About page.
 
-Bugs in the tool belong here, through its **Report a bug** page. Problems inside a game belong to the emulator's own project.
+Report bugs in the tool through its **Report a bug** page. Problems inside a game should go to the emulator's own project.
 
 This is an independent project, not affiliated with or endorsed by Nintendo. Nintendo Switch is a trademark of Nintendo.
 
@@ -96,19 +96,19 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 - **Mises à jour :** compare chaque émulateur à sa dernière version et garde la précédente. Sous Windows, les téléchargements sont aussi analysés avec Microsoft Defender.
 - **Tes propres émulateurs :** ajoutes-en un depuis un dépôt GitHub ou depuis un programme local.
 - **Steam :** ajoute les jeux à ta bibliothèque sans toucher à tes autres raccourcis.
-- **Jaquettes (facultatif) :** tes propres images, ou SteamGridDB avec ta clé gratuite.
+- **Jaquettes (facultatives) :** tes propres images, ou SteamGridDB avec ta clé gratuite.
 - **Conseils par jeu :** le guide communautaire [wichforks](https://github.com/riyadhHDA/wichforks), filtré selon ta carte graphique. C'est toi qui choisis, rien ne change tout seul.
-- **Sauvegardes dans le cloud (facultatif) :** synchronise avant et après chaque partie, et te laisse choisir si les deux versions ont changé.
+- **Sauvegardes dans le cloud (facultatives) :** synchronise avant et après chaque partie, et te laisse choisir si les deux versions ont changé.
 - **Langues :** anglais et français, selon la langue de ton système. [En ajouter une](locales/README.md) demande un seul fichier.
-- **Mise à jour de l'outil lui-même** depuis les versions GitHub, avec une page À propos pour la licence et les liens.
+- **Mise à jour de l'outil lui-même** depuis les versions publiées sur GitHub, avec une page À propos pour la licence et les liens.
 - **Thèmes :** un mode sombre, clair ou noir avec un thème par-dessus, dégradés activables, tes propres couleurs, et des thèmes à importer et exporter.
 - **Prise en charge de la manette**, et un raccourci Steam vers l'outil lui-même, en plein écran.
-- **Un journal d'erreurs** qui écarte les chemins, les noms et les secrets.
+- **Un journal d'erreurs** sans chemins, sans noms et sans secrets.
 
 ## Ce qu'il te faut
 
 - Windows 10 ou 11 (WebView2, inclus dans les versions à jour), ou Linux avec WebKitGTK 4.1.
-- Tes propres clés, firmware et jeux, extraits de ta propre console. **Rien de tout cela n'est fourni ici, et il ne faut jamais les partager ni les ajouter au dépôt.**
+- Tes propres clés, firmware et jeux, extraits de ta propre console. **Aucun de ces fichiers n'est fourni ici, et il ne faut jamais les partager ni les ajouter à un dépôt.**
 
 ## Pour commencer
 
@@ -116,7 +116,7 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 2. Lance-le et suis l'installation guidée.
 3. Mets tes jeux (`.nup`, `.nsp`, `.xci`) dans `Files/Roms`.
 
-Pour le compiler toi-même : `cargo build --release` (sous Windows, `tools/build-release.ps1` garde aussi tes chemins locaux hors du programme). Sous Linux, installe d'abord `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` et `libjavascriptcoregtk-4.1-dev`.
+Pour le compiler toi-même : `cargo build --release` (sous Windows, `tools/build-release.ps1` évite aussi d'inclure tes chemins locaux dans le programme). Sous Linux, installe d'abord `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` et `libjavascriptcoregtk-4.1-dev`.
 
 ## Ajouter un émulateur
 
@@ -128,19 +128,19 @@ Les sauvegardes, le profil utilisateur et les réglages sont synchronisés. **Le
 
 | Avant de jouer | Ce qui se passe |
 |---|---|
-| Seul le cloud a changé | La version locale est remplacée, après une copie dans `Files/Save Backups` |
+| Seul le cloud a changé | La version locale est remplacée, après une copie de secours dans `Files/Save Backups` |
 | Seul ce PC a changé | La version locale est envoyée |
 | Les deux ont changé | Tu vois les deux dates et tu choisis, ou tu annules le lancement |
 
 - **Dossier synchronisé :** un dossier Google Drive pour ordinateur, OneDrive, Dropbox ou NAS. Aucune API nécessaire.
-- **API Google Drive :** crée un projet sur [console.cloud.google.com](https://console.cloud.google.com), active Google Drive API, règle l'écran de consentement sur Externe et **publie-le** (sinon la connexion expire après 7 jours), puis crée un client OAuth de type *Application de bureau* et colle son identifiant et son secret dans la page **Cloud**. L'outil demande seulement l'accès `drive.file` : il ne voit que les fichiers qu'il a créés.
+- **API Google Drive :** crée un projet sur [console.cloud.google.com](https://console.cloud.google.com), active l'API Google Drive, règle l'écran de consentement sur Externe et **publie-le** (sinon la connexion expire après 7 jours), puis crée un client OAuth de type *Application de bureau* et colle son identifiant et son secret dans la page **Cloud**. L'outil demande seulement l'accès `drive.file` : il ne voit que les fichiers qu'il a créés.
 
 Sous Windows, les secrets sont chiffrés pour ton compte. Sous Linux, ils restent dans un fichier de réglages lisible par toi seul.
 
 ## Limites
 
-- **Linux :** les émulateurs sont lancés depuis leur AppImage, avec leurs dossiers dirigés vers les données partagées. Lichii par Frizti n'a pas de version Linux.
-- **Déplacer le dossier :** sous Windows, les raccourcis Steam retrouvent seuls une nouvelle lettre de disque. Après tout autre déplacement, ouvre la page **Steam** et clique sur **Enregistrer**.
+- **Linux :** les émulateurs sont lancés depuis leur AppImage, avec leurs dossiers redirigés vers les données partagées. Lichii par Frizti n'a pas de version Linux.
+- **Déplacer le dossier :** sous Windows, les raccourcis Steam retrouvent seuls une nouvelle lettre de disque. Après tout autre déplacement, ouvre la page **Steam** et clique sur **Enregistrer dans Steam**.
 - L'émulation de ces jeux est expérimentale et change chaque jour : un émulateur plus récent peut moins bien faire tourner un jeu. La version précédente reste dans `Files/Old Versions`.
 
 ## Remerciements
@@ -149,7 +149,7 @@ Cet outil repose sur le travail des projets Eden, Eglantine, Lichii, Frizti, Pok
 
 Les bugs de l'outil se signalent ici, via sa page **Signaler un bug**. Les problèmes dans un jeu concernent le projet de l'émulateur.
 
-Ce projet est indépendant, sans lien avec Nintendo ni approbation de sa part. Nintendo Switch est une marque de Nintendo.
+Ce projet est indépendant : il n'est ni affilié à Nintendo, ni approuvé par Nintendo. Nintendo Switch est une marque de Nintendo.
 
 ## Licence
 

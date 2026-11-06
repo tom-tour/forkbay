@@ -111,7 +111,7 @@ fn install_zip(zip_path: &Path, data: &Path, expected: &str, keep: u32) -> Resul
         clear_synced(data)?;
         zip::ZipArchive::new(fs::File::open(zip_path)?)?.extract(data)?;
         set_config_paths(data)?;
-        if !expected.is_empty() && local_hash(data)? != expected { bail!("contenu différent de la version distante"); }
+        if !expected.is_empty() && local_hash(data)? != expected { bail!("contenu différent de la version du cloud"); }
         Ok(())
     })();
     if let Err(e) = attempt {
@@ -134,9 +134,9 @@ fn folder_dir(s: &Settings) -> Result<PathBuf> {
 // --- Google Drive API ---
 fn google_token(s: &Settings) -> Result<String> {
     let refresh = unprotect(&s.sync.google_refresh_token);
-    if refresh.is_empty() { bail!("Compte Google non connecté sur ce PC : clique sur Connecter dans Cloud."); }
+    if refresh.is_empty() { bail!("Compte Google non connecté sur ce PC : clique sur Connecter mon compte Google dans la page Cloud."); }
     let v: Value = agent().post("https://oauth2.googleapis.com/token").send_form(&[("client_id", &s.sync.google_client_id), ("client_secret", &unprotect(&s.sync.google_client_secret)), ("refresh_token", &refresh), ("grant_type", "refresh_token")])?.into_json()?;
-    v["access_token"].as_str().map(str::to_string).ok_or_else(|| anyhow!("Google n'a pas donné de jeton."))
+    v["access_token"].as_str().map(str::to_string).ok_or_else(|| anyhow!("Google n'a pas renvoyé de jeton."))
 }
 
 fn google_find(token: &str) -> Result<Option<Value>> {
@@ -256,7 +256,7 @@ fn receive_remote(s: &Settings, meta: &Meta, out: &Path) -> Result<()> {
         std::io::copy(&mut r, &mut fs::File::create(out)?)?;
         return Ok(());
     }
-    fs::copy(folder_dir(s)?.join(SYNC_FILE), out).context("Fichier distant introuvable")?;
+    fs::copy(folder_dir(s)?.join(SYNC_FILE), out).context("Fichier introuvable dans le cloud")?;
     Ok(())
 }
 
@@ -344,8 +344,8 @@ pub fn ask_conflict(local: u64, remote: u64, machine: &str, can_cancel: bool) ->
         _ => {}
     }
     use crate::i18n::t;
-    let (a, b, c) = (t("Garder la version locale"), t("Garder la version distante"), t("Annuler"));
-    let text = t(&format!("Les deux versions ont changé depuis le dernier échange.\n\nVersion locale (ce PC) : {}\nVersion distante ({machine}) : {}\n\nCelle que tu ne gardes pas est remplacée. Si c'est la version locale, une copie reste dans Save Backups.", format_date(local), format_date(remote)));
+    let (a, b, c) = (t("Garder la version locale"), t("Garder la version du cloud"), t("Annuler"));
+    let text = t(&format!("Les deux versions ont changé depuis la dernière synchronisation.\n\nVersion locale (ce PC) : {}\nVersion du cloud ({machine}) : {}\n\nCelle que tu ne gardes pas est remplacée. Si c'est la version locale, une copie reste dans Save Backups.", format_date(local), format_date(remote)));
     let buttons = if can_cancel { rfd::MessageButtons::YesNoCancelCustom(a.clone(), b.clone(), c) } else { rfd::MessageButtons::OkCancelCustom(a.clone(), b.clone()) };
     let r = rfd::MessageDialog::new().set_title(t("Forkbay : conflit de sauvegarde")).set_description(text).set_level(rfd::MessageLevel::Warning).set_buttons(buttons).show();
     match r {

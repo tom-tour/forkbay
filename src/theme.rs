@@ -31,7 +31,7 @@ pub fn clean(v: &Value) -> Result<Value> {
 }
 
 pub fn import(path: &Path) -> Result<Value> {
-    let meta = fs::metadata(path).map_err(|_| anyhow!("Dossier introuvable : {}", path.display()))?;
+    let meta = fs::metadata(path).map_err(|_| anyhow!("Fichier introuvable : {}", path.display()))?;
     if meta.len() > MAX_SIZE {
         bail!("Ce fichier ne ressemble pas à un thème Forkbay.");
     }

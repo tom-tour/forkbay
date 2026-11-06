@@ -85,7 +85,7 @@ pub fn apply() -> Result<String> {
         }
         if let Some(d) = asset["digest"].as_str().and_then(|d| d.strip_prefix("sha256:")) {
             if !sha256_file(&new)?.eq_ignore_ascii_case(d) {
-                bail!("Condensat différent : fichier refusé.");
+                bail!("Somme de contrôle incorrecte : fichier refusé.");
             }
         }
         #[cfg(unix)]
