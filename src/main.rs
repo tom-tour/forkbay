@@ -6,6 +6,7 @@ mod core;
 mod emu;
 mod i18n;
 mod import;
+mod report;
 mod steam;
 mod update;
 
@@ -75,6 +76,9 @@ fn dispatch(cmd: &str, a: &Value) -> Result<Value> {
         "set_language" => { let mut s = load_settings(); s.language = s_arg(a, "language"); save_settings(&s)?; json!({ "language": i18n::resolve(&s.language) }) }
         "set_auto_update" => { let mut s = load_settings(); s.auto_update_check = a["enabled"].as_bool().unwrap_or(true); save_settings(&s)?; json!({}) }
         "about" => json!({ "version": update::version(), "license": include_str!("../LICENSE"), "repo": update::REPO_URL, "kofi": update::KOFI_URL }),
+        "report_collect" => report::collect(&s_arg(a, "game"), a["log"].as_bool().unwrap_or(true))?,
+        "report_save" => { report::save(&s_arg(a, "text"))?; json!({}) }
+        "report_open_file" => { open_external(&manager_dir().join("bug-report.txt").to_string_lossy()); json!({}) }
         "update_check" => update::check()?,
         "update_apply" => {
             let message = update::apply()?;

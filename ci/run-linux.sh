@@ -59,6 +59,13 @@ unset S2M_STEAM
 # Versions from the network
 check "emulator status" emu_status '{}' '"name":"Eglantine"'
 
+# Bug report
+mkdir -p "$S2M_ROOT/Data/log"
+printf '%s\n' "$HOME/secret/game.nup" "/home/otherperson/file" "header_key = AABBCC" "mail me@example.com" "build_id=BCF5E512" > "$S2M_ROOT/Data/log/eden_log.txt"
+"$BIN" --cli report_collect '{"game":"","log":true}' "$WORK/rep.json"
+if grep -qE "$HOME|otherperson|AABBCC|example.com" "$WORK/rep.json"; then echo "FAIL report leaks: $(cat "$WORK/rep.json")"; FAIL=1; else echo "ok   report cleaned"; fi
+grep -q 'BCF5E512' "$WORK/rep.json" && echo "ok   report keeps data" || { echo "FAIL report data"; FAIL=1; }
+
 # Language
 S2M_LANG=en_US.UTF-8 "$BIN" --cli install_keys "{\"path\":\"$WORK/r.json\"}" "$WORK/en.json"
 grep -q "Choose your prod.keys" "$WORK/en.json" && echo "ok   english messages" || { echo "FAIL english: $(cat "$WORK/en.json")"; FAIL=1; }

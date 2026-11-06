@@ -102,6 +102,22 @@ $r = App $rootA 'emu_add_github' @{ name = '..\evil'; repo = 'a/b' }; Check 'bad
 $r = App $rootA 'emu_add_github' @{ name = 'Lichii'; repo = 'a/b' }; Check 'duplicate refused' (-not $r.ok)
 $r = App $rootA 'emu_add_github' @{ name = 'X'; repo = 'nope nope' }; Check 'bad repo refused' (-not $r.ok)
 
+"-- bug report"
+$logDir = "$rootA\Data\log"; New-Item -ItemType Directory -Force $logDir | Out-Null
+$secret = @("C:\Users\$env:USERNAME\Documents\game.nup", "H:\Somewhere\$env:COMPUTERNAME", "$rootA\Roms\x", "C:\Users\OtherPerson\file", "mail me@example.com from 192.168.1.20", "header_key = AABBCC", "token=abc123", "build_id=BCF5E512E7B0DF65", "Booting game: 0400486024DEC000") -join "`n"
+[IO.File]::WriteAllText("$logDir\eden_log.txt", $secret)
+$r = App $rootA 'report_collect' @{ game = 'Test Game [0400000000000000].nup'; log = $true }; Check 'report made' $r.ok $r.error
+$txt = $r.value.text
+Check 'no home path' ($txt -notmatch [regex]::Escape($env:USERPROFILE))
+Check 'no user name in paths' ($txt -notmatch ('Users\\' + [regex]::Escape($env:USERNAME)))
+Check 'no other user' ($txt -notmatch 'OtherPerson')
+Check 'no computer name' ($txt -notmatch [regex]::Escape($env:COMPUTERNAME))
+Check 'no email' ($txt -notmatch 'example\.com'); Check 'no ip' ($txt -notmatch '192\.168')
+Check 'no key line' ($txt -notmatch 'AABBCC'); Check 'no token' ($txt -notmatch 'abc123')
+Check 'no folder path' ($txt -notmatch [regex]::Escape($rootA))
+Check 'useful data kept' (($txt -match 'BCF5E512E7B0DF65') -and ($txt -match '0400486024DEC000') -and ($txt -match 'Test Game') -and ($txt -match 'Switch 2 Manager \d'))
+Check 'report file saved' (Test-Path "$rootA\Manager\bug-report.txt")
+$r = App $rootA 'report_collect' @{ game = ''; log = $false }; Check 'log can be left out' (($r.value.text -notmatch 'BCF5E512') )
 "-- data move"
 $r = App $rootA 'move_data' @{ location = 'custom'; custom = "$work\Moved\Data" }; Check 'move' $r.ok $r.error; "     $($r.value.message)"
 Check 'moved save' ((Get-Content "$work\Moved\Data\nand\user\save\0\P\T1\a.bin") -eq 'B-3')
