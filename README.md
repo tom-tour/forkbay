@@ -63,6 +63,10 @@ Saves, the user profile and settings are synced. **Keys and firmware are never s
 
 On Windows, secrets are encrypted for your account. On Linux, they stay in a settings file readable only by you.
 
+## Antivirus warnings
+
+The program is new and not code-signed, so an antivirus can flag it by mistake, sometimes only after it has been running for a while. This has happened with Microsoft Defender. Every release is built by GitHub Actions from this repository, and its SHA-256 checksum is shown on the release page. If you are in doubt, build it yourself. Please do not disable your antivirus: report the false positive to its vendor and tell us in an issue.
+
 ## Limits
 
 - **Linux:** emulators are launched from their AppImage, with their folders pointed at the shared data. Lichii by Frizti has no Linux build.
@@ -138,6 +142,10 @@ Les sauvegardes, le profil utilisateur et les réglages sont synchronisés. **Le
 - **API Google Drive :** crée un projet sur [console.cloud.google.com](https://console.cloud.google.com), active l'API Google Drive, règle l'écran de consentement sur Externe et **publie-le** (sinon la connexion expire après 7 jours), puis crée un client OAuth de type *Application de bureau* et colle son identifiant et son secret dans la page **Cloud**. L'outil demande seulement l'accès `drive.file` : il ne voit que les fichiers qu'il a créés.
 
 Sous Windows, les secrets sont chiffrés pour ton compte. Sous Linux, ils restent dans un fichier de réglages lisible par toi seul.
+
+## Alertes d'antivirus
+
+Le programme est récent et n'est pas signé : un antivirus peut le signaler par erreur, parfois seulement après un moment d'utilisation. C'est déjà arrivé avec Microsoft Defender. Chaque version est compilée par GitHub Actions depuis ce dépôt, et sa somme de contrôle SHA-256 est affichée sur la page de la version. En cas de doute, compile-le toi-même. Ne désactive pas ton antivirus : signale la fausse alerte à son éditeur et préviens-nous dans un ticket.
 
 ## Limites
 

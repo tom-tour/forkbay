@@ -136,7 +136,7 @@ pub fn languages() -> Value {
     let mut list = vec![json!({ "code": "fr", "name": "Français" })];
     for l in all() {
         let done = l.raw["ui"].as_object().map(|o| o.len()).unwrap_or(0);
-        list.push(json!({ "code": l.code, "name": l.raw["name"].as_str().unwrap_or(&l.code), "coverage": if total > 0 { done * 100 / total } else { 100 } }));
+        list.push(json!({ "code": l.code, "name": l.raw["name"].as_str().unwrap_or(&l.code), "coverage": (done * 100).checked_div(total).unwrap_or(100) }));
     }
     json!(list)
 }

@@ -39,7 +39,7 @@ fn load() -> Result<(Value, Value, String, bool)> {
 }
 
 fn words(s: &str) -> Vec<String> {
-    let lower = s.to_lowercase().replace('\'', "").replace('’', "").replace("ocarina of time", "oot").replace("the legend of ", "").replace(" remake", "");
+    let lower = s.to_lowercase().replace(['\'', '’'], "").replace("ocarina of time", "oot").replace("the legend of ", "").replace(" remake", "");
     lower.chars().map(|c| match c { 'é' | 'è' | 'ê' => 'e', c if c.is_alphanumeric() => c, _ => ' ' }).collect::<String>().split_whitespace().map(str::to_string).collect()
 }
 

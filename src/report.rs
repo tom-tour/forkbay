@@ -46,19 +46,51 @@ pub fn sanitize(text: &str) -> String {
     out
 }
 
+#[cfg(not(windows))]
 fn first_line(mut c: std::process::Command) -> String {
     c.output().ok().map(|o| String::from_utf8_lossy(&o.stdout).lines().map(str::trim).filter(|l| !l.is_empty()).collect::<Vec<_>>().join("; ")).unwrap_or_default()
 }
 
 #[cfg(windows)]
 fn system_info() -> (String, String, String, String) {
-    let ps = |q: &str| { let mut c = command("powershell"); c.args(["-NoProfile", "-Command", q]); first_line(c) };
-    (
-        ps("(Get-CimInstance Win32_OperatingSystem).Caption + ' ' + (Get-CimInstance Win32_OperatingSystem).Version"),
-        ps("(Get-CimInstance Win32_Processor).Name"),
-        ps("(Get-CimInstance Win32_VideoController | ForEach-Object { $_.Name + ' (driver ' + $_.DriverVersion + ')' })"),
-        ps("[math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB).ToString() + ' GB'"),
-    )
+    (windows_name(), windows_cpu(), gpu_name(), windows_memory())
+}
+
+#[cfg(windows)]
+fn registry_text(key: &winreg::RegKey, name: &str) -> String {
+    key.get_value::<String, _>(name).unwrap_or_default().trim().to_string()
+}
+
+#[cfg(windows)]
+fn windows_name() -> String {
+    let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
+    hklm.open_subkey(r"SOFTWARE\Microsoft\Windows NT\CurrentVersion").map(|k| format!("{} (build {})", registry_text(&k, "ProductName"), registry_text(&k, "CurrentBuild"))).unwrap_or_default()
+}
+
+#[cfg(windows)]
+fn windows_cpu() -> String {
+    let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
+    hklm.open_subkey(r"HARDWARE\DESCRIPTION\System\CentralProcessor\0").map(|k| registry_text(&k, "ProcessorNameString")).unwrap_or_default()
+}
+
+#[cfg(windows)]
+fn windows_memory() -> String {
+    use windows_sys::Win32::System::SystemInformation::{GlobalMemoryStatusEx, MEMORYSTATUSEX};
+    let mut m: MEMORYSTATUSEX = unsafe { std::mem::zeroed() };
+    m.dwLength = std::mem::size_of::<MEMORYSTATUSEX>() as u32;
+    if unsafe { GlobalMemoryStatusEx(&mut m) } == 0 { return String::new(); }
+    format!("{} GB", (m.ullTotalPhys as f64 / 1_073_741_824.0).round() as u64)
+}
+
+/// Graphics cards from the registry, which needs no helper program.
+#[cfg(windows)]
+pub fn gpu_name() -> String {
+    let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
+    let Ok(class) = hklm.open_subkey(r"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}") else { return String::new() };
+    class.enum_keys().flatten().filter_map(|n| class.open_subkey(n).ok()).filter_map(|k| {
+        let name = registry_text(&k, "DriverDesc");
+        (!name.is_empty()).then(|| format!("{name} (driver {})", registry_text(&k, "DriverVersion")))
+    }).collect::<Vec<_>>().join("; ")
 }
 
 #[cfg(not(windows))]
@@ -72,6 +104,7 @@ fn system_info() -> (String, String, String, String) {
     (os, cpu, gpu, ram)
 }
 
+#[cfg(not(windows))]
 pub fn gpu_name() -> String {
     system_info().2
 }

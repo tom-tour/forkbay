@@ -201,8 +201,8 @@ fn decode(s: &str) -> String {
     let mut out = vec![];
     let mut i = 0;
     while i < b.len() {
-        if b[i] == b'%' && i + 2 < b.len() + 0 && i + 2 <= b.len() - 1 {
-            if let Ok(v) = u8::from_str_radix(&s[i + 1..i + 3], 16) { out.push(v); i += 3; continue; }
+        if b[i] == b'%' {
+            if let Some(v) = s.get(i + 1..i + 3).and_then(|h| u8::from_str_radix(h, 16).ok()) { out.push(v); i += 3; continue; }
         }
         out.push(if b[i] == b'+' { b' ' } else { b[i] });
         i += 1;
@@ -325,8 +325,14 @@ pub fn format_date(secs: u64) -> String {
 
 #[cfg(windows)]
 fn local_offset() -> i64 {
-    let out = command("powershell").args(["-NoProfile", "-Command", "[int][TimeZoneInfo]::Local.GetUtcOffset([datetime]::Now).TotalSeconds"]).output();
-    out.ok().and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse().ok()).unwrap_or(0)
+    use windows_sys::Win32::System::Time::{GetTimeZoneInformation, TIME_ZONE_INFORMATION};
+    let mut z: TIME_ZONE_INFORMATION = unsafe { std::mem::zeroed() };
+    let bias = match unsafe { GetTimeZoneInformation(&mut z) } {
+        1 => z.Bias + z.StandardBias,
+        2 => z.Bias + z.DaylightBias,
+        _ => z.Bias,
+    };
+    -(bias as i64) * 60
 }
 
 #[cfg(not(windows))]

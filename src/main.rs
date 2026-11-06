@@ -69,7 +69,7 @@ fn pick(a: &Value) -> Option<PathBuf> {
     let mut d = rfd::FileDialog::new().set_title(&title);
     if let Some(ext) = a["ext"].as_array() {
         let list: Vec<&str> = ext.iter().filter_map(|x| x.as_str()).collect();
-        if !list.is_empty() { d = d.add_filter(&s_arg(a, "label"), &list); }
+        if !list.is_empty() { d = d.add_filter(s_arg(a, "label"), &list); }
     }
     d.pick_file()
 }
