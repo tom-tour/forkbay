@@ -96,7 +96,7 @@ fn describe(path: &Path, name: &str) -> Option<Value> {
 
 pub fn sources() -> Value {
     let mut bases: Vec<PathBuf> = vec![];
-    if let Ok(b) = std::env::var("S2M_SEARCH") {
+    if let Ok(b) = std::env::var("FORKBAY_SEARCH") {
         bases.push(b.into());
     } else if cfg!(windows) {
         for v in ["APPDATA", "LOCALAPPDATA"] {

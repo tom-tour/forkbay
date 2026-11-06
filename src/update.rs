@@ -5,10 +5,10 @@ use serde_json::{json, Value};
 use std::fs;
 use std::path::PathBuf;
 
-pub const REPO_URL: &str = "https://github.com/tom-tour/switch-2-manager";
+pub const REPO_URL: &str = "https://github.com/tom-tour/forkbay";
 pub const KOFI_URL: &str = "https://ko-fi.com/tom_t";
-const API: &str = "https://api.github.com/repos/tom-tour/switch-2-manager/releases/latest";
-const ASSET: &str = if cfg!(windows) { "switch-2-manager-windows-x86_64.exe" } else { "switch-2-manager-linux-x86_64" };
+const API: &str = "https://api.github.com/repos/tom-tour/forkbay/releases/latest";
+const ASSET: &str = if cfg!(windows) { "forkbay-windows-x86_64.exe" } else { "forkbay-linux-x86_64" };
 
 pub fn version() -> &'static str {
     env!("CARGO_PKG_VERSION")
@@ -23,7 +23,7 @@ fn newer(latest: &str, current: &str) -> bool {
 }
 
 fn release() -> Result<Option<Value>> {
-    let url = std::env::var("S2M_UPDATE_API").unwrap_or_else(|_| API.to_string());
+    let url = std::env::var("FORKBAY_UPDATE_API").unwrap_or_else(|_| API.to_string());
     match agent().get(&url).call() {
         Ok(r) => Ok(Some(r.into_json()?)),
         // Nothing published yet, or a private repository.

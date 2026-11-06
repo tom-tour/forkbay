@@ -28,6 +28,7 @@ pub struct Settings {
     pub language: String,
     pub auto_update_check: bool,
     pub terms_accepted: u32,
+    pub custom_colors: BTreeMap<String, String>,
     pub steam_grid_key: String,
     pub data_location: String,
     pub custom_data_path: String,
@@ -44,6 +45,7 @@ impl Default for Settings {
             language: "auto".into(),
             auto_update_check: true,
             terms_accepted: 0,
+            custom_colors: BTreeMap::new(),
             steam_grid_key: String::new(),
             data_location: "portable".into(),
             custom_data_path: String::new(),
@@ -58,9 +60,9 @@ pub fn exe_dir() -> PathBuf {
     std::env::current_exe().ok().and_then(|p| p.parent().map(Path::to_path_buf)).unwrap_or_else(|| ".".into())
 }
 
-/// The Files folder next to the executable (S2M_ROOT overrides it for tests).
+/// The Files folder next to the executable (FORKBAY_ROOT overrides it for tests).
 pub fn root() -> PathBuf {
-    if let Ok(r) = std::env::var("S2M_ROOT") {
+    if let Ok(r) = std::env::var("FORKBAY_ROOT") {
         return r.into();
     }
     exe_dir().join("Files")
@@ -97,7 +99,7 @@ pub fn home() -> PathBuf {
 
 pub fn data_path_for(s: &Settings) -> PathBuf {
     match s.data_location.as_str() {
-        "local" => local_data_base().join("Switch2Manager").join("Data"),
+        "local" => local_data_base().join("Forkbay").join("Data"),
         "custom" if !s.custom_data_path.is_empty() => PathBuf::from(&s.custom_data_path),
         _ => root().join("Data"),
     }
@@ -460,7 +462,7 @@ pub fn sha256_file(path: &Path) -> Result<String> {
 }
 
 pub fn agent() -> ureq::Agent {
-    ureq::AgentBuilder::new().user_agent("Switch2-Manager").timeout_read(std::time::Duration::from_secs(120)).timeout_connect(std::time::Duration::from_secs(20)).build()
+    ureq::AgentBuilder::new().user_agent("Forkbay").timeout_read(std::time::Duration::from_secs(120)).timeout_connect(std::time::Duration::from_secs(20)).build()
 }
 
 pub fn open_external(target: &str) {

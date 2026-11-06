@@ -87,6 +87,12 @@ fn set_text(e: &mut Node, name: &str, value: &str) {
     }
 }
 
+const TOOL_FLAG: &str = "--fullscreen";
+
+fn is_tool(e: &Node) -> bool {
+    text_field(e, "LaunchOptions").contains(TOOL_FLAG)
+}
+
 pub fn managed_game(e: &Node) -> Option<String> {
     let re = Regex::new(r"--launch '((?:[^']|'')+)'").unwrap();
     re.captures(&text_field(e, "LaunchOptions")).map(|c| c[1].replace("''", "'"))
@@ -109,11 +115,21 @@ fn powershell() -> String {
 fn exe_and_options(file: &str) -> (String, String) {
     if cfg!(windows) {
         let rel = relative_exe().replace('\'', "''");
-        let msg = "Dossier Switch 2 introuvable. Branche le disque, ou ouvre Switch 2 Manager depuis son nouvel emplacement et enregistre Steam.";
+        let msg = "Dossier de Forkbay introuvable. Branche le disque, ou ouvre Forkbay depuis son nouvel emplacement et enregistre Steam.";
         let opts = format!("-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command \"foreach($d in Get-PSDrive -PSProvider FileSystem){{$s=$d.Root+'{rel}';if(Test-Path -LiteralPath $s){{& $s --launch '{}' | Out-Null;exit}}}};Add-Type -AssemblyName System.Windows.Forms;[void][Windows.Forms.MessageBox]::Show('{msg}')\"", game_rel(file));
         (format!("\"{}\"", powershell()), opts)
     } else {
         (format!("\"{}\"", exe_path().display()), format!("--launch '{}'", game_rel(file)))
+    }
+}
+
+fn tool_exe_and_options() -> (String, String) {
+    if cfg!(windows) {
+        let rel = relative_exe().replace('\'', "''");
+        let msg = "Dossier de Forkbay introuvable. Branche le disque, ou ouvre Forkbay depuis son nouvel emplacement et enregistre Steam.";
+        (format!("\"{}\"", powershell()), format!("-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command \"foreach($d in Get-PSDrive -PSProvider FileSystem){{$s=$d.Root+'{rel}';if(Test-Path -LiteralPath $s){{& $s {TOOL_FLAG} | Out-Null;exit}}}};Add-Type -AssemblyName System.Windows.Forms;[void][Windows.Forms.MessageBox]::Show('{msg}')\""))
+    } else {
+        (format!("\"{}\"", exe_path().display()), TOOL_FLAG.to_string())
     }
 }
 
@@ -138,24 +154,43 @@ fn icon_for(file: &str) -> String {
 
 fn new_entry(file: &str) -> Node {
     let (exe, opts) = exe_and_options(file);
-    let name = display_name(file);
+    build_entry(display_name(file), exe, opts, icon_for(file))
+}
+
+fn tool_entry() -> Node {
+    let (exe, opts) = tool_exe_and_options();
+    build_entry("Forkbay".to_string(), exe, opts, exe_path().to_string_lossy().into_owned())
+}
+
+fn build_entry(name: String, exe: String, opts: String, icon: String) -> Node {
     let appid = (crc32(format!("{exe}{name}").as_bytes()) | 0x8000_0000) as i32;
     let start = Path::new(exe.trim_matches('"')).parent().map(|p| format!("{}{}", p.display(), std::path::MAIN_SEPARATOR)).unwrap_or_default();
     let t = |k: &str, v: String| Node { key: k.into(), val: Val::Text(v) };
     let i = |k: &str, v: i32| Node { key: k.into(), val: Val::Int(v) };
     Node { key: "0".into(), val: Val::Map(vec![
-        i("appid", appid), t("AppName", name), t("Exe", exe), t("StartDir", start), t("icon", icon_for(file)), t("ShortcutPath", String::new()), t("LaunchOptions", opts),
+        i("appid", appid), t("AppName", name), t("Exe", exe), t("StartDir", start), t("icon", icon), t("ShortcutPath", String::new()), t("LaunchOptions", opts),
         i("IsHidden", 0), i("AllowDesktopConfig", 1), i("AllowOverlay", 1), i("OpenVR", 0), i("Devkit", 0), t("DevkitGameID", String::new()), i("DevkitOverrideAppID", 0), i("LastPlayTime", 0), t("FlatpakAppID", String::new()),
         Node { key: "tags".into(), val: Val::Map(vec![]) },
     ]) }
 }
 
 /// Adds, removes and refreshes this tool's games. Other shortcuts do not change.
-pub fn save_shortcuts(path: &Path, wanted: &[String]) -> Result<()> {
+pub fn save_shortcuts(path: &Path, wanted: &[String], tool: bool) -> Result<()> {
     let entries = read_shortcuts(path)?;
     let mut result = vec![];
     let mut done: Vec<String> = vec![];
+    let mut tool_done = false;
     for mut e in entries {
+        if is_tool(&e) {
+            if !tool { continue; }
+            let (exe, opts) = tool_exe_and_options();
+            set_text(&mut e, "Exe", &exe);
+            set_text(&mut e, "LaunchOptions", &opts);
+            set_text(&mut e, "icon", &exe_path().to_string_lossy());
+            result.push(e);
+            tool_done = true;
+            continue;
+        }
         let Some(game) = managed_game(&e) else { result.push(e); continue };
         let file = game.trim_start_matches("Roms/").trim_start_matches("Roms\\").to_string();
         if !wanted.contains(&file) { continue; }
@@ -167,11 +202,12 @@ pub fn save_shortcuts(path: &Path, wanted: &[String]) -> Result<()> {
         done.push(file);
     }
     for f in wanted { if !done.contains(f) { result.push(new_entry(f)); } }
+    if tool && !tool_done { result.push(tool_entry()); }
     for (i, e) in result.iter_mut().enumerate() { e.key = i.to_string(); }
     let mut bytes = vec![];
     write_map(&mut bytes, &[Node { key: "shortcuts".into(), val: Val::Map(result) }]);
     if path.is_file() {
-        let backup = PathBuf::from(format!("{}.before-switch2", path.display()));
+        let backup = PathBuf::from(format!("{}.before-forkbay", path.display()));
         if !backup.exists() { fs::copy(path, backup)?; }
     } else {
         fs::create_dir_all(path.parent().unwrap())?;
@@ -184,7 +220,7 @@ pub fn save_shortcuts(path: &Path, wanted: &[String]) -> Result<()> {
 }
 
 pub fn steam_dir() -> Option<PathBuf> {
-    if let Ok(p) = std::env::var("S2M_STEAM") { return Some(p.into()); }
+    if let Ok(p) = std::env::var("FORKBAY_STEAM") { return Some(p.into()); }
     #[cfg(windows)]
     {
         let k = winreg::RegKey::predef(winreg::enums::HKEY_CURRENT_USER).open_subkey("Software\\Valve\\Steam").ok()?;
@@ -233,22 +269,24 @@ pub fn load(account: &str) -> Result<Value> {
     let entries = read_shortcuts(&vdf_path(&steam, account))?;
     let mut managed = vec![];
     let mut stale = 0;
+    let mut tool = false;
     for e in &entries {
+        if is_tool(e) { tool = true; if !is_current(e) { stale += 1; } continue; }
         if let Some(g) = managed_game(e) {
             managed.push(g.trim_start_matches("Roms/").trim_start_matches("Roms\\").to_string());
             if !is_current(e) { stale += 1; }
         }
     }
-    Ok(json!({ "managed": managed, "stale": stale }))
+    Ok(json!({ "managed": managed, "stale": stale, "tool": tool }))
 }
 
 fn steam_running() -> bool { running_processes().iter().any(|p| p == "steam") }
 
 /// Closes Steam when needed (it would overwrite the change), then reopens it.
-pub fn save(account: &str, games: &[String]) -> Result<String> {
+pub fn save(account: &str, games: &[String], tool: bool) -> Result<String> {
     let steam = steam_dir().ok_or_else(|| anyhow::anyhow!("Steam introuvable sur ce PC."))?;
     let bin = if cfg!(windows) { steam.join("steam.exe") } else { PathBuf::from("steam") };
-    let test_mode = std::env::var("S2M_STEAM").is_ok();
+    let test_mode = std::env::var("FORKBAY_STEAM").is_ok();
     let mut restart = false;
     if !test_mode && steam_running() {
         let _ = std::process::Command::new(&bin).arg("-shutdown").spawn();
@@ -259,7 +297,7 @@ pub fn save(account: &str, games: &[String]) -> Result<String> {
         if steam_running() { bail!("Steam ne s'est pas fermé : rien n'a été modifié."); }
         restart = true;
     }
-    let r = save_shortcuts(&vdf_path(&steam, account), games).and_then(|_| crate::art::update_steam_art(&vdf_path(&steam, account)));
+    let r = save_shortcuts(&vdf_path(&steam, account), games, tool).and_then(|_| crate::art::update_steam_art(&vdf_path(&steam, account)));
     if restart { let _ = std::process::Command::new(&bin).spawn(); }
     let images = r?;
     Ok(format!("Enregistré : {} jeu(x) dans Steam, {images} image(s).", games.len()))

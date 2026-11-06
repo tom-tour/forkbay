@@ -1,6 +1,8 @@
 <img src="assets/icon.png" width="64" alt="" align="right">
 
-# Switch 2 Manager
+# Forkbay
+
+**Switch 2 emulator manager**
 
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/tom_t)
 [![License: GPL v3+](https://img.shields.io/badge/License-GPLv3+-blue.svg)](LICENSE)
@@ -24,7 +26,9 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **Cloud saves (optional):** syncs before and after each game, with a choice of version when both sides changed.
 - **Languages:** English and French, following your system language. [Adding one](locales/README.md) takes a single file.
 - **Updates of the tool itself** from GitHub releases, with an About page for the license and links.
-- **Dark theme by default**, with a light one.
+- **Themes:** dark by default, light, black, or your own colours.
+- **Controller support**, and a Steam shortcut to the tool itself, full screen.
+- **An error journal** that keeps out paths, names and secrets.
 
 ## What you need
 
@@ -97,7 +101,9 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 - **Sauvegardes dans le cloud (facultatif) :** synchronise avant et après chaque partie, et te laisse choisir si les deux versions ont changé.
 - **Langues :** anglais et français, selon la langue de ton système. [En ajouter une](locales/README.md) demande un seul fichier.
 - **Mise à jour de l'outil lui-même** depuis les versions GitHub, avec une page À propos pour la licence et les liens.
-- **Thème sombre par défaut**, avec un thème clair.
+- **Thèmes :** sombre par défaut, clair, noir, ou tes propres couleurs.
+- **Prise en charge de la manette**, et un raccourci Steam vers l'outil lui-même, en plein écran.
+- **Un journal d'erreurs** qui écarte les chemins, les noms et les secrets.
 
 ## Ce qu'il te faut
 

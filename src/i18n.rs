@@ -42,9 +42,9 @@ fn find(code: &str) -> Option<&'static Locale> {
     all().iter().find(|l| l.code == code)
 }
 
-/// The system language, lowercase (S2M_LANG overrides it for tests).
+/// The system language, lowercase (FORKBAY_LANG overrides it for tests).
 pub fn system() -> String {
-    if let Ok(l) = std::env::var("S2M_LANG") {
+    if let Ok(l) = std::env::var("FORKBAY_LANG") {
         return l.to_lowercase();
     }
     #[cfg(windows)]

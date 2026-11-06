@@ -185,6 +185,7 @@ pub fn install(name: &str) -> Result<String> {
         bail!("Ferme les émulateurs avant d'installer.");
     }
     let rel = latest(&e)?;
+    crate::log::info(&format!("install {name} {}", rel.tag));
     let folder = root().join(&e.name);
     let present = find_exe(&folder).is_some();
     let inst = installed(&e.name);
@@ -364,7 +365,9 @@ pub fn run(emu: &str, game: Option<&Path>) -> Result<()> {
     }
     #[cfg(not(windows))]
     linux_portable(&mut c, &dir)?;
-    c.spawn()?.wait()?;
+    crate::log::info(&format!("start {emu}"));
+    let status = c.spawn()?.wait()?;
+    if !status.success() { crate::log::error(&format!("{emu} stopped with {status}")); } else { crate::log::info(&format!("{emu} closed")); }
     Ok(())
 }
 

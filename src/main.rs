@@ -1,4 +1,4 @@
-// Switch 2 Manager: one window for Switch 2 emulators, on Windows and Linux.
+// Forkbay: one window for Switch 2 emulators, on Windows and Linux.
 #![cfg_attr(not(test), windows_subsystem = "windows")]
 mod art;
 mod cloud;
@@ -7,6 +7,7 @@ mod core;
 mod emu;
 mod i18n;
 mod import;
+mod log;
 mod report;
 mod steam;
 mod update;
@@ -46,7 +47,7 @@ fn state() -> Result<Value> {
     let games: Vec<Value> = rom_files().iter().map(|f| json!({ "file": f, "name": display_name(f), "emu": game_emulator(&s, f), "cover": art::cover_uri(f) })).collect();
     let emus: Vec<Value> = emu::list().iter().map(|e| json!({ "name": e.name, "present": emu::find_exe(&root().join(&e.name)).is_some() })).collect();
     Ok(json!({
-        "setupDone": s.setup_done, "theme": s.theme, "language": i18n::current(), "languageSetting": s.language, "languages": i18n::languages(), "termsAccepted": s.terms_accepted >= 1, "autoUpdateCheck": s.auto_update_check, "version": update::version(),
+        "setupDone": s.setup_done, "theme": s.theme, "customColors": s.custom_colors, "fullscreen": FULLSCREEN.load(std::sync::atomic::Ordering::Relaxed), "padTest": std::env::var("FORKBAY_PADTEST").unwrap_or_default(), "language": i18n::current(), "languageSetting": s.language, "languages": i18n::languages(), "termsAccepted": s.terms_accepted >= 1, "autoUpdateCheck": s.auto_update_check, "version": update::version(),
         "dataLocation": s.data_location, "customDataPath": s.custom_data_path,
         "defaultEmulator": s.default_emulator, "dataPath": data.to_string_lossy(), "games": games, "emulators": emus,
         "keys": has_keys(&data), "firmware": firmware_count(&data),
@@ -71,7 +72,19 @@ fn pick(a: &Value) -> Option<PathBuf> {
     d.pick_file()
 }
 
+static FULLSCREEN: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
 fn dispatch(cmd: &str, a: &Value) -> Result<Value> {
+    let r = run_command(cmd, a);
+    match &r {
+        Err(e) => log::error(&format!("{cmd}: {e}")),
+        Ok(_) if ["emu_install", "import", "move_data", "cloud_sync", "steam_save", "update_apply", "install_keys", "install_firmware"].contains(&cmd) => log::info(&format!("{cmd}: ok")),
+        _ => {}
+    }
+    r
+}
+
+fn run_command(cmd: &str, a: &Value) -> Result<Value> {
     let msg = |m: String| json!({ "message": i18n::t(&m) });
     Ok(match cmd {
         "set_language" => { let mut s = load_settings(); s.language = s_arg(a, "language"); save_settings(&s)?; i18n::page_locale() }
@@ -87,7 +100,7 @@ fn dispatch(cmd: &str, a: &Value) -> Result<Value> {
         "update_check" => update::check()?,
         "update_apply" => {
             let message = update::apply()?;
-            if message.contains("redémarrage") && std::env::var("S2M_SELFTEST").is_err() {
+            if message.contains("redémarrage") && std::env::var("FORKBAY_SELFTEST").is_err() {
                 std::process::Command::new(std::env::current_exe()?).spawn()?;
                 std::thread::spawn(|| { std::thread::sleep(std::time::Duration::from_millis(600)); std::process::exit(0); });
             }
@@ -95,7 +108,7 @@ fn dispatch(cmd: &str, a: &Value) -> Result<Value> {
         }
         "state" => {
             // Automated tests: proves that the page ran its script and reached the program.
-            if let Ok(f) = std::env::var("S2M_SELFTEST") { let _ = std::fs::write(f, "page-loaded"); }
+            if let Ok(f) = std::env::var("FORKBAY_SELFTEST") { let _ = std::fs::write(f, "page-loaded"); }
             repair_setup()?;
             state()?
         }
@@ -106,7 +119,21 @@ fn dispatch(cmd: &str, a: &Value) -> Result<Value> {
         "emu_remove" => msg(emu::remove(&s_arg(a, "name"))?),
         "set_game_emu" => { let mut s = load_settings(); s.games.insert(s_arg(a, "file"), s_arg(a, "emu")); save_settings(&s)?; json!({}) }
         "set_default_emu" => { let mut s = load_settings(); s.default_emulator = s_arg(a, "emu"); save_settings(&s)?; json!({}) }
-        "set_theme" => { let mut s = load_settings(); s.theme = s_arg(a, "theme"); save_settings(&s)?; json!({}) }
+        "set_theme" => {
+            let mut s = load_settings();
+            s.theme = s_arg(a, "theme");
+            if let Some(c) = a["custom"].as_object() {
+                let hex = regex::Regex::new("^#[0-9a-fA-F]{6}$").unwrap();
+                s.custom_colors = c.iter().filter_map(|(k, v)| v.as_str().filter(|x| hex.is_match(x)).map(|x| (k.clone(), x.to_string()))).collect();
+            }
+            save_settings(&s)?;
+            json!({})
+        }
+        "log_js" => { log::error(&format!("page: {}", s_arg(a, "text"))); json!({}) }
+        "log_open" => { let p = log::path(); std::fs::create_dir_all(p.parent().unwrap())?; if !p.exists() { std::fs::write(&p, "")?; } open_external(&p.to_string_lossy()); json!({}) }
+        "selftest" => { if let Ok(f) = std::env::var("FORKBAY_SELFTEST") { std::fs::write(f, s_arg(a, "text"))?; } json!({}) }
+        "selftest_crash" => { if std::env::var("FORKBAY_SELFTEST").is_ok() { panic!("test crash in {}", data_path().display()); } json!({}) }
+        "quit" => std::process::exit(0),
         "finish_setup" => { let mut s = load_settings(); s.setup_done = true; save_settings(&s)?; json!({}) }
         "reopen_setup" => { let mut s = load_settings(); s.setup_done = false; save_settings(&s)?; json!({}) }
         "play" => { std::process::Command::new(std::env::current_exe()?).arg("--launch").arg(format!("Roms/{}", s_arg(a, "file"))).spawn()?; json!({}) }
@@ -125,7 +152,7 @@ fn dispatch(cmd: &str, a: &Value) -> Result<Value> {
         "steam_load" => steam::load(&s_arg(a, "account"))?,
         "steam_save" => {
             let games: Vec<String> = a["games"].as_array().map(|v| v.iter().filter_map(|x| x.as_str().map(str::to_string)).collect()).unwrap_or_default();
-            msg(steam::save(&s_arg(a, "account"), &games)?)
+            msg(steam::save(&s_arg(a, "account"), &games, a["tool"].as_bool().unwrap_or(false))?)
         }
         "fetch_art" => msg(art::fetch_all()?),
         "set_grid_key" => { let mut s = load_settings(); s.steam_grid_key = protect(s_arg(a, "key").trim()); save_settings(&s)?; json!({}) }
@@ -165,11 +192,11 @@ fn dispatch(cmd: &str, a: &Value) -> Result<Value> {
 }
 
 fn notify(text: &str) {
-    rfd::MessageDialog::new().set_title("Switch 2 Manager").set_description(i18n::t(text)).set_level(rfd::MessageLevel::Warning).show();
+    rfd::MessageDialog::new().set_title("Forkbay").set_description(i18n::t(text)).set_level(rfd::MessageLevel::Warning).show();
 }
 
 fn confirm(text: &str) -> bool {
-    matches!(rfd::MessageDialog::new().set_title("Switch 2 Manager").set_description(i18n::t(text)).set_buttons(rfd::MessageButtons::YesNo).show(), rfd::MessageDialogResult::Yes)
+    matches!(rfd::MessageDialog::new().set_title("Forkbay").set_description(i18n::t(text)).set_buttons(rfd::MessageButtons::YesNo).show(), rfd::MessageDialogResult::Yes)
 }
 
 /// Launches a game on its emulator, with cloud sync when enabled. No window of its own.
@@ -229,10 +256,11 @@ fn window_icon() -> Option<Icon> {
     }
 }
 
-fn run_gui() -> Result<()> {
+fn run_gui(fullscreen: bool) -> Result<()> {
+    FULLSCREEN.store(fullscreen, std::sync::atomic::Ordering::Relaxed);
     let event_loop = EventLoopBuilder::<String>::with_user_event().build();
     let _ = PROXY.set(event_loop.create_proxy());
-    let window = WindowBuilder::new().with_title("Switch 2 Manager").with_inner_size(LogicalSize::new(1120.0, 760.0)).with_min_inner_size(LogicalSize::new(900.0, 600.0)).with_window_icon(window_icon()).build(&event_loop)?;
+    let window = WindowBuilder::new().with_title("Forkbay").with_inner_size(LogicalSize::new(1120.0, 760.0)).with_min_inner_size(LogicalSize::new(900.0, 600.0)).with_window_icon(window_icon()).with_fullscreen(fullscreen.then_some(tao::window::Fullscreen::Borderless(None))).build(&event_loop)?;
     let mut context = WebContext::new(Some(manager_dir().join("webview")));
     let builder = WebViewBuilder::new_with_web_context(&mut context).with_html(HTML).with_devtools(false).with_ipc_handler(|req: wry::http::Request<String>| {
         let body = req.body().clone();
@@ -266,6 +294,7 @@ fn run_gui() -> Result<()> {
 }
 
 fn main() {
+    log::install_panic_hook();
     update::cleanup();
     let args: Vec<String> = std::env::args().skip(1).collect();
     let get = |flag: &str| args.iter().position(|a| a == flag).and_then(|i| args.get(i + 1)).map(String::as_str);
@@ -279,6 +308,6 @@ fn main() {
     if args.first().map(String::as_str) == Some("--version") { if let Some(f) = args.get(1) { let _ = std::fs::write(f, env!("CARGO_PKG_VERSION")); } return; }
     let result = if let Some(g) = get("--launch") { launch(Some(g), get("--emu")) }
         else if let Some(e) = get("--open") { launch(None, Some(e)) }
-        else { run_gui().map_err(|e| anyhow!(e)) };
-    if let Err(e) = result { notify(&e.to_string()); }
+        else { log::info(&format!("start {}", update::version())); run_gui(args.iter().any(|a| a == "--fullscreen")).map_err(|e| anyhow!(e)) };
+    if let Err(e) = result { log::error(&e.to_string()); notify(&e.to_string()); }
 }

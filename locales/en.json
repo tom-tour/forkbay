@@ -106,7 +106,7 @@
   "Récupération des jaquettes...": "Getting covers...",
   "Langue du système.": "System language.",
   "Langue enregistrée.": "Language saved.",
-  "Switch 2 Manager, un logiciel libre.": "Switch 2 Manager, free software.",
+  "Forkbay, un logiciel libre.": "Forkbay, free software.",
   "Version": "Version",
   "Mises à jour de l'outil": "Tool updates",
   "Vérifie sur GitHub si une nouvelle version existe.": "Checks GitHub for a new version.",
@@ -220,7 +220,20 @@
   "Ce sont des retours de joueurs, sans garantie.": "These are player reports, with no guarantee.",
   "Tous les émulateurs du guide sont déjà dans ta liste.": "Every emulator of the guide is already in your list.",
   "Français": "Français",
-  "English": "English"
+  "English": "English",
+  "Apparence": "Appearance",
+  "Noir": "Black",
+  "Personnalisé": "Custom",
+  "Fond": "Background",
+  "Panneaux": "Panels",
+  "Texte": "Text",
+  "Accent": "Accent",
+  "Réinitialiser": "Reset",
+  "Quitter Forkbay": "Quit Forkbay",
+  "Forkbay lui-même": "Forkbay itself",
+  "Un raccourci de l'outil dans Steam, en plein écran, pratique à la manette.": "A shortcut to the tool in Steam, full screen, handy with a controller.",
+  "Le journal d'erreurs de Forkbay est toujours inclus, nettoyé lui aussi.": "Forkbay's error journal is always included, cleaned as well.",
+  "Ouvrir le journal": "Open the journal"
  },
  "uiPatterns": [
   [
@@ -694,8 +707,8 @@
    "Cancel"
   ],
   [
-   "^Switch 2 Manager : conflit de sauvegarde$",
-   "Switch 2 Manager: save conflict"
+   "^Forkbay : conflit de sauvegarde$",
+   "Forkbay: save conflict"
   ],
   [
    "(?s)^Les deux versions ont changé depuis le dernier échange\\.\\n\\nVersion locale \\(ce PC\\) : (.*)\\nVersion distante \\((.*)\\) : (.*)\\n\\nCelle que tu ne gardes pas.*$",

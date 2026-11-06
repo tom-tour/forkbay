@@ -1,7 +1,7 @@
 # Runs the core commands of a Windows build on throwaway folders.
 param([string]$Bin)
 $Bin = (Resolve-Path -LiteralPath $Bin).Path
-$work = Join-Path ([IO.Path]::GetTempPath()) ('s2m-' + [guid]::NewGuid().ToString('N'))
+$work = Join-Path ([IO.Path]::GetTempPath()) ('forkbay-' + [guid]::NewGuid().ToString('N'))
 $script:fail = 0
 $rootA = "$work\A\Files"; $rootB = "$work\B\Files"
 New-Item -ItemType Directory -Force "$rootA\Roms", "$rootB\Roms", "$work\search", "$work\cloud", "$work\steam\userdata\1\config" | Out-Null
@@ -9,7 +9,7 @@ New-Item -ItemType Directory -Force "$rootA\Roms", "$rootB\Roms", "$work\search"
 [IO.File]::WriteAllText("$rootB\Roms\Test Game [0400000000000000].nup", 'x')
 
 function App([string]$root, [string]$cmd, $arg = @{}) {
-    $env:S2M_LANG = 'fr'; $env:S2M_ROOT = $root; $env:S2M_SEARCH = "$work\search"; $env:S2M_STEAM = "$work\steam"
+    $env:FORKBAY_LANG = 'fr'; $env:FORKBAY_ROOT = $root; $env:FORKBAY_SEARCH = "$work\search"; $env:FORKBAY_STEAM = "$work\steam"
     $file = "$work\r.json"
     if (Test-Path $file) { Remove-Item $file }
     $json = ($arg | ConvertTo-Json -Compress -Depth 5).Replace('"', '\"')
@@ -64,27 +64,27 @@ $r = App $rootA 'cloud_sync'; "     after a first recentFiles line: $($r.value.m
 $t = Get-Content $ini -Raw; [IO.File]::WriteAllText($ini, $t.Replace('Paths\recentFiles="other"', 'Paths\recentFiles="changed"'))
 $r = App $rootA 'cloud_sync'; Check 'recentFiles alone ignored' ($r.value.message -match 'identiques') ($r | ConvertTo-Json -Compress)
 Add-Type -AssemblyName System.IO.Compression.FileSystem
-$z = [IO.Compression.ZipFile]::OpenRead("$work\cloud\Switch2Sync\switch2-sync.zip"); $names = $z.Entries | ForEach-Object FullName; $z.Dispose()
+$z = [IO.Compression.ZipFile]::OpenRead("$work\cloud\ForkbaySync\forkbay-sync.zip"); $names = $z.Entries | ForEach-Object FullName; $z.Dispose()
 Check 'keys never sent' (-not ($names -match 'keys')); Check 'firmware never sent' (-not ($names -match '\.nca')); Check 'profile sent' ($names -match 'profiles|8000000000000010')
 $s = "$rootA\Data\nand\user\save\0\P\T1\a.bin"; [IO.File]::WriteAllText($s, 'played-on-A')
 $r = App $rootA 'cloud_sync'; Check 'local change sent' ($r.value.message -match 'envoy')
 "-- second PC"
-$env:S2M_CONFLICT = 'cancel'
+$env:FORKBAY_CONFLICT = 'cancel'
 $r = App $rootB 'cloud_sync'; Check 'first exchange asks, cancel keeps local' ($r.value.message -match 'annul') ($r | ConvertTo-Json -Compress)
-$env:S2M_CONFLICT = 'remote'
+$env:FORKBAY_CONFLICT = 'remote'
 $r = App $rootB 'cloud_sync'; Check 'choose remote' ($r.value.message -match 'distante') ($r | ConvertTo-Json -Compress)
 Check 'B received the save' ((Get-Content "$rootB\Data\nand\user\save\0\P\T1\a.bin") -eq 'played-on-A')
 Check 'B paths are its own' ((Get-Content "$rootB\Data\config\qt-config.ini" -Raw) -notmatch '__LOCAL__')
 Check 'B backup made' (@(Get-ChildItem "$rootB\Save Backups" -Directory).Count -ge 1)
-Remove-Item Env:\S2M_CONFLICT
+Remove-Item Env:\FORKBAY_CONFLICT
 $r = App $rootB 'cloud_sync'; Check 'B now identical' ($r.value.message -match 'identiques') ($r | ConvertTo-Json -Compress)
 [IO.File]::WriteAllText($s, 'A-again'); $r = App $rootA 'cloud_sync'; Check 'A sends' ($r.value.message -match 'envoy')
 $r = App $rootB 'cloud_sync'; Check 'B replaced automatically' ($r.value.message -match 'distante') ($r | ConvertTo-Json -Compress)
 Check 'B content' ((Get-Content "$rootB\Data\nand\user\save\0\P\T1\a.bin") -eq 'A-again')
 $sb = "$rootB\Data\nand\user\save\0\P\T1\a.bin"; [IO.File]::WriteAllText($s, 'A-3'); [IO.File]::WriteAllText($sb, 'B-3'); $r = App $rootA 'cloud_sync'
-$env:S2M_CONFLICT = 'local'; $r = App $rootB 'cloud_sync'; Check 'conflict keep local' ($r.value.message -match 'envoy') ($r | ConvertTo-Json -Compress); Remove-Item Env:\S2M_CONFLICT
+$env:FORKBAY_CONFLICT = 'local'; $r = App $rootB 'cloud_sync'; Check 'conflict keep local' ($r.value.message -match 'envoy') ($r | ConvertTo-Json -Compress); Remove-Item Env:\FORKBAY_CONFLICT
 $r = App $rootA 'cloud_sync'; Check 'A receives B' ((Get-Content $s) -eq 'B-3') ($r | ConvertTo-Json -Compress)
-$m = "$work\cloud\Switch2Sync\meta.json"; $j = Get-Content $m -Raw | ConvertFrom-Json; $j.hash = 'AAAA'; [IO.File]::WriteAllText($m, ($j | ConvertTo-Json))
+$m = "$work\cloud\ForkbaySync\meta.json"; $j = Get-Content $m -Raw | ConvertFrom-Json; $j.hash = 'AAAA'; [IO.File]::WriteAllText($m, ($j | ConvertTo-Json))
 $r = App $rootA 'cloud_sync'; Check 'bad remote rolled back' ((-not $r.ok) -and (Get-Content $s) -eq 'B-3') ($r | ConvertTo-Json -Compress)
 $j.hash = (Get-Content "$rootA\Data\sync-state.json" -Raw | ConvertFrom-Json).lastHash; [IO.File]::WriteAllText($m, ($j | ConvertTo-Json))
 "-- steam on a fake folder"
@@ -92,7 +92,7 @@ $j.hash = (Get-Content "$rootA\Data\sync-state.json" -Raw | ConvertFrom-Json).la
 $g = 'Test Game [0400000000000000].nup'
 $r = App $rootA 'steam_save' @{ account = '1'; games = @($g) }; Check 'steam save' $r.ok $r.error
 $r = App $rootA 'steam_load' @{ account = '1' }; Check 'steam managed' (@($r.value.managed) -contains $g) ($r | ConvertTo-Json -Compress); Check 'steam current' ($r.value.stale -eq 0)
-$v = "$work\steam\userdata\1\config\shortcuts.vdf"; Check 'steam backup' (Test-Path "$v.before-switch2")
+$v = "$work\steam\userdata\1\config\shortcuts.vdf"; Check 'steam backup' (Test-Path "$v.before-forkbay")
 [IO.File]::WriteAllBytes($v, [byte[]](1, 2, 3)); $h = (Get-FileHash $v).Hash
 $r = App $rootA 'steam_save' @{ account = '1'; games = @($g) }; Check 'corrupt vdf refused' ((-not $r.ok) -and $h -eq (Get-FileHash $v).Hash)
 
@@ -115,7 +115,7 @@ Check 'no computer name' ($txt -notmatch [regex]::Escape($env:COMPUTERNAME))
 Check 'no email' ($txt -notmatch 'example\.com'); Check 'no ip' ($txt -notmatch '192\.168')
 Check 'no key line' ($txt -notmatch 'AABBCC'); Check 'no token' ($txt -notmatch 'abc123')
 Check 'no folder path' ($txt -notmatch [regex]::Escape($rootA))
-Check 'useful data kept' (($txt -match 'BCF5E512E7B0DF65') -and ($txt -match '0400486024DEC000') -and ($txt -match 'Switch 2 Manager \d'))
+Check 'useful data kept' (($txt -match 'BCF5E512E7B0DF65') -and ($txt -match '0400486024DEC000') -and ($txt -match 'Forkbay \d'))
 Check 'report file saved' (Test-Path "$rootA\Manager\bug-report.txt")
 $r = App $rootA 'report_collect' @{ game = ''; log = $false }; Check 'log can be left out' (($r.value.text -notmatch 'BCF5E512') )
 "-- data move"
@@ -125,6 +125,21 @@ Check 'config rewritten' ((Get-Content "$work\Moved\Data\config\qt-config.ini" -
 Check 'old copy kept' (Test-Path "$rootA\Data.old")
 
 [IO.File]::WriteAllText("$rootA\Roms\Pokemon Pokopia [0400A3A01EE4C000].nup", 'x'); [IO.File]::WriteAllText("$rootA\Roms\Fire Emblem Fortunes Weave [04007EF01F8AE000].nup", 'x'); [IO.File]::WriteAllText("$rootA\Roms\The Legend of Zelda Ocarina of Time [0400486024DEC000][v131072].nup", 'x'); [IO.File]::WriteAllText("$work\bad.txt", 'x')
+"-- journal"
+$r = App $rootA 'install_firmware' @{ path = "$work\empty.zip" }
+$logf = "$rootA\Manager\logs\forkbay.log"; Check 'error logged' ((Get-Content $logf -Raw) -match 'install_firmware')
+Check 'journal has no path' ((Get-Content $logf -Raw) -notmatch [regex]::Escape($env:USERPROFILE))
+$env:FORKBAY_SELFTEST = "$work\self.txt"; $null = App $rootA 'selftest_crash'; Remove-Item Env:\FORKBAY_SELFTEST
+$j = Get-Content $logf -Raw; Check 'crash logged' ($j -match 'CRASH test crash'); Check 'crash path cleaned' ($j -notmatch [regex]::Escape($rootA))
+$r = App $rootA 'report_collect' @{ game = ''; log = $false }; Check 'journal in report' ($r.value.text -match 'CRASH test crash')
+
+"-- steam tool shortcut"
+$vv = "$work\steam\userdata\2\config\shortcuts.vdf"; New-Item -ItemType Directory -Force (Split-Path $vv) | Out-Null
+$r = App $rootA 'steam_save' @{ account = '2'; games = @('Test Game [0400000000000000].nup'); tool = $true }; Check 'tool saved' $r.ok $r.error
+$r = App $rootA 'steam_load' @{ account = '2' }; Check 'tool found' $r.value.tool; Check 'game kept' (@($r.value.managed).Count -eq 1); Check 'tool not listed as game' (@($r.value.managed) -notcontains 'Forkbay')
+$tx = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($vv)); Check 'tool entry name' ($tx -match 'AppName\x00Forkbay'); Check 'fullscreen flag' ($tx -match '--fullscreen')
+$r = App $rootA 'steam_save' @{ account = '2'; games = @(); tool = $false }; $r = App $rootA 'steam_load' @{ account = '2' }; Check 'tool removed' (-not $r.value.tool)
+
 "-- covers"
 $r = App $rootA 'fetch_art'; Check 'no key, clear refusal' ((-not $r.ok) -and $r.error -match 'SteamGridDB') ($r | ConvertTo-Json -Compress)
 New-Item -ItemType Directory -Force "$rootA\Covers" | Out-Null; [IO.File]::WriteAllBytes("$rootA\Covers\Test Game-grid.png", [byte[]](137, 80, 78, 71))
@@ -133,18 +148,18 @@ $r = App $rootA 'state'; Check 'own image shown' (@($r.value.games | Where-Objec
 "-- languages"
 New-Item -ItemType Directory -Force "$rootA\Manager\locales" | Out-Null
 [IO.File]::WriteAllText("$rootA\Manager\locales\de.json", '{"name":"Deutsch","ui":{"Jeux":"Spiele"},"uiPatterns":[],"messages":[["^Choisis ton fichier prod\\.keys\\.$","Wahle deine prod.keys."]],"categories":{}}')
-function Lang([string]$code, [string]$cmd, $arg = @{}) { $env:S2M_ROOT = $rootA; $env:S2M_LANG = $code; $file = "$work\l.json"; if (Test-Path $file) { Remove-Item $file }; $json = ($arg | ConvertTo-Json -Compress).Replace('"', '\"'); Start-Process -FilePath $Bin -ArgumentList '--cli', $cmd, "`"$json`"", "`"$file`"" -Wait -NoNewWindow; Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json }
+function Lang([string]$code, [string]$cmd, $arg = @{}) { $env:FORKBAY_ROOT = $rootA; $env:FORKBAY_LANG = $code; $file = "$work\l.json"; if (Test-Path $file) { Remove-Item $file }; $json = ($arg | ConvertTo-Json -Compress).Replace('"', '\"'); Start-Process -FilePath $Bin -ArgumentList '--cli', $cmd, "`"$json`"", "`"$file`"" -Wait -NoNewWindow; Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json }
 $r = Lang 'de-DE' 'state'; Check 'dropped file detected' ($r.value.language -eq 'de'); Check 'listed' (@($r.value.languages | ForEach-Object code) -contains 'de')
 $r = Lang 'de-DE' 'install_keys' @{ path = "$work\bad.txt" }; Check 'translated message' ($r.error -match 'Wahle') ($r | ConvertTo-Json -Compress)
 $r = Lang 'de-DE' 'install_firmware' @{ path = "$work\empty.zip" }; Check 'missing text falls back to English' ($r.error -match 'not a firmware') ($r | ConvertTo-Json -Compress)
 $r = Lang 'ja-JP' 'state'; Check 'unknown language gives English' ($r.value.language -eq 'en')
 $r = Lang 'fr-CA' 'state'; Check 'french detected' ($r.value.language -eq 'fr')
 $r = Lang 'en-US' 'locale'; Check 'page locale' ($r.value.tables[0].ui.'Jeux' -eq 'Games')
-$env:S2M_LANG = 'fr'
+$env:FORKBAY_LANG = 'fr'
 "-- wichforks"
 $r = App $rootA 'compat'; Check 'guide read' $r.ok $r.error
 if ($r.ok) { "     maj $($r.value.updated), carte [$($r.value.gpu)], jeux $(@($r.value.games.PSObject.Properties).Count), catalogue $(@($r.value.catalogue).Count)"; $r.value.games.PSObject.Properties | ForEach-Object { $g = $_.Value; "     $($_.Name) => $($g.guideName): " + (($g.first | ForEach-Object name) -join ', ') + " | rapports $($g.reports)/$($g.reportsSameGpu)" }; $p = $r.value.games.'Pokemon Pokopia [0400A3A01EE4C000].nup'; Check 'pokopia found' ($p.first.Count -ge 1); $z = $r.value.games.'The Legend of Zelda Ocarina of Time [0400486024DEC000][v131072].nup'; Check 'zelda found' ($z.first.Count -ge 1); $f = $r.value.games.'Fire Emblem Fortunes Weave [04007EF01F8AE000].nup'; Check 'fire emblem found' ($f.first.Count -ge 1) }
-Remove-Item Env:\S2M_ROOT, Env:\S2M_SEARCH, Env:\S2M_STEAM -ErrorAction SilentlyContinue
+Remove-Item Env:\FORKBAY_ROOT, Env:\FORKBAY_SEARCH, Env:\FORKBAY_STEAM -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
 if ($script:fail) { 'RESULT: FAILED' } else { 'RESULT: all passed' }
 exit $script:fail

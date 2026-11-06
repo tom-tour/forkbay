@@ -8,7 +8,7 @@ use std::fs;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 
-const SYNC_FILE: &str = "switch2-sync.zip";
+const SYNC_FILE: &str = "forkbay-sync.zip";
 const GOOGLE_SCOPE: &str = "https://www.googleapis.com/auth/drive.file";
 
 #[derive(Clone)]
@@ -128,7 +128,7 @@ fn folder_dir(s: &Settings) -> Result<PathBuf> {
     if s.sync.folder_path.is_empty() { bail!("Aucun dossier de synchronisation choisi."); }
     let base = PathBuf::from(&s.sync.folder_path);
     if !base.is_dir() { bail!("Dossier de synchronisation introuvable : {}", base.display()); }
-    Ok(base.join("Switch2Sync"))
+    Ok(base.join("ForkbaySync"))
 }
 
 // --- Google Drive API ---
@@ -174,7 +174,7 @@ pub fn google_connect() -> Result<String> {
     let head = String::from_utf8_lossy(&buf[..n]).into_owned();
     let line = head.lines().next().unwrap_or("");
     let param = |k: &str| Regex::new(&format!(r"[?&]{k}=([^& ]+)")).unwrap().captures(line).map(|c| decode(&c[1]));
-    let page = "<html><body style='font-family:sans-serif;background:#12141c;color:#eee;padding:40px'><h2>Switch 2 Manager</h2><p>Tu peux fermer cet onglet et revenir à l'outil.</p></body></html>";
+    let page = "<html><body style='font-family:sans-serif;background:#12141c;color:#eee;padding:40px'><h2>Forkbay</h2><p>Tu peux fermer cet onglet et revenir à l'outil.</p></body></html>";
     let _ = write!(stream, "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{page}", page.len());
     if param("state").as_deref() != Some(state) { bail!("Réponse Google non reconnue : connexion refusée."); }
     let Some(code) = param("code") else { bail!("Connexion refusée par Google."); };
@@ -229,7 +229,7 @@ fn send_remote(s: &Settings, zip_path: &Path, hash: &str, date: u64) -> Result<(
         let existing = google_find(&token)?;
         let mut meta = json!({ "appProperties": { "hash": hash, "savedAt": saved, "machine": machine() } });
         if existing.is_none() { meta["name"] = json!(SYNC_FILE); }
-        let boundary = format!("switch2{}", &sha256_hex(hash.as_bytes())[..24]);
+        let boundary = format!("forkbay{}", &sha256_hex(hash.as_bytes())[..24]);
         let mut body = format!("--{boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n{meta}\r\n--{boundary}\r\nContent-Type: application/zip\r\n\r\n").into_bytes();
         body.extend(fs::read(zip_path)?);
         body.extend(format!("\r\n--{boundary}--\r\n").into_bytes());
@@ -337,7 +337,7 @@ fn local_offset() -> i64 {
 /// Conflict question: both dates, and the user chooses.
 pub fn ask_conflict(local: u64, remote: u64, machine: &str, can_cancel: bool) -> Choice {
     // Scripted answer for the automated tests.
-    match std::env::var("S2M_CONFLICT").as_deref() {
+    match std::env::var("FORKBAY_CONFLICT").as_deref() {
         Ok("local") => return Choice::Local,
         Ok("remote") => return Choice::Remote,
         Ok("cancel") => return Choice::Cancel,
@@ -347,7 +347,7 @@ pub fn ask_conflict(local: u64, remote: u64, machine: &str, can_cancel: bool) ->
     let (a, b, c) = (t("Garder la version locale"), t("Garder la version distante"), t("Annuler"));
     let text = t(&format!("Les deux versions ont changé depuis le dernier échange.\n\nVersion locale (ce PC) : {}\nVersion distante ({machine}) : {}\n\nCelle que tu ne gardes pas est remplacée. Si c'est la version locale, une copie reste dans Save Backups.", format_date(local), format_date(remote)));
     let buttons = if can_cancel { rfd::MessageButtons::YesNoCancelCustom(a.clone(), b.clone(), c) } else { rfd::MessageButtons::OkCancelCustom(a.clone(), b.clone()) };
-    let r = rfd::MessageDialog::new().set_title(t("Switch 2 Manager : conflit de sauvegarde")).set_description(text).set_level(rfd::MessageLevel::Warning).set_buttons(buttons).show();
+    let r = rfd::MessageDialog::new().set_title(t("Forkbay : conflit de sauvegarde")).set_description(text).set_level(rfd::MessageLevel::Warning).set_buttons(buttons).show();
     match r {
         rfd::MessageDialogResult::Custom(t) if t == a => Choice::Local,
         rfd::MessageDialogResult::Custom(t) if t == b => Choice::Remote,

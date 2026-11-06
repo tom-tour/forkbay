@@ -1,13 +1,13 @@
 [package]
-name = "switch-2-manager"
-version = "0.4.0"
+name = "forkbay"
+version = "0.5.0"
 edition = "2021"
-description = "One window for Switch 2 emulators: launch, update, share data, Steam and cloud saves"
+description = "Switch 2 emulator manager: launch, update, share data, Steam and cloud saves"
 license = "GPL-3.0-or-later"
-repository = "https://github.com/tom-tour/switch-2-manager"
+repository = "https://github.com/tom-tour/forkbay"
 
 [[bin]]
-name = "switch-2-manager"
+name = "forkbay"
 path = "src/main.rs"
 
 [dependencies]

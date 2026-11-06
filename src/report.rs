@@ -89,7 +89,7 @@ pub fn collect(game: &str, include_log: bool) -> Result<Value> {
     let data = data_path();
     let (os, cpu, gpu, ram) = system_info();
     let mut t = String::new();
-    t += &format!("Switch 2 Manager {}\nOS: {os}\nCPU: {cpu}\nGPU: {gpu}\nRAM: {ram}\nLanguage: {}\nData mode: {}\n", crate::update::version(), crate::i18n::current(), s.data_location);
+    t += &format!("Forkbay {}\nOS: {os}\nCPU: {cpu}\nGPU: {gpu}\nRAM: {ram}\nLanguage: {}\nData mode: {}\n", crate::update::version(), crate::i18n::current(), s.data_location);
     t += &format!("Keys present: {}\nFirmware files: {}\nCloud: {} ({})\n", has_keys(&data), firmware_count(&data), s.sync.enabled, s.sync.provider);
     t += "\nEmulators:\n";
     for e in crate::emu::list() {
@@ -112,6 +112,8 @@ pub fn collect(game: &str, include_log: bool) -> Result<Value> {
             _ => t += "\nEmulator log: empty or missing\n",
         }
     }
+    let journal = crate::log::tail(LOG_LINES);
+    t += &format!("\nForkbay journal:\n{}\n", if journal.trim().is_empty() { "empty" } else { journal.as_str() });
     let clean = sanitize(&t);
     let out = manager_dir().join("bug-report.txt");
     fs::create_dir_all(manager_dir())?;

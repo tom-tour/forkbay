@@ -10,7 +10,7 @@ try {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 } finally { Pop-Location }
 
-$exe = Join-Path $repo 'target\release\switch-2-manager.exe'
+$exe = Join-Path $repo 'target\release\forkbay.exe'
 $text = [Text.Encoding]::GetEncoding(28591).GetString([IO.File]::ReadAllBytes($exe))
 $found = 0
 foreach ($p in @([regex]::Escape($env:USERPROFILE), [regex]::Escape($repo), [regex]::Escape('\' + $env:USERNAME + '\'), '[A-Za-z]:\\Users\\', [regex]::Escape($env:COMPUTERNAME))) {
