@@ -20,6 +20,9 @@ for (const c of crates) {
   const dir = path.dirname(c.manifest_path);
   const files = fs.readdirSync(dir).filter(f => /^(licen[cs]e|copying|notice|unlicense)/i.test(f)).sort();
   let text = files.map(f => fs.readFileSync(path.join(dir, f), 'utf8').trim()).filter(t => !home.test(t)).join('\n\n---\n\n');
+  // Some crates publish their license only in their repository: see assets/notices.
+  const extra = `assets/notices/${c.name}.txt`;
+  if (fs.existsSync(extra)) text = [text, fs.readFileSync(extra, 'utf8').trim()].filter(Boolean).join('\n\n---\n\n');
   if (!text) { missing.push(c.name); text = `License: ${c.license}. See ${c.repository ?? 'the crate page on crates.io'}.`; }
   if (!groups.has(text)) groups.set(text, []);
   groups.get(text).push(`${c.name} ${c.version} (${c.license})`);

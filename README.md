@@ -26,7 +26,7 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **Cloud saves (optional):** syncs before and after each game, with a choice of version when both sides changed.
 - **Languages:** English and French, following your system language. [Adding one](locales/README.md) takes a single file.
 - **Updates of the tool itself** from GitHub releases, with an About page for the license and links.
-- **Themes:** dark by default, light, black, or your own colours.
+- **Themes:** a dark, light or black mode with a theme on top, gradients on or off, your own colours, and themes you can import and export.
 - **Controller support**, and a Steam shortcut to the tool itself, full screen.
 - **An error journal** that keeps out paths, names and secrets.
 
@@ -101,7 +101,7 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 - **Sauvegardes dans le cloud (facultatif) :** synchronise avant et après chaque partie, et te laisse choisir si les deux versions ont changé.
 - **Langues :** anglais et français, selon la langue de ton système. [En ajouter une](locales/README.md) demande un seul fichier.
 - **Mise à jour de l'outil lui-même** depuis les versions GitHub, avec une page À propos pour la licence et les liens.
-- **Thèmes :** sombre par défaut, clair, noir, ou tes propres couleurs.
+- **Thèmes :** un mode sombre, clair ou noir avec un thème par-dessus, dégradés activables, tes propres couleurs, et des thèmes à importer et exporter.
 - **Prise en charge de la manette**, et un raccourci Steam vers l'outil lui-même, en plein écran.
 - **Un journal d'erreurs** qui écarte les chemins, les noms et les secrets.
 

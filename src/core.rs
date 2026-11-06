@@ -29,6 +29,10 @@ pub struct Settings {
     pub auto_update_check: bool,
     pub terms_accepted: u32,
     pub custom_colors: BTreeMap<String, String>,
+    pub mode: String,
+    pub gradient: bool,
+    pub custom_surfaces: bool,
+    pub user_themes: Vec<serde_json::Value>,
     pub steam_grid_key: String,
     pub data_location: String,
     pub custom_data_path: String,
@@ -41,11 +45,15 @@ impl Default for Settings {
     fn default() -> Self {
         Settings {
             setup_done: false,
-            theme: "dark".into(),
+            theme: "aurora".into(),
             language: "auto".into(),
             auto_update_check: true,
             terms_accepted: 0,
             custom_colors: BTreeMap::new(),
+            mode: "dark".into(),
+            gradient: true,
+            custom_surfaces: false,
+            user_themes: vec![],
             steam_grid_key: String::new(),
             data_location: "portable".into(),
             custom_data_path: String::new(),
@@ -73,7 +81,20 @@ pub fn manager_dir() -> PathBuf {
 }
 
 pub fn load_settings() -> Settings {
-    fs::read_to_string(manager_dir().join("settings.json")).ok().and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default()
+    let path = manager_dir().join("settings.json");
+    let mut s: Settings = match fs::read_to_string(&path) {
+        // Text editors may add a byte order mark: it must not reset the settings.
+        Ok(t) => serde_json::from_str(t.trim_start_matches('\u{feff}')).unwrap_or_else(|e| {
+            // A damaged file is kept aside instead of being overwritten by the next save.
+            let _ = fs::copy(&path, path.with_extension("json.damaged"));
+            // Written directly: the normal journal reads the settings, which would loop here.
+            crate::log::raw("ERROR", &format!("settings.json unreadable: {e}"));
+            Settings::default()
+        }),
+        Err(_) => Settings::default(),
+    };
+    crate::theme::migrate(&mut s);
+    s
 }
 
 pub fn save_settings(s: &Settings) -> Result<()> {

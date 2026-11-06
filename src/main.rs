@@ -10,6 +10,7 @@ mod import;
 mod log;
 mod report;
 mod steam;
+mod theme;
 mod update;
 
 use crate::core::*;
@@ -47,7 +48,7 @@ fn state() -> Result<Value> {
     let games: Vec<Value> = rom_files().iter().map(|f| json!({ "file": f, "name": display_name(f), "emu": game_emulator(&s, f), "cover": art::cover_uri(f) })).collect();
     let emus: Vec<Value> = emu::list().iter().map(|e| json!({ "name": e.name, "present": emu::find_exe(&root().join(&e.name)).is_some() })).collect();
     Ok(json!({
-        "setupDone": s.setup_done, "theme": s.theme, "customColors": s.custom_colors, "fullscreen": FULLSCREEN.load(std::sync::atomic::Ordering::Relaxed), "padTest": std::env::var("FORKBAY_PADTEST").unwrap_or_default(), "language": i18n::current(), "languageSetting": s.language, "languages": i18n::languages(), "termsAccepted": s.terms_accepted >= 1, "autoUpdateCheck": s.auto_update_check, "version": update::version(),
+        "setupDone": s.setup_done, "theme": s.theme, "mode": s.mode, "gradient": s.gradient, "customSurfaces": s.custom_surfaces, "userThemes": s.user_themes, "customColors": s.custom_colors, "fullscreen": FULLSCREEN.load(std::sync::atomic::Ordering::Relaxed), "padTest": std::env::var("FORKBAY_PADTEST").unwrap_or_default(), "language": i18n::current(), "languageSetting": s.language, "languages": i18n::languages(), "termsAccepted": s.terms_accepted >= 1, "autoUpdateCheck": s.auto_update_check, "version": update::version(),
         "dataLocation": s.data_location, "customDataPath": s.custom_data_path,
         "defaultEmulator": s.default_emulator, "dataPath": data.to_string_lossy(), "games": games, "emulators": emus,
         "keys": has_keys(&data), "firmware": firmware_count(&data),
@@ -119,16 +120,17 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
         "emu_remove" => msg(emu::remove(&s_arg(a, "name"))?),
         "set_game_emu" => { let mut s = load_settings(); s.games.insert(s_arg(a, "file"), s_arg(a, "emu")); save_settings(&s)?; json!({}) }
         "set_default_emu" => { let mut s = load_settings(); s.default_emulator = s_arg(a, "emu"); save_settings(&s)?; json!({}) }
-        "set_theme" => {
-            let mut s = load_settings();
-            s.theme = s_arg(a, "theme");
-            if let Some(c) = a["custom"].as_object() {
-                let hex = regex::Regex::new("^#[0-9a-fA-F]{6}$").unwrap();
-                s.custom_colors = c.iter().filter_map(|(k, v)| v.as_str().filter(|x| hex.is_match(x)).map(|x| (k.clone(), x.to_string()))).collect();
-            }
-            save_settings(&s)?;
-            json!({})
+        "set_theme" => { theme::set(a)?; json!({}) }
+        "theme_import" => {
+            let p = if a["path"].is_string() { Some(PathBuf::from(s_arg(a, "path"))) } else { rfd::FileDialog::new().add_filter("Forkbay", &["json"]).pick_file() };
+            match p { Some(p) => json!({ "theme": theme::import(&p)? }), None => json!({}) }
         }
+        "theme_export" => {
+            let safe: String = a["theme"]["name"].as_str().unwrap_or("theme").chars().filter(|c| c.is_alphanumeric() || " _-".contains(*c)).collect();
+            let p = if a["path"].is_string() { Some(PathBuf::from(s_arg(a, "path"))) } else { rfd::FileDialog::new().add_filter("Forkbay", &["json"]).set_file_name(format!("{safe}.forkbay-theme.json")).save_file() };
+            match p { Some(p) => msg(theme::export(&p, &a["theme"])?), None => json!({}) }
+        }
+        "theme_remove" => { theme::remove(&s_arg(a, "name"))?; json!({}) }
         "log_js" => { log::error(&format!("page: {}", s_arg(a, "text"))); json!({}) }
         "log_open" => { let p = log::path(); std::fs::create_dir_all(p.parent().unwrap())?; if !p.exists() { std::fs::write(&p, "")?; } open_external(&p.to_string_lossy()); json!({}) }
         "selftest" => { if let Ok(f) = std::env::var("FORKBAY_SELFTEST") { std::fs::write(f, s_arg(a, "text"))?; } json!({}) }

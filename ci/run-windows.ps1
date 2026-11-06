@@ -140,6 +140,20 @@ $r = App $rootA 'steam_load' @{ account = '2' }; Check 'tool found' $r.value.too
 $tx = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($vv)); Check 'tool entry name' ($tx -match 'AppName\x00Forkbay'); Check 'fullscreen flag' ($tx -match '--fullscreen')
 $r = App $rootA 'steam_save' @{ account = '2'; games = @(); tool = $false }; $r = App $rootA 'steam_load' @{ account = '2' }; Check 'tool removed' (-not $r.value.tool)
 
+"-- themes"
+$good = "$work\good.json"; [IO.File]::WriteAllText($good, '{"forkbayTheme":1,"name":"Lava <b>","a":"#ff0000","b":"#ffaa00","gradient":false,"evil":"x"}')
+$r = App $rootA 'theme_import' @{ path = $good }; Check 'theme imported' ($r.value.theme.name -eq 'Lava b') ($r | ConvertTo-Json -Compress); Check 'unknown field dropped' ($null -eq $r.value.theme.evil)
+$r = App $rootA 'state'; Check 'theme active' ($r.value.theme -eq 'user:Lava b'); Check 'theme listed' (@($r.value.userThemes).Count -eq 1)
+foreach ($bad in '{"forkbayTheme":1,"name":"X","a":"red;}body{","b":"#000000"}', '{"forkbayTheme":1,"name":"X","a":"#000000","b":"url(evil)"}', '{"name":"X","a":"#000000","b":"#000000"}', 'not json', '{"forkbayTheme":1,"name":"","a":"#000000","b":"#000000"}', '{"forkbayTheme":1,"name":"X","a":"#000000","b":"#000000","bg":"expression(1)","card":"#000000","text":"#000000"}') { $b = "$work\bad.json"; [IO.File]::WriteAllText($b, $bad); $r = App $rootA 'theme_import' @{ path = $b }; Check "bad theme refused" (-not $r.ok) $bad }
+[IO.File]::WriteAllText("$work\big.json", ('x' * 20000)); $r = App $rootA 'theme_import' @{ path = "$work\big.json" }; Check 'huge file refused' (-not $r.ok)
+$out = "$work\out.json"; $r = App $rootA 'theme_export' @{ path = $out; theme = @{ name = 'Sortie'; a = '#112233'; b = '#445566'; gradient = $true; bg = '#000000'; card = '#111111'; text = '#eeeeee' } }; Check 'theme exported' $r.ok $r.error; $j = Get-Content $out -Raw | ConvertFrom-Json; Check 'export content' (($j.a -eq '#112233') -and ($j.text -eq '#eeeeee') -and ($j.forkbayTheme -eq 1))
+$r = App $rootA 'theme_import' @{ path = $out }; Check 'export can be imported' ($r.value.theme.name -eq 'Sortie')
+$r = App $rootA 'theme_remove' @{ name = 'Sortie' }; $r = App $rootA 'state'; Check 'theme removed' (@($r.value.userThemes).Count -eq 1); Check 'falls back to preset' ($r.value.theme -eq 'aurora')
+$cfg = "$rootA\Manager\settings.json"; $c = Get-Content $cfg -Raw | ConvertFrom-Json; $c.theme = 'light'; $c | ConvertTo-Json -Depth 6 | Set-Content $cfg -Encoding UTF8; $r = App $rootA 'state'; Check 'old setting migrated' (($r.value.mode -eq 'light') -and ($r.value.theme -eq 'aurora')) ($r.value | Select-Object mode, theme | ConvertTo-Json -Compress)
+
+[IO.File]::WriteAllText($cfg, 'not json at all'); $r = App $rootA 'state'; Check 'damaged settings kept aside' (Test-Path "$cfg.damaged".Replace('.json.damaged','.json.damaged')) ; Check 'damaged settings logged' ((Get-Content "$rootA\Manager\logs\forkbay.log" -Raw) -match 'settings.json unreadable')
+[IO.File]::WriteAllText($cfg, '{"setupDone":true}')
+
 "-- covers"
 $r = App $rootA 'fetch_art'; Check 'no key, clear refusal' ((-not $r.ok) -and $r.error -match 'SteamGridDB') ($r | ConvertTo-Json -Compress)
 New-Item -ItemType Directory -Force "$rootA\Covers" | Out-Null; [IO.File]::WriteAllBytes("$rootA\Covers\Test Game-grid.png", [byte[]](137, 80, 78, 71))

@@ -228,12 +228,28 @@
   "Panneaux": "Panels",
   "Texte": "Text",
   "Accent": "Accent",
-  "Réinitialiser": "Reset",
   "Quitter Forkbay": "Quit Forkbay",
   "Forkbay lui-même": "Forkbay itself",
   "Un raccourci de l'outil dans Steam, en plein écran, pratique à la manette.": "A shortcut to the tool in Steam, full screen, handy with a controller.",
   "Le journal d'erreurs de Forkbay est toujours inclus, nettoyé lui aussi.": "Forkbay's error journal is always included, cleaned as well.",
-  "Ouvrir le journal": "Open the journal"
+  "Ouvrir le journal": "Open the journal",
+  "Mode": "Mode",
+  "Thème": "Theme",
+  "Aurore": "Aurora",
+  "Océan": "Ocean",
+  "Couchant": "Sunset",
+  "Forêt": "Forest",
+  "Rubis": "Ruby",
+  "Graphite": "Graphite",
+  "Dégradés": "Gradients",
+  "Accent 2": "Accent 2",
+  "Remplacer aussi le fond et le texte du mode": "Also replace the mode's background and text",
+  "Nom du thème": "Theme name",
+  "Mon thème": "My theme",
+  "Importer un thème": "Import a theme",
+  "Exporter ce thème": "Export this theme",
+  "Retirer ce thème": "Remove this theme",
+  "Thème importé.": "Theme imported."
  },
  "uiPatterns": [
   [
@@ -713,6 +729,22 @@
   [
    "(?s)^Les deux versions ont changé depuis le dernier échange\\.\\n\\nVersion locale \\(ce PC\\) : (.*)\\nVersion distante \\((.*)\\) : (.*)\\n\\nCelle que tu ne gardes pas.*$",
    "Both versions changed since the last exchange.\n\nLocal version (this PC): $1\nRemote version ($2): $3\n\nThe one you do not keep is replaced. If it is the local version, a copy stays in Save Backups."
+  ],
+  [
+   "^Ce thème n'a pas de nom valide\\.$",
+   "This theme has no valid name."
+  ],
+  [
+   "^Ce fichier ne contient pas de couleurs valides\\.$",
+   "This file contains no valid colours."
+  ],
+  [
+   "^Ce fichier ne ressemble pas à un thème Forkbay\\.$",
+   "This file does not look like a Forkbay theme."
+  ],
+  [
+   "^Thème exporté : (.+)$",
+   "Theme exported: $1"
   ]
  ],
  "categories": {

@@ -25,6 +25,16 @@ fn stamp() -> String {
     format!("{y}-{m:02}-{d:02} {:02}:{:02}:{:02} UTC", rem / 3600, rem % 3600 / 60, rem % 60)
 }
 
+/// Writes without cleaning, for messages known to hold no path or name.
+pub fn raw(level: &str, message: &str) {
+    let file = path();
+    let Some(dir) = file.parent() else { return };
+    if fs::create_dir_all(dir).is_err() { return; }
+    if let Ok(mut f) = fs::OpenOptions::new().create(true).append(true).open(&file) {
+        let _ = writeln!(f, "{} {level} {message}", stamp());
+    }
+}
+
 pub fn write(level: &str, message: &str) {
     let file = path();
     let Some(dir) = file.parent() else { return };
