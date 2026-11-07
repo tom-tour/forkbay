@@ -47,6 +47,7 @@ pub struct Settings {
     pub art_kinds: Vec<String>,
     pub art_source: String,
     pub art_replace: bool,
+    pub art_disabled: Vec<String>,
 }
 
 impl Default for Settings {
@@ -76,6 +77,7 @@ impl Default for Settings {
             art_kinds: ["grid", "wide", "hero", "logo", "icon"].map(String::from).to_vec(),
             art_source: "all".into(),
             art_replace: false,
+            art_disabled: vec![],
         }
     }
 }

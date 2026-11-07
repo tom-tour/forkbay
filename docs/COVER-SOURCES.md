@@ -10,7 +10,7 @@ A source is a small text file that describes where to look. It contains no code.
 
 ## Adding a source
 
-Open **Settings**, then **Image sources**, and put a `.json` file in that folder.
+Open **Settings**, then **Image sources**, and click **Add a source** to choose a `.json` file. You can also put the file in the folder that **Open folder** shows. Each source can be turned on or off there, SteamGridDB included.
 
 ### A site with one address per game
 
@@ -65,7 +65,7 @@ Une source est un petit fichier texte qui indique où chercher. Elle ne contient
 
 ## Ajouter une source
 
-Ouvre **Réglages**, puis **Sources d'images**, et place un fichier `.json` dans ce dossier.
+Ouvre **Réglages**, puis **Sources d'images**, et clique sur **Ajouter une source** pour choisir un fichier `.json`. Tu peux aussi placer le fichier dans le dossier qu'ouvre **Ouvrir le dossier**. Chaque source s'y active ou se désactive, SteamGridDB compris.
 
 ### Un site avec une adresse par jeu
 

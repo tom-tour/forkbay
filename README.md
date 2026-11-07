@@ -22,8 +22,8 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **Automatic copies:** saves, profile and settings are copied before you play and before an emulator changes version, with or without the cloud. You can restore them from **Settings**.
 - **Your own emulators:** add one from a GitHub repository or from a local program.
 - **Steam:** adds games to your library and leaves your other shortcuts alone.
-- **Covers (optional):** see all of a game's images, choose or drag new ones, or download only the types you want from SteamGridDB with your free key or from [your own image sources](docs/COVER-SOURCES.md).
-- **Console and picture settings:** game language, region, handheld or TV mode, resolution, vertical sync, speed limit, graphics engine and volume, for all your emulators.
+- **Game details:** the gear on a cover opens the game's settings and images.
+- **Console and picture settings:** game language, region, handheld or TV mode, resolution, vertical sync, speed limit, graphics engine and volume, on the **Emulators** page for all your games, or for one game only from its details.
 - **Running games:** a game in progress shows as running, with a button to close it.
 - **Per-game suggestions:** the [wichforks](https://github.com/riyadhHDA/wichforks) community guide, filtered by your graphics card. You choose; nothing changes on its own.
 - **Cloud saves (optional):** syncs before and after each play session, with a choice of version when both sides changed.
@@ -120,8 +120,8 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 - **Copies automatiques :** les sauvegardes, le profil et les réglages sont copiés avant de jouer et avant qu'un émulateur change de version, avec ou sans cloud. Tu peux les restaurer depuis **Réglages**.
 - **Tes propres émulateurs :** ajoutes-en un depuis un dépôt GitHub ou depuis un programme local.
 - **Steam :** ajoute les jeux à ta bibliothèque sans toucher à tes autres raccourcis.
-- **Jaquettes (facultatives) :** vois toutes les images d'un jeu, choisis ou glisse-en de nouvelles, ou télécharge seulement les types voulus depuis SteamGridDB avec ta clé gratuite ou depuis [tes propres sources d'images](docs/COVER-SOURCES.md).
-- **Réglages de console et d'image :** langue des jeux, région, mode portable ou TV, résolution, synchronisation verticale, limite de vitesse, moteur graphique et volume, pour tous tes émulateurs.
+- **Fiche du jeu :** l'engrenage sur une jaquette ouvre les réglages et les images du jeu.
+- **Réglages de console et d'image :** langue des jeux, région, mode portable ou TV, résolution, synchronisation verticale, limite de vitesse, moteur graphique et volume, dans la page **Émulateurs** pour tous tes jeux, ou pour un seul jeu depuis sa fiche.
 - **Jeux en cours :** un jeu lancé est indiqué comme en cours, avec un bouton pour le fermer.
 - **Conseils par jeu :** le guide communautaire [wichforks](https://github.com/riyadhHDA/wichforks), filtré selon ta carte graphique. C'est toi qui choisis, rien ne change tout seul.
 - **Sauvegardes dans le cloud (facultatives) :** synchronise avant et après chaque partie, et te laisse choisir si les deux versions ont changé.

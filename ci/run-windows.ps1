@@ -260,6 +260,26 @@ $r = App $rootG 'state'; Check 'sources offered' (@($r.value.artSources) -contai
 $r = App $rootG 'fetch_art' @{ kinds = @('wide'); source = 'Unknown' }; Check 'unknown source refused' (-not $r.ok)
 $r = App $rootG 'fetch_art' @{ kinds = @('wide'); source = 'Source A'; replace = $true; file = $g }; $r2 = App $rootG 'state'; Check 'choices remembered' ($r.ok -and @($r2.value.artChoice.kinds) -join ',' -eq 'wide' -and $r2.value.artChoice.source -eq 'Source A' -and $r2.value.artChoice.replace) ($r | ConvertTo-Json -Compress)
 Check 'chosen images only, existing image kept' (Test-Path -LiteralPath "$rootG\Covers\Run Game-grid.png")
+"-- settings of one game"
+$gi = "$rootG\Data\config\custom\0400000000000002.ini"
+$r = App $rootG 'game_settings_get' @{ file = $g }; Check 'game follows the common settings at first' ($r.ok -and $null -eq $r.value.own.use_docked_mode -and $r.value.common.language_index -eq 2) ($r | ConvertTo-Json -Compress -Depth 4)
+$r = App $rootG 'game_settings_set' @{ file = $g; key = 'use_docked_mode'; value = 1 }; $t = [IO.File]::ReadAllText($gi); Check 'game setting written where the emulators read it' ($r.ok -and $t.Contains("use_docked_mode\use_global=false`r`nuse_docked_mode\default=false`r`nuse_docked_mode=1`r`n")) $t
+$r = App $rootG 'game_settings_set' @{ file = $g; key = 'speed'; value = 0 }; $r = App $rootG 'game_settings_get' @{ file = $g }; Check 'own values read back' ($r.value.own.use_docked_mode -eq 1 -and $r.value.own.speed -eq 0 -and $null -eq $r.value.own.volume) ($r | ConvertTo-Json -Compress -Depth 4)
+$r = App $rootG 'state'; Check 'game marked as having its own settings' (@($r.value.games | Where-Object { $_.file -eq $g -and $_.own }).Count -eq 1)
+$r = App $rootG 'custom_games'; Check 'listed with its settings' (@($r.value).Count -eq 1 -and (@($r.value[0].own) -join ',') -eq 'use_docked_mode,speed') ($r | ConvertTo-Json -Compress -Depth 4)
+$r = App $rootG 'game_settings_set' @{ file = $g; key = 'use_docked_mode'; value = $null }; $t = [IO.File]::ReadAllText($gi); Check 'game follows the common setting again' ($r.ok -and $t.Contains("use_docked_mode\use_global=true") -and -not $t.Contains('use_docked_mode=1')) $t
+$r = App $rootG 'game_settings_set' @{ file = $g; key = 'language_index'; value = 99 }; Check 'game value out of range refused' (-not $r.ok)
+[IO.File]::WriteAllText("$rootG\Roms\No Id Game.nup", 'x'); $r = App $rootG 'game_settings_get' @{ file = 'No Id Game.nup' }; Check 'game without id explained' ((-not $r.ok) -and $r.error -match '0100000000010000')
+$r = App $rootG 'game_settings_set' @{ file = '..\x [0400000000000009].nup'; key = 'volume'; value = 10 }; Check 'unknown game refused for settings' (-not $r.ok)
+"-- image sources"
+$r = App $rootG 'art_sources'; Check 'sources listed with SteamGridDB' ((@($r.value).name -join ',') -eq 'Source A,SteamGridDB' -and -not $r.value[1].ok) ($r | ConvertTo-Json -Compress)
+$r = App $rootG 'art_source_enable' @{ name = 'Source A'; enabled = $false }; $r2 = App $rootG 'state'; Check 'source turned off' ($r.ok -and @($r2.value.artSources).Count -eq 0)
+$r = App $rootG 'fetch_art' @{ kinds = @('wide') }; Check 'no active source, clear refusal' ((-not $r.ok) -and $r.error -match 'SteamGridDB')
+App $rootG 'art_source_enable' @{ name = 'Source A'; enabled = $true } | Out-Null; $r = App $rootG 'state'; Check 'source turned on again' (@($r.value.artSources) -contains 'Source A')
+[IO.File]::WriteAllText("$work\new-source.json", '{"name":"Source B","direct":{"icon":"https://example.com/{id}.png"}}'); $r = App $rootG 'art_source_add' @{ path = "$work\new-source.json" }; Check 'source added' ($r.ok -and (Test-Path "$sd\Source B.json")) ($r | ConvertTo-Json -Compress)
+$r = App $rootG 'art_source_add' @{ path = "$work\new-source.json" }; Check 'same name refused' (-not $r.ok)
+[IO.File]::WriteAllText("$work\bad-source.json", '{"name":"Bad"}'); $r = App $rootG 'art_source_add' @{ path = "$work\bad-source.json" }; Check 'unusable source refused' ((-not $r.ok) -and -not (Test-Path "$sd\Bad.json"))
+$r = App $rootG 'grid_key_test' @{ key = '' }; Check 'key test without a key refused' (-not $r.ok)
 "-- first start"
 Remove-Item Env:\FORKBAY_ROOT; $env:FORKBAY_INSTALLTEST = '1'; $env:FORKBAY_SHORTCUT_DIR = "$work\links"
 $dl = "$work\Downloads"; New-Item -ItemType Directory -Force $dl | Out-Null; Copy-Item $Bin "$dl\forkbay-windows-x86_64.exe"

@@ -384,7 +384,56 @@
   "Sans bordure": "Borderless",
   "Exclusif": "Exclusive",
   "Aucune": "None",
-  "Fermer": "Close"
+  "Fermer": "Close",
+  "Fiche du jeu": "Game details",
+  "Installés": "Installed",
+  "Réglages des jeux": "Game settings",
+  "Pour tous tes jeux, quel que soit l'émulateur : ils partagent le même dossier de données. Un jeu peut avoir ses propres réglages, depuis l'engrenage sur sa jaquette. Ferme l'émulateur avant de changer un réglage.": "For all your games, whatever the emulator: they share the same data folder. A game can have its own settings, from the gear on its cover. Close the emulator before changing a setting.",
+  "Émulateur :": "Emulator:",
+  "Le nom du fichier de ce jeu ne contient pas son identifiant, comme [0100000000010000] : Forkbay ne sait pas où l'émulateur range ses réglages. Change-les directement dans l'émulateur.": "This game's file name does not contain its ID, such as [0100000000010000], so Forkbay does not know where the emulator keeps its settings. Change them in the emulator itself.",
+  "Télécharger des images pour ce jeu": "Download images for this game",
+  "Comme partout": "Common",
+  "Comme partout :": "Common:",
+  "Propre au jeu": "This game only",
+  "Propre à ce jeu": "Set for this game",
+  "Réglages communs à tous les jeux": "Settings common to all games",
+  "Ferme l'émulateur avant de changer un réglage.": "Close the emulator before changing a setting.",
+  "Ce jeu suit de nouveau le réglage commun.": "This game follows the common setting again.",
+  "Réglage du jeu enregistré.": "Game setting saved.",
+  "Retour aux images": "Back to images",
+  "Images de tous les jeux": "Images for all games",
+  "Aucune source active pour l'instant : ajoute ta clé SteamGridDB gratuite ou une source, juste en dessous.": "No active source yet: add your free SteamGridDB key or a source, just below.",
+  "Active": "On",
+  "Clé enregistrée": "Key saved",
+  "Pas de clé": "No key",
+  "Des images faites par la communauté. Il faut une clé gratuite, liée à ton compte SteamGridDB.": "Images made by the community. It needs a free key, tied to your SteamGridDB account.",
+  "Nouvelle clé": "New key",
+  "Colle ta clé ici": "Paste your key here",
+  "Tester": "Test",
+  "Obtenir une clé gratuite": "Get a free key",
+  "Retirer la clé": "Remove the key",
+  "Confirmer le retrait de la clé": "Confirm removing the key",
+  "Clé retirée.": "Key removed.",
+  "Illisible :": "Unreadable:",
+  "Ajouter une source": "Add a source",
+  "Comment écrire une source": "How to write a source",
+  "Avec « Toutes », Forkbay essaie tes sources dans l'ordre, puis SteamGridDB. Pour retirer une source, désactive-la ou supprime son fichier dans le dossier.": "With “All”, Forkbay tries your sources in order, then SteamGridDB. To remove a source, turn it off or delete its file in the folder.",
+  "Test de la clé...": "Testing the key...",
+  "Colle d'abord ta clé SteamGridDB.": "Paste your SteamGridDB key first.",
+  "Système": "System",
+  "Image": "Display",
+  "Performances": "Performance",
+  "Son": "Sound",
+  "Seulement si le jeu contient cette langue.": "Only if the game includes this language.",
+  "Certains jeux demandent aussi la bonne région.": "Some games also need the right region.",
+  "FIFO évite les déchirures d'image.": "FIFO prevents screen tearing.",
+  "Jeux qui ont leurs propres réglages": "Games with their own settings",
+  "Voir la fiche": "Open details",
+  "Aucun pour l'instant. Ouvre un jeu avec l'engrenage sur sa jaquette pour lui donner ses propres réglages.": "None yet. Open a game with the gear on its cover to give it its own settings.",
+  "Images des jeux": "Game images",
+  "Tes sources d'images, dont SteamGridDB, et le dossier où sont rangées les images.": "Your image sources, SteamGridDB included, and the folder where images are kept.",
+  "Langue, région, mode TV, résolution et le reste sont dans la page Émulateurs.": "Language, region, TV mode, resolution and the rest are on the Emulators page.",
+  "Cartes trouvées :": "Cards found:"
  },
  "uiPatterns": [
   [
@@ -470,6 +519,14 @@
    {
     ", copie hors ligne": ", offline copy"
    }
+  ],
+  [
+   "^L'émulateur garde aussi (\\d+) autre\\(s\\) réglage\\(s\\) propre\\(s\\) à ce jeu : change-les dans l'émulateur\\.$",
+   "The emulator also keeps $1 other setting(s) for this game: change them in the emulator."
+  ],
+  [
+   "^\\+(\\d+) dans l'émulateur$",
+   "+$1 in the emulator"
   ]
  ],
  "messages": [
@@ -1020,6 +1077,58 @@
   [
    "^Somme de contrôle absente : mise à jour refusée\\.$",
    "No checksum available: update rejected."
+  ],
+  [
+   "^Le nom du fichier de ce jeu ne contient pas son identifiant, comme \\[0100000000010000\\] : Forkbay ne sait pas où l'émulateur range ses réglages\\.$",
+   "This game's file name does not contain its ID, such as [0100000000010000], so Forkbay does not know where the emulator keeps its settings."
+  ],
+  [
+   "^Ce fichier ne contient ni « url » ni « direct »\\.$",
+   "This file contains neither “url” nor “direct”."
+  ],
+  [
+   "^Aucune source active : ajoute ta clé SteamGridDB ou une source, dans Sources d'images\\.$",
+   "No active source: add your SteamGridDB key or a source, in Image sources."
+  ],
+  [
+   "^Cette source n'existe plus ou est désactivée\\.$",
+   "This source no longer exists or is turned off."
+  ],
+  [
+   "^Ce fichier est trop lourd pour une source d'images\\.$",
+   "This file is too large for an image source."
+  ],
+  [
+   "^Cette source ne peut pas être lue : (.+)$",
+   "This source cannot be read: $1"
+  ],
+  [
+   "^Une source porte déjà ce nom : (.+)$",
+   "A source already has this name: $1"
+  ],
+  [
+   "^Source ajoutée : (.+)$",
+   "Source added: $1"
+  ],
+  [
+   "^Colle d'abord ta clé SteamGridDB\\.$",
+   "Paste your SteamGridDB key first."
+  ],
+  [
+   "^La clé fonctionne\\.$",
+   "The key works."
+  ],
+  [
+   "^SteamGridDB refuse cette clé\\.$",
+   "SteamGridDB refuses this key."
+  ],
+  [
+   "^SteamGridDB est injoignable : (.+)$",
+   "SteamGridDB cannot be reached: $1"
+  ],
+  [
+   "^Choisis une source d'images$",
+   "Choose an image source"
   ]
  ],
  "categories": {

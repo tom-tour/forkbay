@@ -49,7 +49,7 @@ fn s_arg(a: &Value, k: &str) -> String {
 fn state() -> Result<Value> {
     let s = load_settings();
     let data = data_path();
-    let games: Vec<Value> = rom_files().iter().map(|f| json!({ "file": f, "name": display_name(f), "emu": game_emulator(&s, f), "cover": art::cover_uri(f) })).collect();
+    let games: Vec<Value> = rom_files().iter().map(|f| json!({ "file": f, "name": display_name(f), "emu": game_emulator(&s, f), "cover": art::cover_uri(f), "own": config::has_own(f), "hasId": config::game_id(f).is_some() })).collect();
     let emus: Vec<Value> = emu::list().iter().map(|e| json!({ "name": e.name, "present": emu::find_exe(&root().join(&e.name)).is_some() })).collect();
     Ok(json!({
         "setupDone": s.setup_done, "theme": s.theme, "mode": s.mode, "gradient": s.gradient, "customSurfaces": s.custom_surfaces, "userThemes": s.user_themes, "customColors": s.custom_colors, "fullscreen": FULLSCREEN.load(std::sync::atomic::Ordering::Relaxed), "padTest": std::env::var("FORKBAY_PADTEST").unwrap_or_default(), "secTest": std::env::var("FORKBAY_SECTEST").is_ok(), "uiTest": std::env::var("FORKBAY_UITEST").unwrap_or_default(), "installPrompt": install::needed(), "fullscreenGames": s.fullscreen_games, "gameDirs": s.game_dirs, "coverSources": art::source_names(), "artSources": art::offered(&s), "artChoice": { "kinds": s.art_kinds, "source": s.art_source, "replace": s.art_replace }, "language": i18n::current(), "languageSetting": s.language, "languages": i18n::languages(), "termsAccepted": s.terms_accepted >= 1, "autoUpdateCheck": s.auto_update_check, "version": update::version(),
@@ -177,6 +177,21 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
         "remove_image" => { art::remove_image(&s_arg(a, "file"), &s_arg(a, "kind"))?; json!({}) }
         "emu_settings_get" => config::get(),
         "emu_settings_set" => { config::set(&s_arg(a, "key"), a["value"].as_u64().ok_or_else(|| anyhow!("Valeur refusée."))?)?; json!({}) }
+        "game_settings_get" => config::game_get(&s_arg(a, "file"))?,
+        "game_settings_set" => {
+            let value = if a["value"].is_null() { None } else { Some(a["value"].as_u64().ok_or_else(|| anyhow!("Valeur refusée."))?) };
+            config::game_set(&s_arg(a, "file"), &s_arg(a, "key"), value)?;
+            json!({})
+        }
+        "custom_games" => config::custom_games(),
+        "art_sources" => art::source_list(&load_settings()),
+        "art_source_enable" => { art::set_enabled(&s_arg(a, "name"), a["enabled"].as_bool().unwrap_or(true))?; json!({}) }
+        "art_source_add" => {
+            let p = if a["path"].is_string() { Some(PathBuf::from(s_arg(a, "path"))) } else { rfd::FileDialog::new().set_title(i18n::t("Choisis une source d'images")).add_filter("JSON", &["json"]).pick_file() };
+            match p { Some(p) => msg(art::add_source(&p)?), None => json!({}) }
+        }
+        "grid_key_test" => msg(art::test_key(&s_arg(a, "key"))?),
+        "grid_key_remove" => { let mut s = load_settings(); s.steam_grid_key.clear(); save_settings(&s)?; json!({}) }
         "game_session" => json!({ "session": emu::session(), "other": a["other"].as_bool().unwrap_or(false).then(emu::any_running) }),
         "game_close" => msg(emu::close(a["force"].as_bool().unwrap_or(false))?),
         "set_image" => { art::set_image(&s_arg(a, "file"), &s_arg(a, "kind"), Path::new(&s_arg(a, "path")))?; json!({}) }

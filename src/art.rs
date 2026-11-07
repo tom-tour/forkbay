@@ -149,17 +149,29 @@ struct Source {
     direct: BTreeMap<String, String>,
 }
 
+fn read_source(f: &Path) -> Result<Source> {
+    let name = f.file_stem().unwrap_or_default().to_string_lossy().to_string();
+    let text = fs::read_to_string(f)?;
+    let mut s: Source = serde_json::from_str(text.trim_start_matches('\u{feff}'))?;
+    if s.url.is_empty() && s.direct.is_empty() { bail!("Ce fichier ne contient ni « url » ni « direct »."); }
+    if s.name.is_empty() { s.name = name; }
+    Ok(s)
+}
+
+fn source_files() -> Vec<PathBuf> {
+    let Ok(rd) = fs::read_dir(sources_dir()) else { return vec![] };
+    let mut files: Vec<PathBuf> = rd.flatten().map(|e| e.path()).filter(|p| p.extension().is_some_and(|x| x == "json")).collect();
+    files.sort();
+    files
+}
+
 /// Readable sources, and the names of the files that could not be read.
 fn sources() -> (Vec<Source>, Vec<String>) {
     let (mut good, mut bad) = (vec![], vec![]);
-    let Ok(rd) = fs::read_dir(sources_dir()) else { return (good, bad) };
-    let mut files: Vec<PathBuf> = rd.flatten().map(|e| e.path()).filter(|p| p.extension().is_some_and(|x| x == "json")).collect();
-    files.sort();
-    for f in files {
+    for f in source_files() {
         let name = f.file_stem().unwrap_or_default().to_string_lossy().to_string();
-        match fs::read_to_string(&f).map_err(anyhow::Error::from).and_then(|t| Ok(serde_json::from_str::<Source>(t.trim_start_matches('\u{feff}'))?)) {
-            Ok(mut s) if !s.url.is_empty() || !s.direct.is_empty() => { if s.name.is_empty() { s.name = name; } good.push(s); }
-            Ok(_) => { crate::log::error(&format!("image source {name}: no url or direct")); bad.push(name); }
+        match read_source(&f) {
+            Ok(s) => good.push(s),
             Err(e) => { crate::log::error(&format!("image source {name}: {e}")); bad.push(name); }
         }
     }
@@ -172,11 +184,59 @@ pub fn source_names() -> Vec<String> {
 
 const STEAMGRID: &str = "SteamGridDB";
 
-/// Everything the download panel can offer.
+/// Everything the download panel can offer, in the order they are tried.
 pub fn offered(s: &Settings) -> Vec<String> {
-    let mut list = source_names();
-    if !unprotect(&s.steam_grid_key).is_empty() { list.push(STEAMGRID.to_string()); }
+    let mut list: Vec<String> = source_names().into_iter().filter(|n| !s.art_disabled.contains(n)).collect();
+    if !unprotect(&s.steam_grid_key).is_empty() && !s.art_disabled.iter().any(|n| n == STEAMGRID) { list.push(STEAMGRID.to_string()); }
     list
+}
+
+/// Every source, usable or not, for the page that manages them.
+pub fn source_list(s: &Settings) -> Value {
+    let mut list: Vec<Value> = source_files().iter().map(|f| {
+        let file = f.file_name().unwrap_or_default().to_string_lossy().to_string();
+        match read_source(f) {
+            Ok(src) => serde_json::json!({ "name": src.name, "file": file, "kind": "file", "ok": true, "enabled": !s.art_disabled.contains(&src.name) }),
+            Err(e) => serde_json::json!({ "name": f.file_stem().unwrap_or_default().to_string_lossy(), "file": file, "kind": "file", "ok": false, "error": crate::i18n::t(&e.to_string()), "enabled": false }),
+        }
+    }).collect();
+    let key = !unprotect(&s.steam_grid_key).is_empty();
+    list.push(serde_json::json!({ "name": STEAMGRID, "kind": "steamgrid", "ok": key, "enabled": key && !s.art_disabled.iter().any(|n| n == STEAMGRID) }));
+    Value::Array(list)
+}
+
+pub fn set_enabled(name: &str, on: bool) -> Result<()> {
+    let mut s = load_settings();
+    s.art_disabled.retain(|n| n != name);
+    if !on { s.art_disabled.push(name.to_string()); }
+    save_settings(&s)
+}
+
+/// Copies a source file chosen by the user into the sources folder, once it reads correctly.
+pub fn add_source(path: &Path) -> Result<String> {
+    if fs::metadata(path)?.len() > 1024 * 1024 { bail!("Ce fichier est trop lourd pour une source d'images."); }
+    let src = read_source(path).map_err(|e| anyhow!("Cette source ne peut pas être lue : {e}"))?;
+    if src.name == STEAMGRID || source_names().contains(&src.name) { bail!("Une source porte déjà ce nom : {}", src.name); }
+    fs::create_dir_all(sources_dir())?;
+    let stem: String = src.name.chars().filter(|c| c.is_alphanumeric() || " -_".contains(*c)).collect::<String>().trim().to_string();
+    let stem = if stem.is_empty() { "source".to_string() } else { stem };
+    let target = (1..).map(|n| sources_dir().join(if n == 1 { format!("{stem}.json") } else { format!("{stem}-{n}.json") })).find(|p| !p.exists()).unwrap();
+    fs::copy(path, &target)?;
+    Ok(format!("Source ajoutée : {}", src.name))
+}
+
+/// Checks a SteamGridDB key with one search.
+pub fn test_key(key: &str) -> Result<String> {
+    let key = if key.trim().is_empty() { unprotect(&load_settings().steam_grid_key) } else { key.trim().to_string() };
+    if key.is_empty() { bail!("Colle d'abord ta clé SteamGridDB."); }
+    match agent().get("https://www.steamgriddb.com/api/v2/search/autocomplete/zelda").set("Authorization", &format!("Bearer {key}")).call() {
+        Ok(r) => {
+            let v: Value = r.into_json()?;
+            if v["success"].as_bool() == Some(true) { Ok("La clé fonctionne.".to_string()) } else { bail!("SteamGridDB refuse cette clé.") }
+        }
+        Err(ureq::Error::Status(401 | 403, _)) => bail!("SteamGridDB refuse cette clé."),
+        Err(e) => bail!("SteamGridDB est injoignable : {e}"),
+    }
 }
 
 fn encode(s: &str) -> String {
@@ -232,11 +292,13 @@ fn from_source(src: &Source, file: &str, c: &Choice, done: &mut Vec<String>) -> 
 /// Sources are tried in order: the first one to have an image provides it.
 pub fn fetch(c: Choice) -> Result<String> {
     let mut s = load_settings();
-    let key = unprotect(&s.steam_grid_key);
-    let (list, bad) = sources();
-    if key.is_empty() && list.is_empty() { bail!("Renseigne d'abord ta clé SteamGridDB dans la page Réglages."); }
+    let usable = offered(&s);
+    let key = if usable.iter().any(|n| n == STEAMGRID) { unprotect(&s.steam_grid_key) } else { String::new() };
+    let (mut list, bad) = sources();
+    list.retain(|x| usable.contains(&x.name));
+    if usable.is_empty() { bail!("Aucune source active : ajoute ta clé SteamGridDB ou une source, dans Sources d'images."); }
     if c.kinds.is_empty() { bail!("Coche au moins un type d'image."); }
-    if c.source != "all" && !offered(&s).contains(&c.source) { bail!("Cette source n'existe plus."); }
+    if c.source != "all" && !usable.contains(&c.source) { bail!("Cette source n'existe plus ou est désactivée."); }
     s.art_kinds = c.kinds.clone();
     s.art_source = c.source.clone();
     s.art_replace = c.replace;

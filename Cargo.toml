@@ -1,6 +1,6 @@
 [package]
 name = "forkbay"
-version = "0.9.0"
+version = "0.10.0"
 edition = "2021"
 description = "Switch 2 emulator manager: launch, update, share data, Steam and cloud saves"
 license = "GPL-3.0-or-later"
