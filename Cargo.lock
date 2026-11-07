@@ -567,9 +567,9 @@ name = "forkbay"
 version = "0.8.0"
 dependencies = [
  "anyhow",
- "base64 0.22.1",
+ "base64 0.23.1",
  "embed-resource",
- "getrandom 0.2.17",
+ "getrandom 0.4.3",
  "png",
  "regex",
  "rfd",

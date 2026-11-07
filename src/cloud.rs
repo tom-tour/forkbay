@@ -155,7 +155,7 @@ pub fn google_connect() -> Result<String> {
     if s.sync.google_client_id.is_empty() || secret.is_empty() { bail!("Renseigne d'abord l'identifiant et le secret du client OAuth."); }
     let b64 = base64::engine::general_purpose::URL_SAFE_NO_PAD;
     let mut seed = [0u8; 32];
-    getrandom::getrandom(&mut seed).map_err(|e| anyhow!("{e}"))?;
+    getrandom::fill(&mut seed).map_err(|e| anyhow!("{e}"))?;
     let nonce = sha256_hex(&seed);
     let verifier = nonce.clone() + &nonce[..20];
     use sha2::{Digest, Sha256};
