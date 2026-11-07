@@ -226,6 +226,40 @@ $env:SteamGamepadUI = '1'; $r = App $rootF 'steam_ui_detect'; Check 'Steam full-
 App $rootF 'game_dir_add' @{ path = "$work\games" } | Out-Null; App $rootF 'finish_setup' | Out-Null
 $env:FORKBAY_ROOT = $rootF; $env:FORKBAY_SELFTEST = "$work\ui.txt"; $env:FORKBAY_UITEST = "$work\any name.png"; Remove-Item -LiteralPath "$rootF\Covers\Other Game-grid.jpg" -ErrorAction SilentlyContinue; $w = Start-Process -FilePath $Bin -PassThru; $ui = ''; for ($i = 0; $i -lt 60 -and $ui -notmatch 'drop='; $i++) { Start-Sleep -Milliseconds 500; if (Test-Path "$work\ui.txt") { $ui = Get-Content "$work\ui.txt" -Raw } }; if (-not $w.HasExited) { Stop-Process -Id $w.Id -Force }; Remove-Item Env:\FORKBAY_SELFTEST, Env:\FORKBAY_UITEST
 Check 'F11 and dropping an image in the window' ($ui -match 'on=true off=false drop=ok') $ui
+"-- emulator settings, running game and image choices"
+$rootG = "$work\G\Files"; New-Item -ItemType Directory -Force "$rootG\Roms", "$rootG\Data\config", "$rootG\Lichii" | Out-Null
+[IO.File]::WriteAllText("$rootG\Roms\Run Game [0400000000000002].nup", 'x'); Copy-Item $Bin "$rootG\Lichii\emu.exe"; [IO.File]::WriteAllText("$rootG\Lichii\exe.txt", 'emu.exe')
+$ini = "$rootG\Data\config\qt-config.ini"; [IO.File]::WriteAllText($ini, "[Core]`r`nuse_speed_limit\default=true`r`nuse_speed_limit=true`r`nspeed_limit\default=true`r`nspeed_limit=100`r`n[System]`r`nlanguage_index\default=true`r`nlanguage_index=1`r`nregion_index=1`r`n[UI]`r`nother=keep`r`n")
+$r = App $rootG 'state'; $r = App $rootG 'emu_settings_get'; Check 'settings read' ($r.value.language_index -eq 1 -and $r.value.speed -eq 100 -and $r.value.volume -eq 100) ($r | ConvertTo-Json -Compress)
+$r = App $rootG 'emu_settings_set' @{ key = 'language_index'; value = 2 }; $t = [IO.File]::ReadAllText($ini); Check 'game language written for the emulators' ($r.ok -and $t.Contains("language_index\default=false`r`nlanguage_index=2`r`n")) $t
+Check 'other settings untouched' ($t.Contains("region_index=1`r`n") -and $t.Contains("other=keep`r`n")); Check 'copy kept before writing' ([IO.File]::ReadAllText("$ini.forkbay-backup".Replace('.ini.forkbay-backup', '.ini.forkbay-backup')).Contains('language_index=1'))
+$r = App $rootG 'emu_settings_set' @{ key = 'resolution_setup'; value = 6 }; $t = [IO.File]::ReadAllText($ini); Check 'missing section created' ($r.ok -and $t.Contains("[Renderer]") -and $t.Contains("resolution_setup=6"))
+$r = App $rootG 'emu_settings_get'; Check 'value read back' ($r.value.resolution_setup -eq 6 -and $r.value.language_index -eq 2)
+$r = App $rootG 'emu_settings_set' @{ key = 'speed'; value = 0 }; $t = [IO.File]::ReadAllText($ini); Check 'no speed limit' ($t.Contains('use_speed_limit=false') -and (App $rootG 'emu_settings_get').value.speed -eq 0)
+$r = App $rootG 'emu_settings_set' @{ key = 'speed'; value = 150 }; $t = [IO.File]::ReadAllText($ini); Check 'speed limit' ($t.Contains('use_speed_limit=true') -and $t.Contains('speed_limit=150'))
+$r = App $rootG 'emu_settings_set' @{ key = 'language_index'; value = 99 }; Check 'value out of range refused' (-not $r.ok)
+$r = App $rootG 'emu_settings_set' @{ key = 'backend'; value = 2 }; Check 'renderer that draws nothing refused' (-not $r.ok)
+$r = App $rootG 'emu_settings_set' @{ key = 'nand_directory'; value = 1 }; Check 'unknown setting refused' (-not $r.ok)
+function StartG { $env:FORKBAY_ROOT = $rootG; $p = Start-Process -FilePath $Bin -ArgumentList '--launch', '"Roms/Run Game [0400000000000002].nup"' -PassThru; for ($i = 0; $i -lt 60; $i++) { Start-Sleep -Milliseconds 500; $script:s = App $rootG 'game_session'; if ($script:s.value.session.file) { break } }; return $p }
+function StopWait($p) { for ($i = 0; $i -lt 40 -and -not $p.HasExited; $i++) { Start-Sleep -Milliseconds 500 }; return $p.HasExited }
+$p = StartG; Check 'running game known' ($s.value.session.file -like 'Run Game*' -and $s.value.session.emu -eq 'Lichii') ($s | ConvertTo-Json -Compress -Depth 3)
+$r = App $rootG 'emu_settings_set' @{ key = 'language_index'; value = 3 }; Check 'settings refused while an emulator is open' (-not $r.ok)
+$r = App $rootG 'game_close' @{ force = $false }; Check 'close requested' $r.ok $r.error; Check 'game closed normally' (StopWait $p); $s = App $rootG 'game_session'; Check 'session ended' (-not $s.value.session)
+$p = StartG; $r = App $rootG 'game_close' @{ force = $true }; Check 'forced close' ($r.ok -and (StopWait $p)) $r.error
+$r = App $rootG 'game_close' @{ force = $true }; Check 'nothing to close' (-not $r.ok)
+[IO.File]::WriteAllText("$rootG\Manager\session.json", '{"file":"x","emu":"Lichii","exe":"emu.exe","pid":4000000}'); $s = App $rootG 'game_session'; Check 'stale session ignored' ((-not $s.value.session) -and -not (Test-Path "$rootG\Manager\session.json"))
+[IO.File]::WriteAllText("$rootG\Manager\session.json", ('{"file":"x","emu":"Lichii","exe":"emu.exe","pid":' + $PID + '}')); $s = App $rootG 'game_session'; Check 'another program with that number is not a game' (-not $s.value.session)
+$g = 'Run Game [0400000000000002].nup'; $png = [Convert]::FromBase64String('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEBgIApD5fRAAAAABJRU5ErkJggg=='); [IO.File]::WriteAllBytes("$work\tile.png", $png)
+foreach ($k in 'grid', 'logo') { $r = App $rootG 'set_image' @{ file = $g; kind = $k; path = "$work\tile.png" } }
+$r = App $rootG 'game_images' @{ file = $g }; Check 'all images visible' ($r.value.grid -like 'data:image/png*' -and $r.value.logo -like 'data:image/png*' -and -not $r.value.hero) ($r | ConvertTo-Json -Compress)
+$r = App $rootG 'remove_image' @{ file = $g; kind = 'logo' }; $r2 = App $rootG 'game_images' @{ file = $g }; Check 'image removed' ($r.ok -and -not $r2.value.logo -and $r2.value.grid)
+$r = App $rootG 'remove_image' @{ file = '..\..\x'; kind = 'grid' }; Check 'unknown game refused for removal' (-not $r.ok)
+$r = App $rootG 'fetch_art' @{ kinds = @() }; Check 'no image type refused' (-not $r.ok)
+$sd = "$rootG\Manager\cover-sources"; New-Item -ItemType Directory -Force $sd | Out-Null; [IO.File]::WriteAllText("$sd\a.json", '{"name":"Source A","direct":{"grid":"https://example.com/none.png"}}')
+$r = App $rootG 'state'; Check 'sources offered' (@($r.value.artSources) -contains 'Source A') ($r.value.artSources -join ','); Check 'all image types offered by default' (@($r.value.artChoice.kinds).Count -eq 5)
+$r = App $rootG 'fetch_art' @{ kinds = @('wide'); source = 'Unknown' }; Check 'unknown source refused' (-not $r.ok)
+$r = App $rootG 'fetch_art' @{ kinds = @('wide'); source = 'Source A'; replace = $true; file = $g }; $r2 = App $rootG 'state'; Check 'choices remembered' ($r.ok -and @($r2.value.artChoice.kinds) -join ',' -eq 'wide' -and $r2.value.artChoice.source -eq 'Source A' -and $r2.value.artChoice.replace) ($r | ConvertTo-Json -Compress)
+Check 'chosen images only, existing image kept' (Test-Path -LiteralPath "$rootG\Covers\Run Game-grid.png")
 "-- first start"
 Remove-Item Env:\FORKBAY_ROOT; $env:FORKBAY_INSTALLTEST = '1'; $env:FORKBAY_SHORTCUT_DIR = "$work\links"
 $dl = "$work\Downloads"; New-Item -ItemType Directory -Force $dl | Out-Null; Copy-Item $Bin "$dl\forkbay-windows-x86_64.exe"

@@ -5,6 +5,7 @@ mod art;
 mod backup;
 mod cloud;
 mod compat;
+mod config;
 mod core;
 mod emu;
 mod i18n;
@@ -51,7 +52,7 @@ fn state() -> Result<Value> {
     let games: Vec<Value> = rom_files().iter().map(|f| json!({ "file": f, "name": display_name(f), "emu": game_emulator(&s, f), "cover": art::cover_uri(f) })).collect();
     let emus: Vec<Value> = emu::list().iter().map(|e| json!({ "name": e.name, "present": emu::find_exe(&root().join(&e.name)).is_some() })).collect();
     Ok(json!({
-        "setupDone": s.setup_done, "theme": s.theme, "mode": s.mode, "gradient": s.gradient, "customSurfaces": s.custom_surfaces, "userThemes": s.user_themes, "customColors": s.custom_colors, "fullscreen": FULLSCREEN.load(std::sync::atomic::Ordering::Relaxed), "padTest": std::env::var("FORKBAY_PADTEST").unwrap_or_default(), "secTest": std::env::var("FORKBAY_SECTEST").is_ok(), "uiTest": std::env::var("FORKBAY_UITEST").unwrap_or_default(), "installPrompt": install::needed(), "fullscreenGames": s.fullscreen_games, "gameDirs": s.game_dirs, "coverSources": art::source_names(), "language": i18n::current(), "languageSetting": s.language, "languages": i18n::languages(), "termsAccepted": s.terms_accepted >= 1, "autoUpdateCheck": s.auto_update_check, "version": update::version(),
+        "setupDone": s.setup_done, "theme": s.theme, "mode": s.mode, "gradient": s.gradient, "customSurfaces": s.custom_surfaces, "userThemes": s.user_themes, "customColors": s.custom_colors, "fullscreen": FULLSCREEN.load(std::sync::atomic::Ordering::Relaxed), "padTest": std::env::var("FORKBAY_PADTEST").unwrap_or_default(), "secTest": std::env::var("FORKBAY_SECTEST").is_ok(), "uiTest": std::env::var("FORKBAY_UITEST").unwrap_or_default(), "installPrompt": install::needed(), "fullscreenGames": s.fullscreen_games, "gameDirs": s.game_dirs, "coverSources": art::source_names(), "artSources": art::offered(&s), "artChoice": { "kinds": s.art_kinds, "source": s.art_source, "replace": s.art_replace }, "language": i18n::current(), "languageSetting": s.language, "languages": i18n::languages(), "termsAccepted": s.terms_accepted >= 1, "autoUpdateCheck": s.auto_update_check, "version": update::version(),
         "dataLocation": s.data_location, "customDataPath": s.custom_data_path,
         "defaultEmulator": s.default_emulator, "dataPath": data.to_string_lossy(), "games": games, "emulators": emus,
         "keys": has_keys(&data), "firmware": firmware_count(&data),
@@ -165,7 +166,19 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
             let games: Vec<String> = a["games"].as_array().map(|v| v.iter().filter_map(|x| x.as_str().map(str::to_string)).collect()).unwrap_or_default();
             msg(steam::save(&s_arg(a, "account"), &games, a["tool"].as_bool().unwrap_or(false))?)
         }
-        "fetch_art" => msg(art::fetch_all()?),
+        "fetch_art" => {
+            let s = load_settings();
+            let kinds = a["kinds"].as_array().map_or(s.art_kinds.clone(), |v| v.iter().filter_map(|x| x.as_str().map(str::to_string)).collect());
+            let source = a["source"].as_str().map_or(s.art_source.clone(), str::to_string);
+            let replace = a["replace"].as_bool().unwrap_or(s.art_replace);
+            msg(art::fetch(art::Choice { kinds, source, replace, file: s_arg(a, "file") })?)
+        }
+        "game_images" => art::images(&s_arg(a, "file")),
+        "remove_image" => { art::remove_image(&s_arg(a, "file"), &s_arg(a, "kind"))?; json!({}) }
+        "emu_settings_get" => config::get(),
+        "emu_settings_set" => { config::set(&s_arg(a, "key"), a["value"].as_u64().ok_or_else(|| anyhow!("Valeur refusée."))?)?; json!({}) }
+        "game_session" => json!({ "session": emu::session(), "other": a["other"].as_bool().unwrap_or(false).then(emu::any_running) }),
+        "game_close" => msg(emu::close(a["force"].as_bool().unwrap_or(false))?),
         "set_image" => { art::set_image(&s_arg(a, "file"), &s_arg(a, "kind"), Path::new(&s_arg(a, "path")))?; json!({}) }
         "set_fullscreen_games" => { let mut s = load_settings(); s.fullscreen_games = a["enabled"].as_bool().unwrap_or(true); save_settings(&s)?; json!({}) }
         "game_dir_add" => msg(add_game_dir(Path::new(&s_arg(a, "path")))?),
@@ -266,7 +279,7 @@ fn launch(game: Option<&str>, forced: Option<&str>) -> Result<()> {
             }
         }
     }
-    emu::run(&emu_name, path.as_deref())?;
+    emu::run(&emu_name, path.as_deref(), &game.map(game_key_for).unwrap_or_default())?;
     if do_sync {
         if let Err(e) = cloud::sync(&load_settings(), &|l, d, m| cloud::ask_conflict(l, d, m, false)) {
             notify(&format!("Envoi vers le cloud impossible :\n{e}\n\nTa sauvegarde reste bien sur ce PC et sera envoyée à la prochaine synchronisation."));

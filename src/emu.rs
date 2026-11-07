@@ -409,7 +409,7 @@ pub fn remove(name: &str) -> Result<String> {
 }
 
 /// Starts an emulator and waits until it closes.
-pub fn run(emu: &str, game: Option<&Path>) -> Result<()> {
+pub fn run(emu: &str, game: Option<&Path>, key: &str) -> Result<()> {
     let dir = root().join(emu);
     let exe = find_exe(&dir).ok_or_else(|| anyhow!("{emu} n'est pas installé."))?;
     let mut c = std::process::Command::new(&exe);
@@ -423,9 +423,66 @@ pub fn run(emu: &str, game: Option<&Path>) -> Result<()> {
     #[cfg(not(windows))]
     linux_portable(&mut c, &dir)?;
     crate::log::info(&format!("start {emu}{}", if full { " full screen" } else { "" }));
-    let status = c.spawn()?.wait()?;
+    let mut child = c.spawn()?;
+    let exe_name = exe.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+    let _ = fs::create_dir_all(manager_dir());
+    let _ = fs::write(session_file(), json!({ "file": key, "emu": emu, "exe": exe_name, "pid": child.id() }).to_string());
+    let status = child.wait();
+    let _ = fs::remove_file(session_file());
+    let status = status?;
     if !status.success() { crate::log::error(&format!("{emu} stopped with {status}")); } else { crate::log::info(&format!("{emu} closed")); }
     Ok(())
+}
+
+// --- The game being played ---
+fn session_file() -> PathBuf {
+    manager_dir().join("session.json")
+}
+
+// A number left behind by a crash can belong to another program by now.
+fn is_process(pid: u64, exe: &str) -> bool {
+    #[cfg(windows)]
+    {
+        let filter = format!("PID eq {pid}");
+        let Ok(out) = command("tasklist").args(["/FI", filter.as_str(), "/FO", "CSV", "/NH"]).output() else { return false };
+        let text = String::from_utf8_lossy(&out.stdout).into_owned();
+        text.lines().filter_map(|l| l.strip_prefix('"')).filter_map(|l| l.split('"').next()).any(|n| n.eq_ignore_ascii_case(exe))
+    }
+    #[cfg(not(windows))]
+    {
+        // An AppImage runs under another name, so only the number can be checked.
+        let _ = exe;
+        Path::new(&format!("/proc/{pid}")).exists()
+    }
+}
+
+/// What Forkbay started and is still running, on this PC.
+pub fn session() -> Option<Value> {
+    let v: Value = serde_json::from_str(&fs::read_to_string(session_file()).ok()?).ok()?;
+    let pid = v["pid"].as_u64()?;
+    if is_process(pid, v["exe"].as_str().unwrap_or("")) {
+        Some(json!({ "file": v["file"], "emu": v["emu"] }))
+    } else {
+        let _ = fs::remove_file(session_file());
+        None
+    }
+}
+
+/// Asks the emulator to close like its own close button would. Forcing skips anything it had left to write.
+pub fn close(force: bool) -> Result<String> {
+    if session().is_none() { bail!("Aucun jeu en cours."); }
+    let v: Value = serde_json::from_str(&fs::read_to_string(session_file())?)?;
+    let pid = v["pid"].as_u64().ok_or_else(|| anyhow!("Aucun jeu en cours."))?.to_string();
+    let mut c = if cfg!(windows) { command("taskkill") } else { command("kill") };
+    if cfg!(windows) {
+        c.args(["/PID", pid.as_str()]);
+        if force { c.arg("/F"); }
+    } else {
+        c.args([if force { "-KILL" } else { "-TERM" }, pid.as_str()]);
+    }
+    if !c.output()?.status.success() { bail!("Fermeture impossible : ferme le jeu depuis sa fenêtre."); }
+    crate::log::info(if force { "game closed by force" } else { "game close requested" });
+    Ok(if force { "Jeu fermé.".to_string() } else { "Fermeture demandée.".to_string() })
 }
 
 // Emulators built on yuzu read the XDG folders: they are pointed at the shared data.

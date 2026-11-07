@@ -31,7 +31,11 @@ pub fn find_art(file: &str, kind: &str) -> Option<PathBuf> {
 }
 
 pub fn cover_uri(file: &str) -> Option<String> {
-    let p = find_art(file, "grid")?;
+    image_uri(file, "grid")
+}
+
+fn image_uri(file: &str, kind: &str) -> Option<String> {
+    let p = find_art(file, kind)?;
     let bytes = fs::read(&p).ok()?;
     let mime = match p.extension()?.to_str()?.to_lowercase().as_str() { "png" => "image/png", "webp" => "image/webp", "ico" => "image/x-icon", _ => "image/jpeg" };
     Some(format!("data:{mime};base64,{}", base64::engine::general_purpose::STANDARD.encode(bytes)))
@@ -68,6 +72,30 @@ pub fn set_image(file: &str, kind: &str, path: &Path) -> Result<()> {
     store(&fs::read(path)?, file, kind)
 }
 
+/// Every image of one game, for the page.
+pub fn images(file: &str) -> Value {
+    Value::Object(KINDS.iter().map(|k| (k.to_string(), image_uri(file, k).map_or(Value::Null, Value::String))).collect())
+}
+
+pub fn remove_image(file: &str, kind: &str) -> Result<()> {
+    if !KINDS.contains(&kind) { bail!("Type d'image inconnu."); }
+    if !rom_files().iter().any(|f| f == file) { bail!("Jeu introuvable : {file}"); }
+    if let Some(p) = find_art(file, kind) { fs::remove_file(p)?; }
+    Ok(())
+}
+
+/// What to download: chosen by the user, and remembered for next time.
+pub struct Choice {
+    pub kinds: Vec<String>,
+    pub source: String,
+    pub replace: bool,
+    pub file: String,
+}
+
+fn needed(c: &Choice, file: &str, kind: &str, done: &[String]) -> bool {
+    KINDS.contains(&kind) && c.kinds.iter().any(|k| k == kind) && !done.iter().any(|d| d == kind) && (c.replace || find_art(file, kind).is_none())
+}
+
 fn save_image(url: &str, file: &str, kind: &str) -> Result<()> {
     if !url.starts_with("https://") { return Err(anyhow!("Adresse refusée.")); }
     let mut bytes = vec![];
@@ -86,19 +114,20 @@ fn similarity(a: &str, b: &str) -> usize {
     if a.is_empty() { 0 } else { hit * 100 / a.len() }
 }
 
-fn steamgrid(key: &str, file: &str) -> Result<u32> {
+fn steamgrid(key: &str, file: &str, c: &Choice, done: &mut Vec<String>) -> Result<u32> {
     let get = |path: &str| -> Result<Value> {
         let v: Value = agent().get(&format!("https://www.steamgriddb.com/api/v2/{path}")).set("Authorization", &format!("Bearer {key}")).call()?.into_json()?;
         Ok(v["data"].clone())
     };
     let name = display_name(file);
+    if !KINDS.iter().any(|k| needed(c, file, k, done)) { return Ok(0); }
     let found = get(&format!("search/autocomplete/{}", words(&name).join("%20")))?;
     let Some(id) = found[0]["id"].as_u64() else { return Ok(0) };
     let mut n = 0;
     for (kind, path) in [("grid", "grids/game/{}?dimensions=600x900&types=static"), ("wide", "grids/game/{}?dimensions=920x430,460x215&types=static"), ("hero", "heroes/game/{}?types=static"), ("logo", "logos/game/{}?types=static"), ("icon", "icons/game/{}?types=static")] {
-        if find_art(file, kind).is_some() { continue; }
+        if !needed(c, file, kind, done) { continue; }
         let items = get(&path.replace("{}", &id.to_string()))?;
-        if let Some(u) = items[0]["url"].as_str() { if save_image(u, file, kind).is_ok() { n += 1; } }
+        if let Some(u) = items[0]["url"].as_str() { if save_image(u, file, kind).is_ok() { n += 1; done.push(kind.to_string()); } }
     }
     Ok(n)
 }
@@ -141,6 +170,15 @@ pub fn source_names() -> Vec<String> {
     sources().0.into_iter().map(|s| s.name).collect()
 }
 
+const STEAMGRID: &str = "SteamGridDB";
+
+/// Everything the download panel can offer.
+pub fn offered(s: &Settings) -> Vec<String> {
+    let mut list = source_names();
+    if !unprotect(&s.steam_grid_key).is_empty() { list.push(STEAMGRID.to_string()); }
+    list
+}
+
 fn encode(s: &str) -> String {
     s.bytes().map(|b| if b.is_ascii_alphanumeric() || b"-_.~".contains(&b) { (b as char).to_string() } else { format!("%{b:02X}") }).collect()
 }
@@ -162,12 +200,12 @@ fn field_starts_with(v: &Value, prefix: &str) -> bool {
     }
 }
 
-fn from_source(src: &Source, file: &str) -> Result<u32> {
+fn from_source(src: &Source, file: &str, c: &Choice, done: &mut Vec<String>) -> Result<u32> {
     let mut n = 0;
     for (kind, template) in &src.direct {
-        if KINDS.contains(&kind.as_str()) && find_art(file, kind).is_none() && save_image(&fill(template, file), file, kind).is_ok() { n += 1; }
+        if needed(c, file, kind, done) && save_image(&fill(template, file), file, kind).is_ok() { n += 1; done.push(kind.clone()); }
     }
-    if src.url.is_empty() { return Ok(n); }
+    if src.url.is_empty() || !src.images.keys().any(|k| needed(c, file, k, done)) { return Ok(n); }
     let url = fill(&src.url, file);
     if !url.starts_with("https://") { bail!("Adresse refusée."); }
     let mut text = String::new();
@@ -182,31 +220,41 @@ fn from_source(src: &Source, file: &str) -> Result<u32> {
     };
     let Some(best) = best else { return Ok(n) };
     for (kind, fields) in &src.images {
-        if !KINDS.contains(&kind.as_str()) || find_art(file, kind).is_some() { continue; }
+        if !needed(c, file, kind, done) { continue; }
         let Some(u) = fields.iter().find_map(|f| walk(best, f).as_str()) else { continue };
         let u = if u.starts_with("//") { format!("https:{u}") } else { u.to_string() };
-        if save_image(&u, file, kind).is_ok() { n += 1; }
+        if save_image(&u, file, kind).is_ok() { n += 1; done.push(kind.clone()); }
     }
     Ok(n)
 }
 
-/// Downloads what is missing. An image already present is never replaced.
-pub fn fetch_all() -> Result<String> {
-    let s = load_settings();
+/// Downloads the chosen images. An image already present stays unless replacing was chosen.
+/// Sources are tried in order: the first one to have an image provides it.
+pub fn fetch(c: Choice) -> Result<String> {
+    let mut s = load_settings();
     let key = unprotect(&s.steam_grid_key);
     let (list, bad) = sources();
     if key.is_empty() && list.is_empty() { bail!("Renseigne d'abord ta clé SteamGridDB dans la page Réglages."); }
+    if c.kinds.is_empty() { bail!("Coche au moins un type d'image."); }
+    if c.source != "all" && !offered(&s).contains(&c.source) { bail!("Cette source n'existe plus."); }
+    s.art_kinds = c.kinds.clone();
+    s.art_source = c.source.clone();
+    s.art_replace = c.replace;
+    save_settings(&s)?;
+    let games: Vec<String> = rom_files().into_iter().filter(|f| c.file.is_empty() || *f == c.file).collect();
+    if games.is_empty() { bail!("Jeu introuvable : {}", c.file); }
     let (mut got, mut missing, mut failed) = (0, vec![], 0);
-    for file in rom_files() {
+    for file in games {
         crate::emit_status(&format!("Images : {}...", display_name(&file)));
-        for src in &list {
-            match from_source(src, &file) {
+        let mut done = vec![];
+        for src in list.iter().filter(|x| c.source == "all" || c.source == x.name) {
+            match from_source(src, &file, &c, &mut done) {
                 Ok(n) => got += n,
                 Err(e) => { failed += 1; crate::log::error(&format!("image source {}: {e}", src.name)); }
             }
         }
-        if !key.is_empty() { got += steamgrid(&key, &file)?; }
-        if find_art(&file, "grid").is_none() { missing.push(display_name(&file)); }
+        if !key.is_empty() && (c.source == "all" || c.source == STEAMGRID) { got += steamgrid(&key, &file, &c, &mut done)?; }
+        if c.kinds.iter().any(|k| k == "grid") && find_art(&file, "grid").is_none() { missing.push(display_name(&file)); }
     }
     let mut msg = format!("{got} image(s) téléchargée(s).");
     if !missing.is_empty() { msg += &format!(" Sans jaquette : {}.", missing.join(", ")); }

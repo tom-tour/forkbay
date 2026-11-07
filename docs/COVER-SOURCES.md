@@ -4,7 +4,7 @@
 
 Forkbay can download game images from sources you add yourself. It ships with none, apart from the optional SteamGridDB key.
 
-A source is a small text file that describes where to look. It contains no code. Images are downloaded on your PC, only when you click **Download covers**, and stay in `Files/Covers`. Forkbay never replaces an image you already have.
+A source is a small text file that describes where to look. It contains no code. Images are downloaded on your PC, only when you click **Download covers**, and stay in `Files/Covers`. You choose the source and the image types, and existing images stay unless you tick **Replace**.
 
 **You choose the sources you add, and you are responsible for following their terms.** Only add a source you are allowed to use, and do not share images you have no right to share. Sources that point at a console maker's catalogue are not accepted in this project.
 
@@ -59,7 +59,7 @@ Addresses must use `https`. Files that are not PNG, JPEG, WebP or ICO images, or
 
 Forkbay peut télécharger les images de tes jeux depuis des sources que tu ajoutes toi-même. Il n'en fournit aucune, à part la clé SteamGridDB facultative.
 
-Une source est un petit fichier texte qui indique où chercher. Elle ne contient aucun code. Les images sont téléchargées sur ton PC, seulement quand tu cliques sur **Récupérer les jaquettes**, et restent dans `Files/Covers`. Forkbay ne remplace jamais une image que tu as déjà.
+Une source est un petit fichier texte qui indique où chercher. Elle ne contient aucun code. Les images sont téléchargées sur ton PC, seulement quand tu cliques sur **Récupérer les jaquettes**, et restent dans `Files/Covers`. Tu choisis la source et les types d'images, et les images existantes restent sauf si tu coches **Remplacer**.
 
 **Tu choisis les sources que tu ajoutes, et c'est à toi de respecter leurs conditions.** N'ajoute qu'une source que tu as le droit d'utiliser, et ne partage pas d'images que tu n'as pas le droit de partager. Les sources qui visent le catalogue d'un fabricant de consoles ne sont pas acceptées dans ce projet.
 

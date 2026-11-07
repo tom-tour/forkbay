@@ -44,6 +44,9 @@ pub struct Settings {
     pub fullscreen_games: bool,
     pub game_dirs: Vec<String>,
     pub install_asked: bool,
+    pub art_kinds: Vec<String>,
+    pub art_source: String,
+    pub art_replace: bool,
 }
 
 impl Default for Settings {
@@ -70,6 +73,9 @@ impl Default for Settings {
             fullscreen_games: true,
             game_dirs: vec![],
             install_asked: false,
+            art_kinds: ["grid", "wide", "hero", "logo", "icon"].map(String::from).to_vec(),
+            art_source: "all".into(),
+            art_replace: false,
         }
     }
 }

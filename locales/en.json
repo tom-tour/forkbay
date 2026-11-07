@@ -162,7 +162,7 @@
   "Installation des clés...": "Installing the keys...",
   "Installation du firmware...": "Installing the firmware...",
   "Où ranger tes données ?": "Where should your data go?",
-  "Portable": "Portable",
+  "Portable": "Handheld",
   "À côté de l'outil, rien sur le disque système. Idéal sur un disque externe.": "Next to the tool, nothing on the system drive. Ideal for an external drive.",
   "Installé": "Installed",
   "Sur ce PC, dans le dossier de ton compte.": "On this PC, in your account folder.",
@@ -214,7 +214,7 @@
   "Voir le guide": "View guide",
   "Ce sont des retours de joueurs, sans garantie.": "These are player reports, not guarantees.",
   "Tous les émulateurs du guide sont déjà dans ta liste.": "Every emulator in the guide is already in your list.",
-  "Français": "Français",
+  "Français": "French",
   "English": "English",
   "Apparence": "Appearance",
   "Noir": "Black",
@@ -266,7 +266,6 @@
   "Aucune copie pour l'instant.": "No copies yet.",
   "Restauration...": "Restoring...",
   "Images": "Images",
-  "Choisis une image, ou glisse-la directement sur ce jeu. Le nom du fichier n'a pas d'importance.": "Choose an image, or drag it straight onto this game. The file name does not matter.",
   "Jaquette": "Cover",
   "Bannière": "Banner",
   "Logo": "Logo",
@@ -284,7 +283,6 @@
   "Pour les émulateurs de la liste fournie, aussi depuis Steam. Échap en sort par défaut.": "For the emulators in the built-in list, including from Steam. Esc leaves it by default.",
   "Dossiers de jeux": "Games folders",
   "Forkbay lit les jeux là où ils sont, sans rien déplacer ni copier, sous-dossiers compris.": "Forkbay reads games where they are, subfolders included, without moving or copying anything.",
-  "Le plus simple : page Jeux, puis Images sur le jeu voulu. Tu peux aussi les récupérer depuis SteamGridDB avec ta clé gratuite, ou depuis tes propres sources d'images.": "The easiest way: on the Games page, open Images on the game you want. You can also download them from SteamGridDB with your free key, or from your own image sources.",
   "Sources d'images": "Image sources",
   "Comment ajouter une source": "How to add a source",
   "Sources d'images :": "Image sources:",
@@ -305,9 +303,94 @@
   "Raccourci sur le Bureau": "Desktop shortcut",
   "Installation...": "Installing...",
   "Forkbay s'ouvre à son nouvel emplacement...": "Forkbay is opening in its new place...",
-  "Raccourci dans le menu des applications": "Applications menu shortcut"
+  "Raccourci dans le menu des applications": "Applications menu shortcut",
+  "Un émulateur est ouvert hors de Forkbay.": "An emulator is open outside Forkbay.",
+  "Émulateur ouvert :": "Emulator open:",
+  "Forcer la fermeture": "Force close",
+  "Fermeture...": "Closing...",
+  "En cours": "Running",
+  "Confirmer : une partie non sauvegardée sera perdue": "Confirm: unsaved progress will be lost",
+  "La couverture dans Forkbay et dans Steam": "The cover in Forkbay and in Steam",
+  "La bannière horizontale de Steam": "The horizontal banner in Steam",
+  "Le grand fond de la page du jeu dans Steam": "The large background on the game's Steam page",
+  "Le logo posé sur ce fond dans Steam": "The logo shown over that background in Steam",
+  "La petite icône du jeu dans Steam": "The game's small icon in Steam",
+  "Choisis une image ou glisse-la sur la bonne case. Le nom du fichier n'a pas d'importance.": "Choose an image or drag it onto the right box. The file name does not matter.",
+  "Aucune image": "No image",
+  "Choisir": "Choose",
+  "Confirmer le retrait": "Confirm removal",
+  "Télécharger pour ce jeu": "Download for this game",
+  "Télécharger des images": "Download images",
+  "Pour tous tes jeux. Coche seulement ce que tu veux.": "For all your games. Tick only what you want.",
+  "Coche seulement ce que tu veux.": "Tick only what you want.",
+  "Images à télécharger": "Images to download",
+  "Source": "Source",
+  "Toutes, dans l'ordre": "All, in order",
+  "Remplacer les images que j'ai déjà": "Replace the images I already have",
+  "Sinon, seules les images manquantes sont téléchargées.": "Otherwise, only missing images are downloaded.",
+  "Télécharger": "Download",
+  "Coche au moins un type d'image.": "Tick at least one image type.",
+  "Réglage enregistré.": "Setting saved.",
+  "Console et image": "Console and picture",
+  "Pour tous tes émulateurs. Les réglages propres à un jeu dans l'émulateur restent prioritaires. Ferme l'émulateur avant de changer un réglage.": "For all your emulators. Per-game settings in the emulator still come first. Close the emulator before changing a setting.",
+  "La langue des jeux n'agit que si le jeu la contient. Certains jeux demandent aussi la bonne région.": "The game language only works if the game includes it. Some games also need the right region.",
+  "Le plus simple : page Jeux, puis Images sur le jeu voulu, pour voir et changer toutes ses images. Tu peux aussi les récupérer depuis SteamGridDB avec ta clé gratuite, ou depuis tes propres sources d'images.": "The easiest way: on the Games page, open Images on the game you want, to see and change all its images. You can also download them from SteamGridDB with your free key, or from your own image sources.",
+  "Langue des jeux": "Game language",
+  "Région de la console": "Console region",
+  "Mode de la console": "Console mode",
+  "Résolution": "Resolution",
+  "Synchronisation verticale": "Vertical sync",
+  "Type de plein écran": "Full screen type",
+  "Moteur graphique": "Graphics engine",
+  "Limite de vitesse": "Speed limit",
+  "Volume": "Volume",
+  "Carte graphique (Vulkan)": "Graphics card (Vulkan)",
+  "Japonais": "Japanese",
+  "Anglais (États-Unis)": "English (United States)",
+  "Allemand": "German",
+  "Italien": "Italian",
+  "Espagnol": "Spanish",
+  "Chinois": "Chinese",
+  "Coréen": "Korean",
+  "Néerlandais": "Dutch",
+  "Portugais": "Portuguese",
+  "Russe": "Russian",
+  "Taïwanais": "Taiwanese",
+  "Anglais (Royaume-Uni)": "English (United Kingdom)",
+  "Français (Canada)": "French (Canada)",
+  "Espagnol (Amérique latine)": "Spanish (Latin America)",
+  "Chinois simplifié": "Simplified Chinese",
+  "Chinois traditionnel": "Traditional Chinese",
+  "Portugais (Brésil)": "Portuguese (Brazil)",
+  "Polonais": "Polish",
+  "Thaï": "Thai",
+  "Japon": "Japan",
+  "États-Unis": "United States",
+  "Europe": "Europe",
+  "Australie": "Australia",
+  "Chine": "China",
+  "Corée": "Korea",
+  "Taïwan": "Taiwan",
+  "TV": "TV",
+  "1x (taille d'origine)": "1x (original size)",
+  "0,25x": "0.25x",
+  "0,5x": "0.5x",
+  "0,75x": "0.75x",
+  "1,25x": "1.25x",
+  "1,5x": "1.5x",
+  "Désactivée": "Off",
+  "FIFO (activée)": "FIFO (on)",
+  "FIFO souple": "Relaxed FIFO",
+  "Sans bordure": "Borderless",
+  "Exclusif": "Exclusive",
+  "Aucune": "None",
+  "Fermer": "Close"
  },
  "uiPatterns": [
+  [
+   "^Carte (\\d+)$",
+   "Card $1"
+  ],
   [
    "^(\\d+) jeu\\(x\\) trouvé\\(s\\)$",
    "$1 game(s) found"
@@ -390,6 +473,42 @@
   ]
  ],
  "messages": [
+  [
+   "^Aucun jeu en cours\\.$",
+   "No game is running."
+  ],
+  [
+   "^Fermeture impossible : ferme le jeu depuis sa fenêtre\\.$",
+   "Cannot close it: close the game from its own window."
+  ],
+  [
+   "^Jeu fermé\\.$",
+   "Game closed."
+  ],
+  [
+   "^Fermeture demandée\\.$",
+   "Close requested."
+  ],
+  [
+   "^Ferme d'abord l'émulateur : il écraserait ce réglage en se fermant\\.$",
+   "Close the emulator first: it would overwrite this setting when it closes."
+  ],
+  [
+   "^Valeur refusée\\.$",
+   "Value refused."
+  ],
+  [
+   "^Réglage inconnu\\.$",
+   "Unknown setting."
+  ],
+  [
+   "^Coche au moins un type d'image\\.$",
+   "Tick at least one image type."
+  ],
+  [
+   "^Cette source n'existe plus\\.$",
+   "This source no longer exists."
+  ],
   [
    "^Dossier ajouté : (\\d+) jeu\\(x\\) trouvé\\(s\\)\\. Rien n'a été déplacé\\.$",
    "Folder added: $1 game(s) found. Nothing was moved."

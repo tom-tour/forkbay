@@ -22,7 +22,9 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **Automatic copies:** saves, profile and settings are copied before you play and before an emulator changes version, with or without the cloud. You can restore them from **Settings**.
 - **Your own emulators:** add one from a GitHub repository or from a local program.
 - **Steam:** adds games to your library and leaves your other shortcuts alone.
-- **Covers (optional):** choose or drag an image onto a game, use SteamGridDB with your free key, or add [your own image sources](docs/COVER-SOURCES.md).
+- **Covers (optional):** see all of a game's images, choose or drag new ones, or download only the types you want from SteamGridDB with your free key or from [your own image sources](docs/COVER-SOURCES.md).
+- **Console and picture settings:** game language, region, handheld or TV mode, resolution, vertical sync, speed limit, graphics engine and volume, for all your emulators.
+- **Running games:** a game in progress shows as running, with a button to close it.
 - **Per-game suggestions:** the [wichforks](https://github.com/riyadhHDA/wichforks) community guide, filtered by your graphics card. You choose; nothing changes on its own.
 - **Cloud saves (optional):** syncs before and after each play session, with a choice of version when both sides changed.
 - **Languages:** English and French, following your system language. [Adding one](locales/README.md) takes a single file.
@@ -118,7 +120,9 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 - **Copies automatiques :** les sauvegardes, le profil et les réglages sont copiés avant de jouer et avant qu'un émulateur change de version, avec ou sans cloud. Tu peux les restaurer depuis **Réglages**.
 - **Tes propres émulateurs :** ajoutes-en un depuis un dépôt GitHub ou depuis un programme local.
 - **Steam :** ajoute les jeux à ta bibliothèque sans toucher à tes autres raccourcis.
-- **Jaquettes (facultatives) :** choisis ou glisse une image sur un jeu, utilise SteamGridDB avec ta clé gratuite, ou ajoute [tes propres sources d'images](docs/COVER-SOURCES.md).
+- **Jaquettes (facultatives) :** vois toutes les images d'un jeu, choisis ou glisse-en de nouvelles, ou télécharge seulement les types voulus depuis SteamGridDB avec ta clé gratuite ou depuis [tes propres sources d'images](docs/COVER-SOURCES.md).
+- **Réglages de console et d'image :** langue des jeux, région, mode portable ou TV, résolution, synchronisation verticale, limite de vitesse, moteur graphique et volume, pour tous tes émulateurs.
+- **Jeux en cours :** un jeu lancé est indiqué comme en cours, avec un bouton pour le fermer.
 - **Conseils par jeu :** le guide communautaire [wichforks](https://github.com/riyadhHDA/wichforks), filtré selon ta carte graphique. C'est toi qui choisis, rien ne change tout seul.
 - **Sauvegardes dans le cloud (facultatives) :** synchronise avant et après chaque partie, et te laisse choisir si les deux versions ont changé.
 - **Langues :** anglais et français, selon la langue de ton système. [En ajouter une](locales/README.md) demande un seul fichier.
