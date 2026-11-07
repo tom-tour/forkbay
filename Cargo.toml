@@ -20,7 +20,7 @@ anyhow = "1"
 regex = { version = "1", default-features = false, features = ["std", "unicode-perl", "unicode-case"] }
 ureq = { version = "2", features = ["json"] }
 zip = { version = "9", default-features = false, features = ["deflate"] }
-sha2 = "0.10"
+sha2 = "0.11"
 base64 = "0.23"
 getrandom = "0.4"
 
