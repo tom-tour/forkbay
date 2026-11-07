@@ -22,7 +22,7 @@ ureq = { version = "2", features = ["json"] }
 zip = { version = "9", default-features = false, features = ["deflate"] }
 sha2 = "0.10"
 base64 = "0.22"
-getrandom = "0.2"
+getrandom = "0.4"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.56"
