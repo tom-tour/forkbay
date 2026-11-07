@@ -21,7 +21,7 @@ regex = { version = "1", default-features = false, features = ["std", "unicode-p
 ureq = { version = "2", features = ["json"] }
 zip = { version = "9", default-features = false, features = ["deflate"] }
 sha2 = "0.10"
-base64 = "0.22"
+base64 = "0.23"
 getrandom = "0.2"
 
 [target.'cfg(windows)'.dependencies]
