@@ -139,7 +139,7 @@ $r = App $rootA 'report_collect' @{ game = ''; log = $false }; Check 'journal in
 $vv = "$work\steam\userdata\2\config\shortcuts.vdf"; New-Item -ItemType Directory -Force (Split-Path $vv) | Out-Null
 $r = App $rootA 'steam_save' @{ account = '2'; games = @('Test Game [0400000000000000].nup'); tool = $true }; Check 'tool saved' $r.ok $r.error
 $r = App $rootA 'steam_load' @{ account = '2' }; Check 'tool found' $r.value.tool; Check 'game kept' (@($r.value.managed).Count -eq 1); Check 'tool not listed as game' (@($r.value.managed) -notcontains 'Forkbay')
-$tx = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($vv)); Check 'tool entry name' ($tx -match 'AppName\x00Forkbay'); Check 'fullscreen flag' ($tx -match '--fullscreen'); $lc = "$work\steam\userdata\2\config\forkbay-launcher.exe"; Check 'no powershell in shortcuts' ($tx -notmatch 'powershell'); Check 'launcher next to shortcuts' (Test-Path $lc); Check 'quoted game path' ($tx -match '--launch "Roms/Test Game'); $lv = "$work\launcher-version.txt"; Start-Process -FilePath $lc -ArgumentList '--find', "`"$($Bin.Substring(3))`"", '--version', "`"$lv`"" -Wait; Check 'launcher finds the program' (Test-Path $lv)
+$tx = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($vv)); Check 'tool entry name' ($tx -match 'AppName\x00Forkbay'); Check 'Steam mode flag' ($tx -match '--steam-ui'); $lc = "$work\steam\userdata\2\config\forkbay-launcher.exe"; Check 'no powershell in shortcuts' ($tx -notmatch 'powershell'); Check 'launcher next to shortcuts' (Test-Path $lc); Check 'quoted game path' ($tx -match '--launch "Roms/Test Game'); $lv = "$work\launcher-version.txt"; Start-Process -FilePath $lc -ArgumentList '--find', "`"$($Bin.Substring(3))`"", '--version', "`"$lv`"" -Wait; Check 'launcher finds the program' (Test-Path $lv)
 $r = App $rootA 'steam_save' @{ account = '2'; games = @(); tool = $false }; $r = App $rootA 'steam_load' @{ account = '2' }; Check 'tool removed' (-not $r.value.tool)
 
 "-- themes"
@@ -195,6 +195,54 @@ $r = App $rootC 'emu_rollback' @{ name = 'Fake'; version = '..\..\Data' }; Check
 $r = App $rootC 'emu_rollback' @{ name = 'Fake'; version = 'Fake v1' }; Check 'rollback' $r.ok $r.error; Check 'older version active' ((Get-Content "$rootC\Fake\version.txt") -eq 'v1'); Check 'newer version kept' (Test-Path "$rootC\Old Versions\Fake v2\fake.exe"); Check 'data link back' ((Get-Item "$rootC\Fake\user" -Force).Attributes -match 'ReparsePoint'); Check 'no link in the kept version' (-not (Test-Path "$rootC\Old Versions\Fake v2\user"))
 "-- window protection"
 $env:FORKBAY_ROOT = $rootC; $env:FORKBAY_SELFTEST = "$work\sec.txt"; $env:FORKBAY_SECTEST = '1'; $w = Start-Process -FilePath $Bin -PassThru; $sec = ''; for ($i = 0; $i -lt 40 -and $sec -notmatch 'nav=blocked'; $i++) { Start-Sleep -Milliseconds 750; if (Test-Path "$work\sec.txt") { $sec = Get-Content "$work\sec.txt" -Raw } }; Stop-Process -Id $w.Id -Force -ErrorAction SilentlyContinue; Remove-Item Env:\FORKBAY_SELFTEST, Env:\FORKBAY_SECTEST; Check 'page cannot reach or navigate to the web' ($sec -match 'csp=blocked nav=blocked') $sec
+"-- full screen, game folders and images"
+$rootF = "$work\F\Files"; New-Item -ItemType Directory -Force "$rootF\Roms", "$rootF\Lichii", "$work\games\Sub Folder" | Out-Null
+[IO.File]::WriteAllText("$work\games\Sub Folder\Other Game [0400000000000001].nsp", 'x'); [IO.File]::WriteAllText("$work\games\ignored.txt", 'x')
+[IO.File]::WriteAllText("$rootF\Lichii\args.bat", "@echo %* > ""$work\args.txt""`r`n"); [IO.File]::WriteAllText("$rootF\Lichii\exe.txt", 'args.bat')
+$r = App $rootF 'state'; $r = App $rootF 'game_dir_add' @{ path = "$work\games" }; Check 'games folder added' ($r.value.message -match '^Dossier ajout.* : 1 ') ($r | ConvertTo-Json -Compress)
+$r = App $rootF 'game_dir_add' @{ path = "$work\games" }; Check 'same folder refused' (-not $r.ok)
+$r = App $rootF 'game_dir_add' @{ path = "$rootF\Roms" }; Check 'Roms folder refused' (-not $r.ok)
+$r = App $rootF 'state'; $ext = @($r.value.games)[0]; Check 'game found in subfolder, not moved' ($ext.name -eq 'Other Game' -and (Test-Path -LiteralPath "$work\games\Sub Folder\Other Game [0400000000000001].nsp") -and @(Get-ChildItem "$rootF\Roms").Count -eq 0) ($r | ConvertTo-Json -Compress -Depth 3)
+$r = App $rootF 'set_game_emu' @{ file = $ext.file; emu = 'Lichii' }
+function PlayF { if (Test-Path "$work\args.txt") { Remove-Item "$work\args.txt" }; $env:FORKBAY_ROOT = $rootF; Start-Process -FilePath $Bin -ArgumentList '--launch', ('"' + $ext.file + '"') -Wait; Start-Sleep -Milliseconds 300; if (Test-Path "$work\args.txt") { Get-Content "$work\args.txt" -Raw } else { '' } }
+$a = PlayF; Check 'game launched in full screen' ($a -match '^-f -g ' -and $a -match 'Other Game') $a
+App $rootF 'set_fullscreen_games' @{ enabled = $false } | Out-Null; $a = PlayF; Check 'full screen can be turned off' ($a -match '^-g ' -and $a -notmatch '-f ') $a; App $rootF 'set_fullscreen_games' @{ enabled = $true } | Out-Null
+$vdf = "$work\steam\userdata\1\config\shortcuts.vdf"; if (Test-Path $vdf) { Remove-Item $vdf }
+$r = App $rootF 'steam_save' @{ account = '1'; games = @($ext.file); tool = $true }; Check 'steam shortcut for a game elsewhere' $r.ok $r.error
+$raw = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($vdf)); Check 'steam launches it by full path' ($raw.Contains('--launch "' + $ext.file + '"')); Check 'tool shortcut follows the Steam mode' ($raw.Contains('--steam-ui') -and -not $raw.Contains('--fullscreen'))
+$r = App $rootF 'steam_load' @{ account = '1' }; Check 'steam page finds them again' ((@($r.value.managed) -contains $ext.file) -and $r.value.tool -and $r.value.stale -eq 0) ($r | ConvertTo-Json -Compress)
+$png = [Convert]::FromBase64String('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEBgIApD5fRAAAAABJRU5ErkJggg=='); [IO.File]::WriteAllBytes("$work\any name.png", $png); [IO.File]::WriteAllBytes("$work\fake.jpg", [byte[]](0xFF,0xD8,0xFF,0xE0,0,0,0)); [IO.File]::WriteAllText("$work\not-image.png", 'hello')
+$r = App $rootF 'set_image' @{ file = $ext.file; kind = 'grid'; path = "$work\any name.png" }; Check 'image named automatically' ($r.ok -and (Test-Path -LiteralPath "$rootF\Covers\Other Game-grid.png")) $r.error
+$r = App $rootF 'state'; Check 'cover shown' ([bool]@($r.value.games)[0].cover)
+$r = App $rootF 'set_image' @{ file = $ext.file; kind = 'grid'; path = "$work\fake.jpg" }; Check 'new image replaces the old one' ($r.ok -and (Test-Path -LiteralPath "$rootF\Covers\Other Game-grid.jpg") -and -not (Test-Path -LiteralPath "$rootF\Covers\Other Game-grid.png")) $r.error
+$r = App $rootF 'set_image' @{ file = $ext.file; kind = 'grid'; path = "$work\not-image.png" }; Check 'file that is not an image refused' (-not $r.ok)
+$r = App $rootF 'set_image' @{ file = '..\..\x'; kind = 'grid'; path = "$work\any name.png" }; Check 'unknown game refused' (-not $r.ok)
+$r = App $rootF 'set_image' @{ file = $ext.file; kind = '..\x'; path = "$work\any name.png" }; Check 'unknown image type refused' (-not $r.ok)
+$sd = "$rootF\Manager\cover-sources"; New-Item -ItemType Directory -Force $sd | Out-Null; [IO.File]::WriteAllText("$sd\bad.json", '{ nope'); [IO.File]::WriteAllText("$sd\plain.json", '{"name":"Plain","direct":{"wide":"http://example.com/{id}.png","exe":"https://example.com/a.exe"}}')
+$r = App $rootF 'state'; Check 'source listed, bad one ignored' (@($r.value.coverSources) -join ',' -eq 'Plain') ($r.value.coverSources -join ',')
+$r = App $rootF 'fetch_art'; Check 'sources work without a key, insecure address refused' ($r.ok -and $r.value.message -match 'bad' -and -not (Test-Path -LiteralPath "$rootF\Covers\Other Game-wide.png")) ($r | ConvertTo-Json -Compress)
+$r = App $rootF 'game_dir_remove' @{ path = "$work\games" }; $r = App $rootF 'state'; Check 'folder removed, game untouched' (@($r.value.games).Count -eq 0 -and (Test-Path -LiteralPath "$work\games\Sub Folder\Other Game [0400000000000001].nsp"))
+$env:SteamGamepadUI = '1'; $r = App $rootF 'steam_ui_detect'; Check 'Steam full-screen mode detected' $r.value.active; Remove-Item Env:\SteamGamepadUI
+App $rootF 'game_dir_add' @{ path = "$work\games" } | Out-Null; App $rootF 'finish_setup' | Out-Null
+$env:FORKBAY_ROOT = $rootF; $env:FORKBAY_SELFTEST = "$work\ui.txt"; $env:FORKBAY_UITEST = "$work\any name.png"; Remove-Item -LiteralPath "$rootF\Covers\Other Game-grid.jpg" -ErrorAction SilentlyContinue; $w = Start-Process -FilePath $Bin -PassThru; $ui = ''; for ($i = 0; $i -lt 60 -and $ui -notmatch 'drop='; $i++) { Start-Sleep -Milliseconds 500; if (Test-Path "$work\ui.txt") { $ui = Get-Content "$work\ui.txt" -Raw } }; if (-not $w.HasExited) { Stop-Process -Id $w.Id -Force }; Remove-Item Env:\FORKBAY_SELFTEST, Env:\FORKBAY_UITEST
+Check 'F11 and dropping an image in the window' ($ui -match 'on=true off=false drop=ok') $ui
+"-- first start"
+Remove-Item Env:\FORKBAY_ROOT; $env:FORKBAY_INSTALLTEST = '1'; $env:FORKBAY_SHORTCUT_DIR = "$work\links"
+$dl = "$work\Downloads"; New-Item -ItemType Directory -Force $dl | Out-Null; Copy-Item $Bin "$dl\forkbay-windows-x86_64.exe"
+function Inst([string]$exe, [string]$cmd, $arg = @{}) { $file = "$work\i.json"; if (Test-Path $file) { Remove-Item $file }; $json = ($arg | ConvertTo-Json -Compress -Depth 5).Replace('"', '\"'); Start-Process -FilePath $exe -ArgumentList '--cli', $cmd, "`"$json`"", "`"$file`"" -Wait -NoNewWindow; return Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json }
+$old = "$dl\forkbay-windows-x86_64.exe"
+$r = Inst $old 'state'; Check 'new copy asks where to go' $r.value.installPrompt ($r | ConvertTo-Json -Compress -Depth 2); Check 'nothing created before the choice' (-not (Test-Path "$dl\Files\Data"))
+$r = Inst $old 'install_options'; Check 'downloads folder recognised' $r.value.temporary
+$r = Inst $old 'install_to' @{ kind = 'custom'; custom = ''; startMenu = $false; desktop = $false }; Check 'empty folder refused' (-not $r.ok)
+$r = Inst $old 'install_to' @{ kind = 'custom'; custom = "$work\apps"; startMenu = $true; desktop = $false }; $new = "$work\apps\Forkbay\Forkbay.exe"; Check 'program copied to the chosen folder' ($r.ok -and (Test-Path $new)) ($r | ConvertTo-Json -Compress)
+$lnk = (New-Object -ComObject WScript.Shell).CreateShortcut("$work\links\menu\Forkbay.lnk"); Check 'shortcut points at it' ($lnk.TargetPath -eq $new) $lnk.TargetPath; Check 'no shortcut where not asked' (-not (Test-Path "$work\links\desktop"))
+$r = Inst $new 'state'; Check 'new place does not ask again' (-not $r.value.installPrompt)
+[IO.File]::WriteAllText("$dl\other.exe", 'not this program'); Start-Process -FilePath $new -ArgumentList '--cleanup-install', "`"$dl\other.exe`"", '--version', "`"$work\v.txt`"" -Wait; Check 'another file is never removed' (Test-Path "$dl\other.exe")
+New-Item -ItemType Directory -Force "$dl\Files\Manager" | Out-Null; Start-Process -FilePath $new -ArgumentList '--cleanup-install', "`"$old`"", '--version', "`"$work\v.txt`"" -Wait; Check 'old copy and its empty folder removed' (-not (Test-Path $old) -and -not (Test-Path "$dl\Files"))
+$keep = "$work\Keep"; New-Item -ItemType Directory -Force "$keep\Files\Data" | Out-Null; Copy-Item $Bin "$keep\Forkbay.exe"; $r = Inst "$keep\Forkbay.exe" 'state'; Check 'folder already in use does not ask' (-not $r.value.installPrompt)
+Start-Process -FilePath $new -ArgumentList '--cleanup-install', "`"$keep\Forkbay.exe`"", '--version', "`"$work\v.txt`"" -Wait; Check 'data of an old copy is kept' (Test-Path "$keep\Files\Data")
+$stay = "$work\Stay"; New-Item -ItemType Directory -Force $stay | Out-Null; Copy-Item $Bin "$stay\Forkbay.exe"; $r = Inst "$stay\Forkbay.exe" 'install_stay'; $r = Inst "$stay\Forkbay.exe" 'state'; Check 'staying here is remembered' ($r.ok -and -not $r.value.installPrompt -and (Test-Path "$stay\Files\Roms")) ($r | ConvertTo-Json -Compress -Depth 2)
+Remove-Item Env:\FORKBAY_INSTALLTEST, Env:\FORKBAY_SHORTCUT_DIR
 Remove-Item Env:\FORKBAY_ROOT, Env:\FORKBAY_SEARCH, Env:\FORKBAY_STEAM -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
 if ($script:fail) { 'RESULT: FAILED' } else { 'RESULT: all passed' }

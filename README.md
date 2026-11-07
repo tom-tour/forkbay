@@ -22,13 +22,14 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **Automatic copies:** saves, profile and settings are copied before you play and before an emulator changes version, with or without the cloud. You can restore them from **Settings**.
 - **Your own emulators:** add one from a GitHub repository or from a local program.
 - **Steam:** adds games to your library and leaves your other shortcuts alone.
-- **Covers (optional):** your own images, or SteamGridDB with your free key.
+- **Covers (optional):** choose or drag an image onto a game, use SteamGridDB with your free key, or add [your own image sources](docs/COVER-SOURCES.md).
 - **Per-game suggestions:** the [wichforks](https://github.com/riyadhHDA/wichforks) community guide, filtered by your graphics card. You choose; nothing changes on its own.
 - **Cloud saves (optional):** syncs before and after each play session, with a choice of version when both sides changed.
 - **Languages:** English and French, following your system language. [Adding one](locales/README.md) takes a single file.
 - **Self-updates** from GitHub releases, with an About page for the license and links.
 - **Themes:** a dark, light or black mode with a theme on top, gradients on or off, your own colors, and themes you can import and export.
-- **Controller support**, and a Steam shortcut to the tool itself, full screen.
+- **Full screen:** games start in full screen unless you turn it off. The tool's Steam shortcut is full screen in Big Picture and Gaming Mode, and a window on the desktop. F11 switches.
+- **Controller support**, and a Steam shortcut to the tool itself.
 - **An error log** that leaves out paths, names and secrets.
 
 ## What you need
@@ -38,9 +39,9 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 
 ## Getting started
 
-1. Put the program in the folder of your choice. It creates a `Files` folder next to itself.
-2. Run it and follow the guided setup. The program is not code-signed, so Windows SmartScreen may warn you the first time: choose **More info**, then **Run anyway**.
-3. Put your games (`.nup`, `.nsp`, `.xci`) in `Files/Roms`.
+1. Run the program. It is not code-signed, so Windows SmartScreen may warn you the first time: choose **More info**, then **Run anyway**.
+2. Choose where it goes: where it is now, the recommended place, or another folder. It creates a `Files` folder next to itself.
+3. Follow the guided setup, and choose the folder your games (`.nup`, `.nsp`, `.xci`) are in. Nothing is moved. You can also put them in `Files/Roms`.
 
 To build it yourself, run `cargo build --release`. On Windows, `tools/build-release.ps1` also keeps your local paths out of the program, but Defender flagged builds made this way far more often. On Linux, first install `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` and `libjavascriptcoregtk-4.1-dev`.
 
@@ -80,7 +81,7 @@ The program is new and not code-signed, so an antivirus can flag it by mistake, 
 
 1. On the **Steam** page, untick your games and the shortcut to the tool, then click **Apply to Steam**. On Windows, also delete `forkbay-launcher.exe` next to Steam's shortcut file (`userdata/<account>/config`).
 2. **Copy your saves somewhere safe:** they are in your data folder, which is `Files/Data` unless you chose another location.
-3. Delete the program and its `Files` folder, and your data folder if it is elsewhere.
+3. Delete the program and its `Files` folder, your data folder if it is elsewhere, and its Start menu and desktop shortcuts if you created them. Your games stay where they are.
 
 ## Limits
 
@@ -117,13 +118,14 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 - **Copies automatiques :** les sauvegardes, le profil et les réglages sont copiés avant de jouer et avant qu'un émulateur change de version, avec ou sans cloud. Tu peux les restaurer depuis **Réglages**.
 - **Tes propres émulateurs :** ajoutes-en un depuis un dépôt GitHub ou depuis un programme local.
 - **Steam :** ajoute les jeux à ta bibliothèque sans toucher à tes autres raccourcis.
-- **Jaquettes (facultatives) :** tes propres images, ou SteamGridDB avec ta clé gratuite.
+- **Jaquettes (facultatives) :** choisis ou glisse une image sur un jeu, utilise SteamGridDB avec ta clé gratuite, ou ajoute [tes propres sources d'images](docs/COVER-SOURCES.md).
 - **Conseils par jeu :** le guide communautaire [wichforks](https://github.com/riyadhHDA/wichforks), filtré selon ta carte graphique. C'est toi qui choisis, rien ne change tout seul.
 - **Sauvegardes dans le cloud (facultatives) :** synchronise avant et après chaque partie, et te laisse choisir si les deux versions ont changé.
 - **Langues :** anglais et français, selon la langue de ton système. [En ajouter une](locales/README.md) demande un seul fichier.
 - **Mise à jour de l'outil lui-même** depuis les versions publiées sur GitHub, avec une page À propos pour la licence et les liens.
 - **Thèmes :** un mode sombre, clair ou noir avec un thème par-dessus, dégradés activables, tes propres couleurs, et des thèmes à importer et exporter.
-- **Prise en charge de la manette**, et un raccourci Steam vers l'outil lui-même, en plein écran.
+- **Plein écran :** les jeux démarrent en plein écran, sauf si tu le désactives. Le raccourci Steam de l'outil est en plein écran dans Big Picture et en mode Jeu, et en fenêtre sur le bureau. F11 passe de l'un à l'autre.
+- **Prise en charge de la manette**, et un raccourci Steam vers l'outil lui-même.
 - **Un journal d'erreurs** sans chemins, sans noms et sans secrets.
 
 ## Ce qu'il te faut
@@ -133,9 +135,9 @@ Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer 
 
 ## Pour commencer
 
-1. Place le programme dans le dossier de ton choix. Il crée un dossier `Files` à côté de lui.
-2. Lance-le et suis l'installation guidée. Le programme n'est pas signé : Windows SmartScreen peut afficher un avertissement la première fois. Choisis alors **Informations complémentaires**, puis **Exécuter quand même**.
-3. Mets tes jeux (`.nup`, `.nsp`, `.xci`) dans `Files/Roms`.
+1. Lance le programme. Il n'est pas signé : Windows SmartScreen peut afficher un avertissement la première fois. Choisis alors **Informations complémentaires**, puis **Exécuter quand même**.
+2. Choisis où le ranger : là où il est, à l'endroit conseillé ou dans un autre dossier. Il crée un dossier `Files` à côté de lui.
+3. Suis l'installation guidée, et indique le dossier où se trouvent tes jeux (`.nup`, `.nsp`, `.xci`). Rien n'est déplacé. Tu peux aussi les mettre dans `Files/Roms`.
 
 Pour le compiler toi-même : `cargo build --release`. Sous Windows, `tools/build-release.ps1` évite aussi d'inclure tes chemins locaux dans le programme, mais Defender a signalé bien plus souvent les versions compilées ainsi. Sous Linux, installe d'abord `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` et `libjavascriptcoregtk-4.1-dev`.
 
@@ -175,7 +177,7 @@ Le programme est récent et n'est pas signé : un antivirus peut le signaler par
 
 1. Sur la page **Steam**, décoche tes jeux et le raccourci vers l'outil, puis clique sur **Enregistrer dans Steam**. Sous Windows, supprime aussi `forkbay-launcher.exe`, à côté du fichier de raccourcis de Steam (`userdata/<compte>/config`).
 2. **Mets tes sauvegardes en lieu sûr :** elles sont dans ton dossier de données, `Files/Data` sauf si tu as choisi un autre emplacement.
-3. Supprime le programme et son dossier `Files`, ainsi que ton dossier de données s'il est ailleurs.
+3. Supprime le programme et son dossier `Files`, ton dossier de données s'il est ailleurs, et ses raccourcis du menu Démarrer et du Bureau si tu les as créés. Tes jeux restent où ils sont.
 
 ## Limites
 

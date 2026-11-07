@@ -31,7 +31,6 @@
   "Dossier des jeux": "Games folder",
   "Récupérer les jaquettes": "Download covers",
   "Jouer": "Play",
-  "Aucun jeu : place tes fichiers .nup, .nsp ou .xci dans le dossier des jeux.": "No games found: put your .nup, .nsp or .xci files in the games folder.",
   "Après une mise à jour, l'ancienne version reste dans Old Versions. Tes données ne changent pas.": "After an update, the previous version stays in Old Versions. Your data does not change.",
   "Actualiser": "Refresh",
   "Ajouter un émulateur": "Add an emulator",
@@ -173,7 +172,6 @@
   "Lichii est le plus polyvalent sous Windows, à essayer en premier.": "Lichii is the most versatile on Windows: try it first.",
   "Installer Lichii": "Install Lichii",
   "Tes jeux": "Your games",
-  "Place tes fichiers .nup, .nsp ou .xci dans le dossier des jeux.": "Put your .nup, .nsp or .xci files in the games folder.",
   "Ouvrir le dossier": "Open folder",
   "Options": "Options",
   "Dernière étape. Ces deux options sont facultatives et restent disponibles plus tard.": "Last step. Both of these are optional, and you can set them up later.",
@@ -196,8 +194,6 @@
   "Reprendre les étapes d'installation et d'import.": "Go through the setup and import steps again.",
   "Pour ajouter une langue, dépose un fichier dans Manager/locales. Le mode d'emploi est dans le dossier locales du projet.": "To add a language, drop a file in Manager/locales. The instructions are in the project's locales folder.",
   "Jaquettes (facultatives)": "Covers (optional)",
-  "Dépose tes propres images dans le dossier Covers, sous le nom « Nom du jeu-grid.png », ou récupère-les depuis SteamGridDB avec ta clé gratuite : jaquette, bannière, logo et icône, pour l'outil et pour Steam.": "Drop your own images in the Covers folder, named like “Game Name-grid.png”, or download them from SteamGridDB with your free key: cover, banner, logo and icon, for the tool and for Steam.",
-  "Avec une clé gratuite SteamGridDB (Preferences, puis API sur leur site), l'outil récupère les images de tes jeux. Sinon, dépose les tiennes dans le dossier Covers.": "With a free SteamGridDB key (Preferences, then API on their site), the tool gets images for your games. Otherwise, drop your own in the Covers folder.",
   "Récupérer": "Download",
   "Je confirme que mes clés, mon firmware et mes jeux viennent de ma propre console, et que j'utilise cet outil sous ma responsabilité.": "I confirm that my keys, firmware and games come from my own console, and that I use this tool at my own risk.",
   "Cet outil ne fournit aucun de ces fichiers. Il n'est lié à aucun fabricant de consoles et il est fourni sans garantie.": "This tool provides none of these files. It is not affiliated with any console maker and comes with no warranty.",
@@ -229,7 +225,6 @@
   "Accent": "Accent",
   "Quitter Forkbay": "Quit Forkbay",
   "Forkbay lui-même": "Forkbay itself",
-  "Un raccourci vers l'outil dans Steam, en plein écran, pratique à la manette.": "A shortcut to the tool in Steam, full screen, handy with a controller.",
   "Le journal d'erreurs de Forkbay est toujours inclus, anonymisé lui aussi.": "Forkbay's error log is always included, with personal details removed too.",
   "Ouvrir le journal": "Open log",
   "Mode": "Mode",
@@ -269,7 +264,48 @@
   "Restaurer": "Restore",
   "Confirmer la restauration": "Confirm restore",
   "Aucune copie pour l'instant.": "No copies yet.",
-  "Restauration...": "Restoring..."
+  "Restauration...": "Restoring...",
+  "Images": "Images",
+  "Choisis une image, ou glisse-la directement sur ce jeu. Le nom du fichier n'a pas d'importance.": "Choose an image, or drag it straight onto this game. The file name does not matter.",
+  "Jaquette": "Cover",
+  "Bannière": "Banner",
+  "Logo": "Logo",
+  "Icône": "Icon",
+  "Choisis une image": "Choose an image",
+  "Image enregistrée.": "Image saved.",
+  "Dépose l'image sur un jeu, dans la page Jeux.": "Drop the image on a game, on the Games page.",
+  "Ce fichier n'est pas une image PNG, JPEG, WebP ou ICO.": "This file is not a PNG, JPEG, WebP or ICO image.",
+  "Aucun jeu pour l'instant : ajoute le dossier où ils se trouvent depuis la page Réglages, ou place-les dans le dossier des jeux de Forkbay.": "No games yet: add the folder they are in from the Settings page, or put them in Forkbay's games folder.",
+  "Ajouter un dossier de jeux": "Add a games folder",
+  "Ouvrir le dossier des jeux de Forkbay": "Open Forkbay's games folder",
+  "Dossier où se trouvent tes jeux": "Folder your games are in",
+  "Dossier retiré de la liste. Tes jeux n'ont pas bougé.": "Folder removed from the list. Your games have not moved.",
+  "Lancer les jeux en plein écran": "Launch games in full screen",
+  "Pour les émulateurs de la liste fournie, aussi depuis Steam. Échap en sort par défaut.": "For the emulators in the built-in list, including from Steam. Esc leaves it by default.",
+  "Dossiers de jeux": "Games folders",
+  "Forkbay lit les jeux là où ils sont, sans rien déplacer ni copier, sous-dossiers compris.": "Forkbay reads games where they are, subfolders included, without moving or copying anything.",
+  "Le plus simple : page Jeux, puis Images sur le jeu voulu. Tu peux aussi les récupérer depuis SteamGridDB avec ta clé gratuite, ou depuis tes propres sources d'images.": "The easiest way: on the Games page, open Images on the game you want. You can also download them from SteamGridDB with your free key, or from your own image sources.",
+  "Sources d'images": "Image sources",
+  "Comment ajouter une source": "How to add a source",
+  "Sources d'images :": "Image sources:",
+  "Tu choisis ce que tu ajoutes, et c'est à toi de respecter les conditions de ces sites.": "You choose what you add, and you are responsible for following those sites' terms.",
+  "Un raccourci vers l'outil dans Steam. En plein écran dans Big Picture et en mode Jeu, en fenêtre sinon. F11 passe de l'un à l'autre.": "A shortcut to the tool in Steam. Full screen in Big Picture and Gaming Mode, a window otherwise. F11 switches between them.",
+  "Indique le dossier où se trouvent déjà tes jeux : rien n'est déplacé ni copié. Tu peux aussi placer tes fichiers .nup, .nsp ou .xci dans le dossier des jeux de Forkbay.": "Choose the folder your games are already in: nothing is moved or copied. You can also put your .nup, .nsp or .xci files in Forkbay's games folder.",
+  "Avec une clé gratuite SteamGridDB (Preferences, puis API sur leur site), l'outil récupère les images de tes jeux. Sinon, ajoute les tiennes depuis la page Jeux, avec le bouton Images.": "With a free SteamGridDB key (Preferences, then API on their site), the tool downloads images for your games. Otherwise, add your own from the Games page, with the Images button.",
+  "Où installer Forkbay ?": "Where should Forkbay go?",
+  "Il garde ses émulateurs et ses données dans un dossier Files, à côté de lui. Choisis un endroit où il peut rester.": "It keeps its emulators and data in a Files folder next to itself. Choose a place where it can stay.",
+  "Ici": "Here",
+  "Attention : ce dossier sert plutôt aux fichiers temporaires, et il est souvent vidé.": "Careful: this folder is usually for temporary files, and it often gets emptied.",
+  "Idéal sur un disque externe, ou si tu as déjà choisi ce dossier.": "Ideal on an external drive, or if you already chose this folder.",
+  "À l'endroit conseillé": "In the recommended place",
+  "Dans ton compte, sans droits d'administrateur, sur le disque système.": "In your account, without administrator rights, on the system drive.",
+  "Dans un autre dossier": "In another folder",
+  "Par exemple sur un disque avec plus de place. Un sous-dossier Forkbay y sera créé.": "For example on a drive with more room. A Forkbay subfolder will be created there.",
+  "Raccourci dans le menu Démarrer": "Start menu shortcut",
+  "Raccourci sur le Bureau": "Desktop shortcut",
+  "Installation...": "Installing...",
+  "Forkbay s'ouvre à son nouvel emplacement...": "Forkbay is opening in its new place...",
+  "Raccourci dans le menu des applications": "Applications menu shortcut"
  },
  "uiPatterns": [
   [
@@ -354,6 +390,46 @@
   ]
  ],
  "messages": [
+  [
+   "^Dossier ajouté : (\\d+) jeu\\(x\\) trouvé\\(s\\)\\. Rien n'a été déplacé\\.$",
+   "Folder added: $1 game(s) found. Nothing was moved."
+  ],
+  [
+   "^Ce dossier est déjà utilisé\\.$",
+   "This folder is already in use."
+  ],
+  [
+   "^Choisis un dossier\\.$",
+   "Choose a folder."
+  ],
+  [
+   "^Type d'image inconnu\\.$",
+   "Unknown image type."
+  ],
+  [
+   "^Ce fichier n'est pas une image PNG, JPEG, WebP ou ICO\\.$",
+   "This file is not a PNG, JPEG, WebP or ICO image."
+  ],
+  [
+   "^Image trop lourde \\(25 Mo au maximum\\)\\.$",
+   "This image is too large (25 MB at most)."
+  ],
+  [
+   "^(.+) Source injoignable : (\\d+) essai\\(s\\), voir le journal\\.(.*)$",
+   "$1 Source unreachable: $2 attempt(s), see the log.$3"
+  ],
+  [
+   "^(.+) Source illisible : (.+)\\.$",
+   "$1 Unreadable source: $2."
+  ],
+  [
+   "^Impossible d'écrire dans (.+) : choisis un autre dossier\\.$",
+   "Cannot write to $1: choose another folder."
+  ],
+  [
+   "^Un autre Forkbay est déjà ouvert dans (.+) : ferme-le, puis réessaie\\.$",
+   "Another Forkbay is already open in $1: close it, then try again."
+  ],
   [
    "^(.+) est un dossier normal alors qu'un lien est attendu : déplace son contenu dans Data, puis supprime-le\\.$",
    "$1 is a regular folder, not a link: move its contents to Data, then delete it."

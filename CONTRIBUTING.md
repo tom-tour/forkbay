@@ -8,6 +8,7 @@ Pull requests are welcome. For a large change, please open an issue first so tha
 
 - **Never add keys, firmware, games, dumps or copyrighted artwork**, in code, tests, issues or screenshots.
 - Nothing that helps get them from anywhere other than your own console.
+- No image source that points at a console maker's catalogue, in the code or the documentation.
 - By contributing, you agree that your work is released under this project's license, GPL-3.0-or-later.
 - Bugs inside a game belong to the emulator's own project.
 
@@ -45,6 +46,7 @@ Les pull requests sont les bienvenues. Pour un gros changement, ouvre d'abord un
 
 - **N'ajoute jamais de clés, de firmware, de jeux, de dumps ni d'images protégées**, que ce soit dans le code, les tests, les tickets ou les captures d'écran.
 - Rien qui aide à les obtenir autrement que depuis ta propre console.
+- Aucune source d'images qui vise le catalogue d'un fabricant de consoles, ni dans le code ni dans la documentation.
 - En contribuant, tu acceptes que ton travail soit publié sous la licence du projet, GPL-3.0-or-later.
 - Les bugs dans un jeu concernent le projet de l'émulateur.
 

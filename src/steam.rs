@@ -87,10 +87,31 @@ fn set_text(e: &mut Node, name: &str, value: &str) {
     }
 }
 
-const TOOL_FLAG: &str = "--fullscreen";
+const TOOL_FLAG: &str = "--steam-ui";
+const OLD_TOOL_FLAG: &str = "--fullscreen";
 
 fn is_tool(e: &Node) -> bool {
-    text_field(e, "LaunchOptions").contains(TOOL_FLAG)
+    let o = text_field(e, "LaunchOptions");
+    o.contains(TOOL_FLAG) || o.contains(OLD_TOOL_FLAG)
+}
+
+/// True in Steam's full-screen interfaces (Big Picture, the Steam Deck's Gaming Mode), not on the desktop.
+pub fn big_picture() -> bool {
+    let on = |k: &str| std::env::var(k).is_ok_and(|v| v == "1");
+    if on("SteamGamepadUI") || on("SteamTenfoot") || std::env::var_os("GAMESCOPE_WAYLAND_DISPLAY").is_some() {
+        return true;
+    }
+    if std::env::var("XDG_CURRENT_DESKTOP").is_ok_and(|v| v.eq_ignore_ascii_case("gamescope")) {
+        return true;
+    }
+    #[cfg(windows)]
+    {
+        let key = winreg::RegKey::predef(winreg::enums::HKEY_CURRENT_USER).open_subkey("Software\\Valve\\Steam");
+        if key.and_then(|k| k.get_value::<u32, _>("BigPictureInForeground")).is_ok_and(|v| v != 0) {
+            return true;
+        }
+    }
+    false
 }
 
 pub fn managed_game(e: &Node) -> Option<String> {
@@ -98,7 +119,7 @@ pub fn managed_game(e: &Node) -> Option<String> {
     re.captures(&text_field(e, "LaunchOptions")).and_then(|c| c.get(1).map(|m| m.as_str().replace("''", "'")).or_else(|| c.get(2).map(|m| m.as_str().to_string())))
 }
 
-fn game_rel(file: &str) -> String { if cfg!(windows) { format!("Roms/{file}") } else { format!("Roms/{file}").replace('\'', "''") } }
+fn game_rel(file: &str) -> String { if cfg!(windows) { game_arg(file) } else { game_arg(file).replace('\'', "''") } }
 
 const LAUNCHER: &str = "forkbay-launcher.exe";
 
@@ -308,7 +329,7 @@ pub fn load(account: &str) -> Result<Value> {
     let mut stale = 0;
     let mut tool = false;
     for e in &entries {
-        if is_tool(e) { tool = true; if !is_current(e) { stale += 1; } continue; }
+        if is_tool(e) { tool = true; if !is_current(e) || !text_field(e, "LaunchOptions").contains(TOOL_FLAG) { stale += 1; } continue; }
         if let Some(g) = managed_game(e) {
             managed.push(g.trim_start_matches("Roms/").trim_start_matches("Roms\\").to_string());
             if !is_current(e) { stale += 1; }

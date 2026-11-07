@@ -414,12 +414,15 @@ pub fn run(emu: &str, game: Option<&Path>) -> Result<()> {
     let exe = find_exe(&dir).ok_or_else(|| anyhow!("{emu} n'est pas installé."))?;
     let mut c = std::process::Command::new(&exe);
     c.current_dir(&dir);
+    // These emulators leave full screen when given a game, unless they are told otherwise.
+    let full = game.is_some() && load_settings().fullscreen_games && list().iter().any(|e| e.name == emu && !e.user);
+    if full { c.arg("-f"); }
     if let Some(g) = game {
         c.arg("-g").arg(g);
     }
     #[cfg(not(windows))]
     linux_portable(&mut c, &dir)?;
-    crate::log::info(&format!("start {emu}"));
+    crate::log::info(&format!("start {emu}{}", if full { " full screen" } else { "" }));
     let status = c.spawn()?.wait()?;
     if !status.success() { crate::log::error(&format!("{emu} stopped with {status}")); } else { crate::log::info(&format!("{emu} closed")); }
     Ok(())

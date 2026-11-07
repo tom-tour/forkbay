@@ -69,6 +69,19 @@ grep -q 'BCF5E512' "$WORK/rep.json" && echo "ok   report keeps data" || { echo "
 # Language
 FORKBAY_LANG=en_US.UTF-8 "$BIN" --cli install_keys "{\"path\":\"$WORK/r.json\"}" "$WORK/en.json"
 grep -q "Choose your prod.keys" "$WORK/en.json" && echo "ok   english messages" || { echo "FAIL english: $(cat "$WORK/en.json")"; FAIL=1; }
+# Game folders, images, Steam mode and first start
+mkdir -p "$WORK/games/Sub"; echo x > "$WORK/games/Sub/Other Game [0400000000000001].nsp"
+"$BIN" --cli game_dir_add "{\"path\":\"$WORK/games\"}" "$WORK/o.json"; grep -q '"ok":true' "$WORK/o.json" && echo "ok   games folder added" || { echo "FAIL games folder: $(cat "$WORK/o.json")"; FAIL=1; }
+"$BIN" --cli state '{}' "$WORK/o.json"; grep -q 'Other Game' "$WORK/o.json" && echo "ok   game found in a subfolder" || { echo "FAIL game in folder: $(cat "$WORK/o.json")"; FAIL=1; }
+printf '\377\330\377\340' > "$WORK/a.jpg"; G="$WORK/games/Sub/Other Game [0400000000000001].nsp"; "$BIN" --cli set_image "{\"file\":\"$G\",\"kind\":\"grid\",\"path\":\"$WORK/a.jpg\"}" "$WORK/o.json"; grep -q '"ok":true' "$WORK/o.json" && echo "ok   image named automatically" || { echo "FAIL image: $(cat "$WORK/o.json")"; FAIL=1; }
+"$BIN" --cli game_dir_remove "{\"path\":\"$WORK/games\"}" "$WORK/o.json"
+SteamGamepadUI=1 "$BIN" --cli steam_ui_detect '{}' "$WORK/o.json"; grep -q '"active":true' "$WORK/o.json" && echo "ok   Steam full-screen mode detected" || { echo "FAIL steam mode: $(cat "$WORK/o.json")"; FAIL=1; }
+env -u SteamGamepadUI -u GAMESCOPE_WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=GNOME "$BIN" --cli steam_ui_detect '{}' "$WORK/o.json"; grep -q '"active":false' "$WORK/o.json" && echo "ok   desktop mode detected" || { echo "FAIL desktop mode: $(cat "$WORK/o.json")"; FAIL=1; }
+mkdir -p "$WORK/dl"; cp "$BIN" "$WORK/dl/forkbay-linux-x86_64"; OLD="$WORK/dl/forkbay-linux-x86_64"
+I="env -u FORKBAY_ROOT FORKBAY_INSTALLTEST=1 FORKBAY_SHORTCUT_DIR=$WORK/links"
+$I "$OLD" --cli state '{}' "$WORK/o.json"; grep -q '"installPrompt":true' "$WORK/o.json" && echo "ok   new copy asks where to go" || { echo "FAIL first start: $(cat "$WORK/o.json")"; FAIL=1; }
+$I "$OLD" --cli install_to "{\"kind\":\"custom\",\"custom\":\"$WORK/apps\",\"startMenu\":true,\"desktop\":false}" "$WORK/o.json"; [ -x "$WORK/apps/Forkbay/forkbay" ] && [ -f "$WORK/links/menu/forkbay.desktop" ] && echo "ok   program copied, shortcut created" || { echo "FAIL install: $(cat "$WORK/o.json")"; FAIL=1; }
+$I "$WORK/apps/Forkbay/forkbay" --cleanup-install "$OLD" --version "$WORK/o.txt"; [ ! -e "$OLD" ] && echo "ok   old copy removed" || { echo "FAIL old copy still there"; FAIL=1; }
 FORKBAY_LANG=fr_FR.UTF-8 "$BIN" --cli state '{}' "$WORK/fr.json"
 grep -q '"language":"fr"' "$WORK/fr.json" && echo "ok   french detected" || { echo "FAIL french detection"; FAIL=1; }
 
