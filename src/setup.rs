@@ -21,14 +21,12 @@ pub fn set_emulator_link(folder: &Path, data: &Path) -> Result<()> {
     make_link(&link, data)
 }
 
-/// Each emulator version gets its own shader cache: a cache left by another fork, or by another
-/// version of the same one, can pass the emulator's own checks and still give a black screen.
-/// Data/cache/shader becomes a link to Data/cache/shaders/<emulator>/<version>.
-pub fn point_shader_cache(data: &Path, emu: &str, version: &str) -> Result<PathBuf> {
+/// Each emulator gets its own shader cache: a cache left by another fork can pass the emulator's
+/// own version check and still give a black screen. Versions of one fork share theirs, so an
+/// update does not recompile every game. Data/cache/shader becomes a link to Data/cache/shaders/<emulator>.
+pub fn point_shader_cache(data: &Path, emu: &str) -> Result<PathBuf> {
     let base = data.join("cache");
-    let mine = base.join("shaders").join(emu);
-    let version = Regex::new(r"[^A-Za-z0-9._-]").unwrap().replace_all(version, "_");
-    let own = mine.join(if version.is_empty() { "local" } else { &version });
+    let own = base.join("shaders").join(emu);
     fs::create_dir_all(&own)?;
     let link = base.join("shader");
     match fs::symlink_metadata(&link) {
@@ -37,19 +35,26 @@ pub fn point_shader_cache(data: &Path, emu: &str, version: &str) -> Result<PathB
         }
         Ok(_) => {
             // The cache every emulator shared before: set aside, never used again.
-            let aside = (1..).map(|n| base.join("shaders").join(if n == 1 { "shared-before".to_string() } else { format!("shared-before-{n}") })).find(|p| !p.exists()).unwrap();
+            let aside = (1..).map(|n| base.join(if n == 1 { "shader-shared-before".to_string() } else { format!("shader-shared-before-{n}") })).find(|p| !p.exists()).unwrap();
             fs::rename(&link, &aside)?;
         }
         Err(_) => {}
     }
     if fs::symlink_metadata(&link).is_err() { make_link(&link, &own)?; }
-    // The version before stays for a rollback; older caches are of no use.
-    let mut others: Vec<(std::time::SystemTime, PathBuf)> = fs::read_dir(&mine)?.flatten()
-        .filter(|e| e.path() != own && e.file_type().is_ok_and(|t| t.is_dir()))
-        .map(|e| (e.metadata().and_then(|m| m.modified()).unwrap_or(std::time::UNIX_EPOCH), e.path())).collect();
-    others.sort_by_key(|o| std::cmp::Reverse(o.0));
-    for (_, old) in others.into_iter().skip(1) { let _ = fs::remove_dir_all(old); }
     Ok(own)
+}
+
+/// Size of an emulator's shader cache, in bytes.
+pub fn shader_cache_size(data: &Path, emu: &str) -> u64 {
+    tree_stats(&data.join("cache").join("shaders").join(emu)).1
+}
+
+/// Empties an emulator's shader cache: the emulator rebuilds it while you play.
+pub fn clear_shader_cache(data: &Path, emu: &str) -> Result<()> {
+    let own = data.join("cache").join("shaders").join(emu);
+    if own.exists() { fs::remove_dir_all(&own)?; }
+    fs::create_dir_all(&own)?;
+    Ok(())
 }
 
 /// Points the emulator's folders at Data and its game folders at Roms.
@@ -202,25 +207,27 @@ pub fn move_data(location: &str, custom: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn each_emulator_version_has_its_own_shader_cache() {
+    fn each_emulator_has_its_own_shader_cache() {
         use std::fs;
         let data = std::env::temp_dir().join(format!("forkbay-shaders-{}", std::process::id()));
         let _ = fs::remove_dir_all(&data);
         let link = data.join("cache/shader");
         fs::create_dir_all(&link).unwrap();
         fs::write(link.join("vulkan.bin"), "shared").unwrap();
-        let a1 = super::point_shader_cache(&data, "Lichii", "frizti-v3").unwrap();
-        assert!(data.join("cache/shaders/shared-before/vulkan.bin").is_file(), "old shared cache set aside");
-        fs::write(link.join("vulkan.bin"), "a1").unwrap();
-        assert_eq!(fs::read_to_string(a1.join("vulkan.bin")).unwrap(), "a1");
-        let b = super::point_shader_cache(&data, "Eglantine", "daily/2026 11").unwrap();
-        assert!(b.ends_with("daily_2026_11") && !link.join("vulkan.bin").exists(), "another emulator starts empty");
-        std::thread::sleep(std::time::Duration::from_millis(20));
-        super::point_shader_cache(&data, "Lichii", "frizti-v4").unwrap();
-        std::thread::sleep(std::time::Duration::from_millis(20));
-        super::point_shader_cache(&data, "Lichii", "frizti-v5").unwrap();
-        assert!(!a1.exists() && data.join("cache/shaders/Lichii/frizti-v4").is_dir(), "only the version before is kept");
-        assert!(b.is_dir());
+        let a = super::point_shader_cache(&data, "Lichii").unwrap();
+        assert!(data.join("cache/shader-shared-before/vulkan.bin").is_file(), "old shared cache set aside");
+        fs::write(link.join("vulkan.bin"), "lichii").unwrap();
+        assert_eq!(fs::read_to_string(a.join("vulkan.bin")).unwrap(), "lichii");
+        super::point_shader_cache(&data, "Eglantine").unwrap();
+        assert!(!link.join("vulkan.bin").exists(), "another emulator starts empty");
+        super::point_shader_cache(&data, "Lichii").unwrap();
+        assert_eq!(fs::read_to_string(link.join("vulkan.bin")).unwrap(), "lichii", "back to its own cache");
+        assert_eq!(super::shader_cache_size(&data, "Lichii"), 6);
+        super::clear_shader_cache(&data, "Lichii").unwrap();
+        assert!(!link.join("vulkan.bin").exists() && super::shader_cache_size(&data, "Lichii") == 0);
+        super::point_shader_cache(&data, "Lichii").unwrap();
+        fs::write(link.join("x"), "1").unwrap();
+        assert!(a.join("x").is_file(), "the link still works after clearing");
         super::remove_link(&link).unwrap();
         fs::remove_dir_all(&data).unwrap();
     }

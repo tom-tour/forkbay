@@ -145,7 +145,7 @@ pub fn status() -> Value {
         let present = find_exe(&folder).is_some();
         let inst = installed(&e.name);
         let local = e.source == "local";
-        let mut row = json!({ "name": e.name, "about": e.about, "present": present, "installed": inst, "latest": "", "date": "", "size": 0, "page": page_url(e), "upToDate": false, "error": "", "user": e.user, "local": local, "notes": "", "old": old_versions(&e.name) });
+        let mut row = json!({ "name": e.name, "about": e.about, "present": present, "installed": inst, "latest": "", "date": "", "size": 0, "page": page_url(e), "upToDate": false, "error": "", "user": e.user, "local": local, "notes": "", "old": old_versions(&e.name), "shaders": shader_cache_size(&data_path(), &e.name) });
         if !local {
             match latest(e) {
                 Ok(l) => {
@@ -377,6 +377,13 @@ pub fn add_local(name: &str, exe: &Path) -> Result<String> {
     Ok(format!("{name} ajouté. Ses mises à jour restent à faire à la main."))
 }
 
+pub fn clear_shaders(name: &str) -> Result<String> {
+    if !list().iter().any(|e| e.name == name) { bail!("Émulateur inconnu : {name}"); }
+    if any_running() { bail!("Ferme l'émulateur avant de vider son cache de shaders."); }
+    clear_shader_cache(&data_path(), name)?;
+    Ok(format!("Cache de shaders de {name} vidé. Les shaders seront recompilés en jouant."))
+}
+
 /// Only the list entry goes: the folder stays.
 pub fn remove(name: &str) -> Result<String> {
     let all: Vec<Emu> = user_list().into_iter().filter(|e| e.name != name).collect();
@@ -401,7 +408,7 @@ pub fn run(emu: &str, game: Option<&Path>, key: &str) -> Result<()> {
     // Not while another emulator runs: its cache would change under it.
     if any_running() {
         crate::log::info("shader cache unchanged: another emulator is running");
-    } else if let Err(e) = point_shader_cache(&data_path(), emu, &installed(emu)) {
+    } else if let Err(e) = point_shader_cache(&data_path(), emu) {
         crate::log::error(&format!("shader cache: {e}"));
     }
     crate::log::info(&format!("start {emu}{}", if full { " full screen" } else { "" }));

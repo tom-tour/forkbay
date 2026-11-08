@@ -52,6 +52,8 @@
   "Ouvrir": "Open",
   "Versions": "Releases",
   "Retirer": "Remove",
+  "Vider le cache de shaders": "Clear shader cache",
+  "En cas d'écran noir ou de graphismes cassés après une mise à jour": "If you get a black screen or broken graphics after an update",
   "Tes autres raccourcis ne changent pas. Après un déplacement du dossier de Forkbay, clique simplement sur Enregistrer dans Steam.": "Your other shortcuts do not change. After moving the Forkbay folder, simply click Apply to Steam.",
   "Compte Steam": "Steam account",
   "Jeux dans Steam": "Games in Steam",
@@ -693,6 +695,14 @@
   [
    "^(.+) : vérification et installation\\.\\.\\.$",
    "$1: checking and installing..."
+  ],
+  [
+   "^Ferme l'émulateur avant de vider son cache de shaders\\.$",
+   "Close the emulator before clearing its shader cache."
+  ],
+  [
+   "^Cache de shaders de (.+) vidé\\. Les shaders seront recompilés en jouant\\.$",
+   "$1 shader cache cleared. Shaders will be rebuilt as you play."
   ],
   [
    "^Émulateur inconnu : (.+)$",

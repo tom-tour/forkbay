@@ -92,6 +92,7 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
         "backup_now" => msg(backup::now()?),
         "backup_restore" => msg(backup::restore(&s_arg(a, "name"))?),
         "backup_set" => { backup::set(a["enabled"].as_bool(), a["keep"].as_u64())?; json!({}) }
+        "emu_clear_shaders" => msg(emu::clear_shaders(&s_arg(a, "name"))?),
         "emu_remove" => msg(emu::remove(&s_arg(a, "name"))?),
         "set_game_emu" => { let mut s = load_settings(); s.games.insert(s_arg(a, "file"), s_arg(a, "emu")); save_settings(&s)?; json!({}) }
         "set_default_emu" => { let mut s = load_settings(); s.default_emulator = s_arg(a, "emu"); save_settings(&s)?; json!({}) }
