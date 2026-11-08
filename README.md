@@ -13,6 +13,14 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 
 ![The games library](docs/screenshots/games.png)
 
+**Each game has its own settings and images**
+
+![A game's settings and images](docs/screenshots/game-details.gif)
+
+**Dark, light or black, with the theme of your choice**
+
+![Switching themes](docs/screenshots/themes.gif)
+
 <table>
   <tr>
     <td><img src="docs/screenshots/emulators.png" alt="Emulators: install, update and roll back"></td>
@@ -21,13 +29,6 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
   <tr>
     <td><img src="docs/screenshots/steam.png" alt="Adding games to Steam"></td>
     <td><img src="docs/screenshots/settings.png" alt="Themes and settings"></td>
-  </tr>
-</table>
-
-<table>
-  <tr>
-    <td><img src="docs/screenshots/game-details.gif" alt="A game's settings and images"></td>
-    <td><img src="docs/screenshots/themes.gif" alt="Switching themes"></td>
   </tr>
 </table>
 
