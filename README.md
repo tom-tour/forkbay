@@ -11,6 +11,21 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 
 **[Français](#français)**
 
+![The games library](docs/screenshots/games.png)
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/emulators.png" alt="Emulators: install, update and roll back"></td>
+    <td><img src="docs/screenshots/game-settings.png" alt="Settings for one game"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/steam.png" alt="Adding games to Steam"></td>
+    <td><img src="docs/screenshots/settings.png" alt="Themes and settings"></td>
+  </tr>
+</table>
+
+<sub>The games and covers in these pictures are made up.</sub>
+
 ## What it does
 
 - **Guided setup:** imports what already exists on your PC, walks you through your keys and firmware, then installs an emulator.
@@ -108,6 +123,8 @@ GPL-3.0-or-later. See [LICENSE](LICENSE).
 # Français
 
 Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer les jeux, garder les émulateurs à jour, partager un seul dossier de données, ajouter les jeux à Steam et synchroniser tes sauvegardes. C'est un seul petit programme, écrit en Rust.
+
+Les captures d'écran sont [en haut de la page](#forkbay). Les jeux et les jaquettes qu'on y voit sont inventés.
 
 ## Ce que fait l'outil
 
