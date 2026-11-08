@@ -398,6 +398,12 @@ pub fn run(emu: &str, game: Option<&Path>, key: &str) -> Result<()> {
     }
     #[cfg(not(windows))]
     linux_portable(&mut c, &dir)?;
+    // Not while another emulator runs: its cache would change under it.
+    if any_running() {
+        crate::log::info("shader cache unchanged: another emulator is running");
+    } else if let Err(e) = point_shader_cache(&data_path(), emu, &installed(emu)) {
+        crate::log::error(&format!("shader cache: {e}"));
+    }
     crate::log::info(&format!("start {emu}{}", if full { " full screen" } else { "" }));
     let mut child = c.spawn()?;
     let exe_name = exe.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();

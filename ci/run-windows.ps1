@@ -182,6 +182,7 @@ $r = App $rootC 'backup_now'; Check 'unchanged data not copied again' ($r.value.
 Copy-Item "$env:WINDIR\System32\hostname.exe" "$work\fake\fake.exe"; $r = App $rootC 'emu_add_local' @{ name = 'Fake'; exe = "$work\fake\fake.exe" }; Check 'test emulator added' $r.ok $r.error; $r = App $rootC 'set_default_emu' @{ emu = 'Fake' }; [IO.File]::WriteAllText("$rootC\Roms\Game [0400000000000000].nup", 'x'); $r = App $rootC 'set_game_emu' @{ file = 'Game [0400000000000000].nup'; emu = 'Fake' }
 function PlayC { $env:FORKBAY_ROOT = $rootC; Start-Process -FilePath $Bin -ArgumentList '--launch', '"Roms/Game [0400000000000000].nup"' -Wait }
 [IO.File]::WriteAllText($sc, 'two'); PlayC; $r = App $rootC 'backup_list'; Check 'copy before playing' (@($r.value.copies).Count -eq 2) ($r | ConvertTo-Json -Compress -Depth 4)
+$sh = Get-Item -Force "$rootC\Data\cache\shader" -ErrorAction SilentlyContinue; Check 'shader cache of this emulator only' ($sh -and $sh.LinkType -eq 'Junction' -and "$($sh.Target)" -like '*cache\shaders\Fake\local') "$($sh.LinkType) $($sh.Target)"
 PlayC; $r = App $rootC 'backup_list'; Check 'no copy when nothing changed' (@($r.value.copies).Count -eq 2)
 [IO.File]::WriteAllText($sc, 'three'); $first = @($r.value.copies)[-1].name; $r = App $rootC 'backup_restore' @{ name = $first }; Check 'restore' $r.ok $r.error; Check 'restored content' ((Get-Content $sc) -eq 'one')
 $r = App $rootC 'backup_list'; $n = @($r.value.copies)[0].name; Check 'state kept before restore' ((Get-Content "$rootC\Save Backups\$n\nand\user\save\0\P\T1\a.bin") -eq 'three')
