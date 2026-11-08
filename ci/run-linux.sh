@@ -42,6 +42,12 @@ test ! -e "$FORKBAY_ROOT/Data/load/X/m.bin" && echo "ok   unticked mods skipped"
 grep -q 'vibration=1' "$FORKBAY_ROOT/Data/config/qt-config.ini" && echo "ok   controls merged" || { echo "FAIL controls"; FAIL=1; }
 grep -q 'net=2' "$FORKBAY_ROOT/Data/config/qt-config.ini" && { echo "FAIL network copied"; FAIL=1; } || echo "ok   unticked network skipped"
 
+# An emulator installed in the system (a distribution package) is used where it is, never copied
+check "system emulator used in place" emu_add_local '{"name":"SysEmu","exe":"/usr/bin/true"}' 'sur place'
+grep -qx '/usr/bin/true' "$FORKBAY_ROOT/SysEmu/exe.txt" && echo "ok   started by its full path" || { echo "FAIL exe path: $(cat "$FORKBAY_ROOT/SysEmu/exe.txt")"; FAIL=1; }
+test "$(find "$FORKBAY_ROOT/SysEmu" -mindepth 1 | wc -l)" -le 3 && echo "ok   system folder not copied" || { echo "FAIL system folder copied"; FAIL=1; }
+check "system emulator present" emu_status '{}' '"name":"SysEmu"'
+
 # Cloud through a synced folder
 mkdir -p "$WORK/cloud"
 check "cloud settings" cloud_save "{\"enabled\":false,\"provider\":\"folder\",\"folderPath\":\"$WORK/cloud\",\"keepBackups\":3}" '"ok":true'

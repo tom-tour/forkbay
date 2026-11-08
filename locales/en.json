@@ -43,6 +43,7 @@
   "Vérification des versions...": "Checking versions...",
   "Versions vérifiées.": "Versions checked.",
   "Copie locale": "Local copy",
+  "Installé dans le système": "Installed in the system",
   "Non disponible": "Not available",
   "À jour": "Up to date",
   "Mise à jour disponible": "Update available",
@@ -793,6 +794,14 @@
    "The folder already exists: $1"
   ],
   [
+   "^(.+) ajouté, utilisé sur place\\. Ses mises à jour passent par ton gestionnaire de paquets\\.$",
+   "$1 added and used where it is. Update it with your package manager."
+  ],
+  [
+   "^Ce dossier est trop gros pour être copié \\((.+)\\) : choisis le programme d'un émulateur portable\\.$",
+   "This folder is too big to copy ($1): choose the program of a portable emulator."
+  ],
+  [
    "^(.+) ajouté\\. Ses mises à jour restent à faire à la main\\.$",
    "$1 added. Update it manually."
   ],
@@ -1180,7 +1189,7 @@
   ],
   "Cache de shaders": [
    "Shader cache",
-   "Reduces stuttering; may not work with other emulators"
+   "Reduces stuttering. Only for the emulator it came from"
   ],
   "Captures d'écran": [
    "Screenshots",

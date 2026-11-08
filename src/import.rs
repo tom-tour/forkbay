@@ -29,7 +29,7 @@ const CATS: [Cat; 12] = [
     Cat { id: "graphics", label: "Graphismes et audio", hint: "Rendu, processeur, son", dirs: &[], sections: &["Renderer", "Core", "Cpu", "Audio"], on: false },
     Cat { id: "gamecfg", label: "Réglages par jeu", hint: "Fichiers config/custom", dirs: &["config/custom"], sections: &[], on: false },
     Cat { id: "mods", label: "Mods", hint: "Dossier load", dirs: &["load"], sections: &[], on: false },
-    Cat { id: "shaders", label: "Cache de shaders", hint: "Évite certaines saccades, peut ne pas servir sur un autre émulateur", dirs: &["cache/shader", "shader"], sections: &[], on: false },
+    Cat { id: "shaders", label: "Cache de shaders", hint: "Évite certaines saccades. Seulement pour l'émulateur d'où il vient", dirs: &["cache/shader", "shader"], sections: &[], on: false },
     Cat { id: "shots", label: "Captures d'écran", hint: "Dossier screenshots", dirs: &["screenshots"], sections: &[], on: false },
     Cat { id: "sdmc", label: "Carte SD virtuelle", hint: "Dossier sdmc", dirs: &["sdmc"], sections: &[], on: false },
 ];
@@ -88,8 +88,20 @@ fn category_info(src: &Path, c: &Cat) -> Option<Value> {
     Some(json!({ "id": c.id, "label": label, "hint": hint, "detail": detail, "on": c.on }))
 }
 
+/// The emulator of this list that a data folder belongs to, from the folder's name or its parent's
+/// (a portable "user" folder). Shader caches only go to that emulator: another fork could get a black screen.
+fn origin_emulator(path: &Path, emulators: &[String]) -> Option<String> {
+    [path.file_name(), path.parent().and_then(Path::file_name)].into_iter().flatten()
+        .find_map(|n| emulators.iter().find(|e| e.eq_ignore_ascii_case(&n.to_string_lossy())).cloned())
+}
+
+fn emulator_names() -> Vec<String> {
+    crate::emu::list().into_iter().map(|e| e.name).collect()
+}
+
 fn describe(path: &Path, name: &str) -> Option<Value> {
-    let cats: Vec<Value> = CATS.iter().filter_map(|c| category_info(path, c)).collect();
+    let origin = origin_emulator(path, &emulator_names());
+    let cats: Vec<Value> = CATS.iter().filter(|c| c.id != "shaders" || origin.is_some()).filter_map(|c| category_info(path, c)).collect();
     if cats.is_empty() {
         return None;
     }
@@ -164,15 +176,22 @@ pub fn import(source: &Path, wanted: &[String]) -> Result<String> {
         bail!("Dossier introuvable : {}", source.display());
     }
     let data = repair_setup()?;
+    let origin = origin_emulator(source, &emulator_names());
     let mut done = vec![];
     for c in CATS.iter().filter(|c| wanted.iter().any(|w| w == c.id)) {
+        if c.id == "shaders" && origin.is_none() { continue; }
         let mut copied = 0;
         for d in c.dirs {
             let mut dir = source.join(d);
             if !dir.exists() && d.starts_with("config/") {
                 dir = config_side(source).join(d.trim_start_matches("config/"));
             }
-            copied += copy_tree(&dir, &data.join(d), false)?;
+            // Shaders go to the cache of the emulator they came from, never to the shared folder.
+            let target = match (&origin, c.id) {
+                (Some(e), "shaders") => data.join("cache").join("shaders").join(e),
+                _ => data.join(d),
+            };
+            copied += copy_tree(&dir, &target, false)?;
         }
         let mut merged = 0;
         if !c.sections.is_empty() {
@@ -191,6 +210,15 @@ pub fn import(source: &Path, wanted: &[String]) -> Result<String> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn shaders_only_go_to_the_emulator_they_came_from() {
+        use std::path::Path;
+        let emus = ["Lichii".to_string(), "Eglantine".to_string()];
+        assert_eq!(super::origin_emulator(Path::new("/home/a/.local/share/eglantine"), &emus).as_deref(), Some("Eglantine"));
+        assert_eq!(super::origin_emulator(Path::new("C:/Emus/Lichii/user"), &emus).as_deref(), Some("Lichii"));
+        assert_eq!(super::origin_emulator(Path::new("C:/Users/x/AppData/Roaming/eden"), &emus), None);
+    }
+
     #[test]
     fn one_section_of_an_ini_file() {
         let text = "[Controls]\nvibration=1\n[Network]\nnet=2\n";

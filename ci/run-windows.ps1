@@ -51,6 +51,10 @@ $ids = @($s.categories | ForEach-Object id); foreach ($c in 'keys', 'saves', 'pr
 $r = App $rootA 'import' @{ path = $src; cats = @('saves', 'profiles', 'keys', 'network') }; Check 'import' $r.ok $r.error; "     $($r.value.message)"
 Check 'save copied' (Test-Path "$rootA\Data\nand\user\save\0\P\T1\a.bin")
 Check 'profile copied' (Test-Path "$rootA\Data\nand\system\save\8000000000000010\p.dat")
+foreach ($n in 'eglantine', 'eden') { New-Item -ItemType Directory -Force "$work\other\$n\cache\shader\0400" | Out-Null; [IO.File]::WriteAllText("$work\other\$n\cache\shader\0400\vulkan.bin", $n) }
+$r = App $rootA 'inspect' @{ path = "$work\other\eden" }; Check 'shaders of an unknown emulator not offered' (-not (@($r.value.categories | ForEach-Object id) -contains 'shaders')) ($r | ConvertTo-Json -Compress -Depth 4)
+$r = App $rootA 'inspect' @{ path = "$work\other\eglantine" }; Check 'shaders of a known emulator offered' (@($r.value.categories | ForEach-Object id) -contains 'shaders')
+$r = App $rootA 'import' @{ path = "$work\other\eglantine"; cats = @('shaders') }; Check 'shaders go to their own emulator' ($r.ok -and (Test-Path "$rootA\Data\cache\shaders\Eglantine\0400\vulkan.bin") -and -not (Test-Path "$rootA\Data\cache\shader\0400")) $r.error
 Check 'keys not overwritten' ((Get-Content "$rootA\Data\keys\prod.keys") -match 'header_key')
 Check 'unticked mods skipped' (-not (Test-Path "$rootA\Data\load\X\m.bin"))
 $ini = Get-Content "$rootA\Data\config\qt-config.ini" -Raw

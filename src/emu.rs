@@ -362,19 +362,38 @@ pub fn add_local(name: &str, exe: &Path) -> Result<String> {
     if folder.exists() {
         bail!("Le dossier existe déjà : {}", folder.display());
     }
-    if exe.extension().is_some_and(|x| x.eq_ignore_ascii_case("appimage")) {
+    let appimage = exe.extension().is_some_and(|x| x.eq_ignore_ascii_case("appimage"));
+    let in_place = !appimage && installed_in_system(exe, &home(), cfg!(windows));
+    if !appimage && !in_place {
+        // The whole folder is copied: refuse one that is clearly not an emulator's own folder.
+        let (files, size) = tree_stats(exe.parent().unwrap());
+        if files > 20_000 || size > 20 * 1024 * 1024 * 1024 {
+            bail!("Ce dossier est trop gros pour être copié ({files} fichiers, {} Mo) : choisis le programme d'un émulateur portable.", size / 1_048_576);
+        }
+    }
+    if appimage {
         fs::create_dir_all(&folder)?;
         fs::copy(exe, folder.join(exe.file_name().unwrap()))?;
+    } else if in_place {
+        fs::create_dir_all(&folder)?;
     } else {
         copy_tree(exe.parent().unwrap(), &folder, true)?;
         let _ = fs::remove_dir_all(folder.join("user"));
     }
-    fs::write(folder.join("exe.txt"), exe.file_name().unwrap().to_string_lossy().as_bytes())?;
+    // An emulator installed in the system is started where it is, by its full path.
+    let target = if in_place { exe.to_string_lossy().into_owned() } else { exe.file_name().unwrap().to_string_lossy().into_owned() };
+    fs::write(folder.join("exe.txt"), target.as_bytes())?;
     set_emulator_link(&folder, &data_path())?;
     let mut all = user_list();
-    all.push(Emu { name: name.into(), source: "local".into(), about: "Copie locale".into(), user: true, ..Default::default() });
+    all.push(Emu { name: name.into(), source: "local".into(), about: if in_place { "Installé dans le système" } else { "Copie locale" }.into(), user: true, ..Default::default() });
     save_user_list(&all)?;
-    Ok(format!("{name} ajouté. Ses mises à jour restent à faire à la main."))
+    Ok(if in_place { format!("{name} ajouté, utilisé sur place. Ses mises à jour passent par ton gestionnaire de paquets.") } else { format!("{name} ajouté. Ses mises à jour restent à faire à la main.") })
+}
+
+/// On Linux, a program outside the home folder (/usr/bin from a package, /opt…) belongs to the
+/// system: it is used where it is. Copying its folder would copy /usr/bin.
+fn installed_in_system(exe: &Path, home: &Path, windows: bool) -> bool {
+    !windows && !exe.starts_with(home)
 }
 
 pub fn clear_shaders(name: &str) -> Result<String> {
@@ -473,4 +492,17 @@ fn linux_portable(c: &mut std::process::Command, dir: &Path) -> Result<()> {
     }
     c.env("XDG_DATA_HOME", xdg.join("share")).env("XDG_CONFIG_HOME", xdg.join("config")).env("XDG_CACHE_HOME", xdg.join("cache"));
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn system_installs_are_used_in_place_on_linux_only() {
+        use std::path::Path;
+        let home = Path::new("/home/sam");
+        assert!(super::installed_in_system(Path::new("/usr/bin/eglantine"), home, false));
+        assert!(super::installed_in_system(Path::new("/opt/lichii/lichii"), home, false));
+        assert!(!super::installed_in_system(Path::new("/home/sam/Emus/Eglantine/eglantine"), home, false));
+        assert!(!super::installed_in_system(Path::new("C:/Emus/eglantine.exe"), Path::new("C:/Users/sam"), true));
+    }
 }

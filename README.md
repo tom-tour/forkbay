@@ -42,7 +42,7 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **Updates:** compares each emulator with its latest release, shows the release notes first, and keeps the previous version so you can roll back. On Windows, downloads are also scanned with Microsoft Defender.
 - **A shader cache per emulator:** a cache left by another fork can give a black screen, so each emulator keeps its own, across its updates. A button empties it if an update ever breaks the graphics.
 - **Automatic copies:** saves, profile and settings are copied before you play and before an emulator changes version, with or without the cloud. You can restore them from **Settings**.
-- **Your own emulators:** add one from a GitHub repository or from a local program.
+- **Your own emulators:** add one from a GitHub repository or from a local program. On Linux, an emulator installed by your package manager (AUR, for example) is used where it is, with the same shared data.
 - **Steam:** adds games to your library and leaves your other shortcuts alone.
 - **Game details:** the gear on a cover opens the game's settings and images.
 - **Console and picture settings:** game language, region, handheld or TV mode, resolution, vertical sync, speed limit, graphics engine and volume, on the **Emulators** page for all your games, or for one game only from its details.
@@ -143,7 +143,7 @@ Les captures d'écran sont [en haut de la page](#forkbay).
 - **Mises à jour :** compare chaque émulateur à sa dernière version, affiche d'abord les notes de version et garde la précédente pour pouvoir y revenir. Sous Windows, les téléchargements sont aussi analysés avec Microsoft Defender.
 - **Un cache de shaders par émulateur :** un cache laissé par un autre fork peut donner un écran noir, donc chaque émulateur garde le sien, d'une mise à jour à l'autre. Un bouton le vide si une mise à jour casse un jour les graphismes.
 - **Copies automatiques :** les sauvegardes, le profil et les réglages sont copiés avant de jouer et avant qu'un émulateur change de version, avec ou sans cloud. Tu peux les restaurer depuis **Réglages**.
-- **Tes propres émulateurs :** ajoutes-en un depuis un dépôt GitHub ou depuis un programme local.
+- **Tes propres émulateurs :** ajoutes-en un depuis un dépôt GitHub ou depuis un programme local. Sous Linux, un émulateur installé par ton gestionnaire de paquets (AUR, par exemple) est utilisé sur place, avec les mêmes données partagées.
 - **Steam :** ajoute les jeux à ta bibliothèque sans toucher à tes autres raccourcis.
 - **Fiche du jeu :** l'engrenage sur une jaquette ouvre les réglages et les images du jeu.
 - **Réglages de console et d'image :** langue des jeux, région, mode portable ou TV, résolution, synchronisation verticale, limite de vitesse, moteur graphique et volume, dans la page **Émulateurs** pour tous tes jeux, ou pour un seul jeu depuis sa fiche.
