@@ -24,6 +24,13 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
   </tr>
 </table>
 
+<table>
+  <tr>
+    <td><img src="docs/screenshots/game-details.gif" alt="A game's settings and images"></td>
+    <td><img src="docs/screenshots/themes.gif" alt="Switching themes"></td>
+  </tr>
+</table>
+
 ## What it does
 
 - **Guided setup:** imports what already exists on your PC, walks you through your keys and firmware, then installs an emulator.
