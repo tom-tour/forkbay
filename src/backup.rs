@@ -1,6 +1,8 @@
 // Automatic copies of saves, profile and settings, with or without the cloud.
 use crate::cloud;
 use crate::core::*;
+use crate::files::*;
+use crate::setup::*;
 use anyhow::{bail, Result};
 use regex::Regex;
 use serde_json::{json, Value};

@@ -1,5 +1,8 @@
 // Emulator list, version checks, installation and launching.
 use crate::core::*;
+use crate::files::*;
+use crate::setup::*;
+use crate::sys::*;
 use anyhow::{anyhow, bail, Result};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -108,7 +111,7 @@ pub fn latest(e: &Emu) -> Result<Release> {
     let wanted = Regex::new(wanted)?;
     let exclude = if e.asset_exclude.is_empty() { None } else { Some(Regex::new(&e.asset_exclude)?) };
     let tag = Regex::new(if e.tag.is_empty() { "." } else { &e.tag })?;
-    let releases: Value = agent().get(&api_url(e)).call().map_err(|err| anyhow!("Réseau : {err}"))?.into_json()?;
+    let releases = crate::net::get_json(&api_url(e), None).map_err(|err| anyhow!("Réseau : {err}"))?;
     let mut best: Option<Release> = None;
     for r in releases.as_array().into_iter().flatten() {
         let t = r["tag_name"].as_str().unwrap_or("");
@@ -161,24 +164,6 @@ pub fn status() -> Value {
     json!(rows)
 }
 
-fn download(url: &str, out: &Path, size: u64, label: &str) -> Result<()> {
-    let mut reader = agent().get(url).call().map_err(|e| anyhow!("Téléchargement : {e}"))?.into_reader();
-    let mut file = fs::File::create(out)?;
-    let mut buf = vec![0u8; 256 * 1024];
-    let (mut done, mut last) = (0u64, 0u64);
-    loop {
-        let n = std::io::Read::read(&mut reader, &mut buf)?;
-        if n == 0 { break; }
-        std::io::Write::write_all(&mut file, &buf[..n])?;
-        done += n as u64;
-        if size > 0 && done * 100 / size != last {
-            last = done * 100 / size;
-            crate::emit_status(&format!("{label} : téléchargement {last} %"));
-        }
-    }
-    Ok(())
-}
-
 pub fn install(name: &str) -> Result<String> {
     let e = list().into_iter().find(|x| x.name == name).ok_or_else(|| anyhow!("Émulateur inconnu : {name}"))?;
     if e.source == "local" {
@@ -206,7 +191,7 @@ pub fn install(name: &str) -> Result<String> {
     let _ = fs::remove_dir_all(&work);
     fs::create_dir_all(&work)?;
     let file = work.join(if rel.asset.to_lowercase().ends_with(".appimage") { rel.asset.as_str() } else { "download.zip" });
-    download(&rel.url, &file, rel.size, name)?;
+    crate::net::download(&rel.url, None, &file, rel.size, &|p| crate::emit_status(&format!("{name} : téléchargement {p} %"))).map_err(|e| anyhow!("Téléchargement : {e}"))?;
     crate::emit_status(&format!("{name} : vérification et installation..."));
     if rel.size > 0 && fs::metadata(&file)?.len() != rel.size {
         bail!("Téléchargement incomplet : taille différente.");
@@ -237,16 +222,7 @@ pub fn install(name: &str) -> Result<String> {
         }
         (work.clone(), rel.asset.clone())
     };
-    #[cfg(windows)]
-    {
-        let defender = PathBuf::from(std::env::var_os("ProgramFiles").unwrap_or_default()).join("Windows Defender").join("MpCmdRun.exe");
-        if defender.is_file() {
-            let st = command(&defender.to_string_lossy()).args(["-Scan", "-ScanType", "3", "-DisableRemediation", "-File"]).arg(&new_dir).output()?;
-            if st.status.code() == Some(2) {
-                bail!("Defender signale une menace : installation annulée.");
-            }
-        }
-    }
+    crate::sys::virus_scan(&new_dir)?;
     let label = if inst.is_empty() { "inconnue".to_string() } else { inst };
     if folder.exists() {
         let old = retire(&folder, &e.name, &label)?;
@@ -439,28 +415,11 @@ fn session_file() -> PathBuf {
     manager_dir().join("session.json")
 }
 
-// A number left behind by a crash can belong to another program by now.
-fn is_process(pid: u64, exe: &str) -> bool {
-    #[cfg(windows)]
-    {
-        let filter = format!("PID eq {pid}");
-        let Ok(out) = command("tasklist").args(["/FI", filter.as_str(), "/FO", "CSV", "/NH"]).output() else { return false };
-        let text = String::from_utf8_lossy(&out.stdout).into_owned();
-        text.lines().filter_map(|l| l.strip_prefix('"')).filter_map(|l| l.split('"').next()).any(|n| n.eq_ignore_ascii_case(exe))
-    }
-    #[cfg(not(windows))]
-    {
-        // An AppImage runs under another name, so only the number can be checked.
-        let _ = exe;
-        Path::new(&format!("/proc/{pid}")).exists()
-    }
-}
-
 /// What Forkbay started and is still running, on this PC.
 pub fn session() -> Option<Value> {
     let v: Value = serde_json::from_str(&fs::read_to_string(session_file()).ok()?).ok()?;
     let pid = v["pid"].as_u64()?;
-    if is_process(pid, v["exe"].as_str().unwrap_or("")) {
+    if crate::sys::is_process(pid,v["exe"].as_str().unwrap_or("")) {
         Some(json!({ "file": v["file"], "emu": v["emu"] }))
     } else {
         let _ = fs::remove_file(session_file());

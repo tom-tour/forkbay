@@ -20,7 +20,13 @@ cargo build --release
 
 On Linux, first install `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` and `libjavascriptcoregtk-4.1-dev`.
 
-Tests run the real program on throwaway folders:
+Unit tests check the logic that needs no files or network, on both systems:
+
+```bash
+cargo test
+```
+
+The other tests run the real program on throwaway folders:
 
 ```bash
 pwsh ci/run-windows.ps1 -Bin target/release/forkbay.exe
@@ -29,6 +35,13 @@ pwsh ci/run-windows.ps1 -Bin target/release/forkbay.exe
 ```bash
 bash ci/run-linux.sh target/release/forkbay screenshots
 ```
+
+## Where things are
+
+- `ui/`: the page. `index.html` holds the layout, `style.css` the look, and `js/` one script per screen. The build puts them back into a single page inside the program.
+- `src/commands.rs`: every command the page can send, by name.
+- `src/sys.rs`: everything that differs between Windows and Linux. `src/net.rs`: every network call.
+- `src/core.rs`: settings and paths. `src/games.rs`, `src/setup.rs`, `src/emu.rs`, `src/config.rs` and the other files: one subject each, named after it.
 
 ## Texts and languages
 
@@ -58,7 +71,13 @@ cargo build --release
 
 Sous Linux, installe d'abord `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libsoup-3.0-dev` et `libjavascriptcoregtk-4.1-dev`.
 
-Les tests lancent le vrai programme sur des dossiers jetables :
+Les tests unitaires vérifient la logique qui n'a besoin ni de fichiers ni du réseau, sur les deux systèmes :
+
+```bash
+cargo test
+```
+
+Les autres tests lancent le vrai programme sur des dossiers jetables :
 
 ```bash
 pwsh ci/run-windows.ps1 -Bin target/release/forkbay.exe
@@ -67,6 +86,13 @@ pwsh ci/run-windows.ps1 -Bin target/release/forkbay.exe
 ```bash
 bash ci/run-linux.sh target/release/forkbay screenshots
 ```
+
+## Où trouver quoi
+
+- `ui/` : la page. `index.html` contient la structure, `style.css` l'apparence et `js/` un script par écran. La compilation les réunit en une seule page dans le programme.
+- `src/commands.rs` : toutes les commandes que la page peut envoyer, par nom.
+- `src/sys.rs` : tout ce qui diffère entre Windows et Linux. `src/net.rs` : tous les appels réseau.
+- `src/core.rs` : les réglages et les chemins. `src/games.rs`, `src/setup.rs`, `src/emu.rs`, `src/config.rs` et les autres fichiers : un sujet chacun, qui leur donne leur nom.
 
 ## Textes et langues
 

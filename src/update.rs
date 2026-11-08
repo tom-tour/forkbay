@@ -1,5 +1,5 @@
 // Updates of the tool itself, from the project's GitHub releases.
-use crate::core::*;
+use crate::files::*;
 use anyhow::{anyhow, bail, Result};
 use serde_json::{json, Value};
 use std::fs;
@@ -24,10 +24,10 @@ fn newer(latest: &str, current: &str) -> bool {
 
 fn release() -> Result<Option<Value>> {
     let url = std::env::var("FORKBAY_UPDATE_API").unwrap_or_else(|_| API.to_string());
-    match agent().get(&url).call() {
-        Ok(r) => Ok(Some(r.into_json()?)),
+    match crate::net::get_json(&url, None) {
+        Ok(v) => Ok(Some(v)),
         // Nothing published yet, or a private repository.
-        Err(ureq::Error::Status(404, _)) => Ok(None),
+        Err(e) if crate::net::status(&e) == Some(404) => Ok(None),
         Err(e) => Err(anyhow!("Réseau : {e}")),
     }
 }
@@ -70,21 +70,7 @@ pub fn apply() -> Result<String> {
     let exe = std::env::current_exe()?;
     let new = PathBuf::from(format!("{}.new", exe.display()));
     let result = (|| -> Result<()> {
-        let mut reader = agent().get(url).call().map_err(|e| anyhow!("Téléchargement : {e}"))?.into_reader();
-        let mut file = fs::File::create(&new)?;
-        let mut buf = vec![0u8; 256 * 1024];
-        let (mut done, mut last) = (0u64, 0u64);
-        loop {
-            let n = std::io::Read::read(&mut reader, &mut buf)?;
-            if n == 0 { break; }
-            std::io::Write::write_all(&mut file, &buf[..n])?;
-            done += n as u64;
-            if size > 0 && done * 100 / size != last {
-                last = done * 100 / size;
-                crate::emit_status(&crate::i18n::t(&format!("Mise à jour : téléchargement {last} %")));
-            }
-        }
-        drop(file);
+        crate::net::download(url, None, &new, size, &|p| crate::emit_status(&format!("Mise à jour : téléchargement {p} %"))).map_err(|e| anyhow!("Téléchargement : {e}"))?;
         if size > 0 && fs::metadata(&new)?.len() != size {
             bail!("Téléchargement incomplet : taille différente.");
         }
@@ -110,4 +96,15 @@ pub fn apply() -> Result<String> {
         return Err(e.into());
     }
     Ok("Mise à jour installée : redémarrage...".into())
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn versions_compare_by_number() {
+        assert!(super::newer("v0.10.0", "0.9.0"));
+        assert!(super::newer("1.0", "0.99.99"));
+        assert!(!super::newer("0.9.1", "0.10.0"));
+        assert!(!super::newer("v0.10.0", "0.10.0"));
+    }
 }

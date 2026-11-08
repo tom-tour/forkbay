@@ -1,5 +1,8 @@
 // Steam shortcuts: binary shortcuts.vdf (0 = group, 1 = text, 2 = integer, 8 = end).
 use crate::core::*;
+use crate::files::*;
+use crate::games::*;
+use crate::sys::*;
 use anyhow::{bail, Result};
 use regex::Regex;
 use serde_json::{json, Value};
@@ -362,3 +365,30 @@ pub fn save(account: &str, games: &[String], tool: bool) -> Result<String> {
 }
 
 pub fn app_id(e: &Node) -> u32 { if let Some(Val::Int(v)) = field(e, "appid") { *v as u32 } else { 0 } }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn shortcuts_file_is_rewritten_byte_for_byte() {
+        let entry = build_entry("Game".into(), "\"/apps/forkbay\"".into(), "--launch x".into(), String::new());
+        let Val::Int(appid) = field(&entry, "appid").unwrap().clone() else { panic!("no appid") };
+        assert!(appid < 0, "Steam needs the high bit of a shortcut id");
+        let root = vec![Node { key: "shortcuts".into(), val: Val::Map(vec![entry]) }];
+        let mut bytes = vec![];
+        write_map(&mut bytes, &root);
+        let mut pos = 0;
+        let read = read_map(&bytes, &mut pos).unwrap();
+        assert_eq!(pos, bytes.len());
+        let mut again = vec![];
+        write_map(&mut again, &read);
+        assert_eq!(again, bytes);
+        assert!(read_map(&bytes[..bytes.len() - 3], &mut 0).is_err());
+    }
+
+    #[test]
+    fn crc32_matches_the_standard() {
+        assert_eq!(crc32(b"123456789"), 0xCBF4_3926);
+    }
+}

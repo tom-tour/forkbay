@@ -3,6 +3,7 @@
 // The values were checked against the source of each emulator in emulators.json: their tables
 // are identical.
 use crate::core::*;
+use crate::games::*;
 use anyhow::{anyhow, bail, Result};
 use regex::Regex;
 use serde_json::{json, Value};
@@ -154,7 +155,7 @@ fn is_own(lines: &[String], key: &str) -> bool {
 }
 
 fn gpus() -> Vec<String> {
-    crate::report::gpu_name().split("; ").filter(|g| !g.is_empty()).map(|g| g.split(" (driver").next().unwrap_or(g).to_string()).collect()
+    crate::sys::gpu_name().split("; ").filter(|g| !g.is_empty()).map(|g| g.split(" (driver").next().unwrap_or(g).to_string()).collect()
 }
 
 /// Current common values, for the page. A value missing from the file is the emulators' default.

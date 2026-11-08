@@ -1,6 +1,8 @@
 // Game art: the user's own images in the Covers folder, SteamGridDB with their free key,
 // or image sources they add themselves. The project ships no other source.
 use crate::core::*;
+use crate::games::*;
+use crate::sys::*;
 use anyhow::{anyhow, bail, Result};
 use base64::Engine;
 use regex::Regex;
@@ -8,7 +10,6 @@ use serde::Deserialize;
 use serde_json::Value;
 use std::collections::BTreeMap;
 use std::fs;
-use std::io::Read;
 use std::path::{Path, PathBuf};
 
 const EXTS: [&str; 5] = ["png", "jpg", "jpeg", "webp", "ico"];
@@ -98,8 +99,7 @@ fn needed(c: &Choice, file: &str, kind: &str, done: &[String]) -> bool {
 
 fn save_image(url: &str, file: &str, kind: &str) -> Result<()> {
     if !url.starts_with("https://") { return Err(anyhow!("Adresse refusée.")); }
-    let mut bytes = vec![];
-    agent().get(url).call()?.into_reader().take(MAX_IMAGE + 1).read_to_end(&mut bytes)?;
+    let bytes = crate::net::get_bytes(url, MAX_IMAGE)?;
     if bytes.len() as u64 > MAX_IMAGE { bail!("Image trop lourde (25 Mo au maximum)."); }
     store(&bytes, file, kind)
 }
@@ -116,8 +116,7 @@ fn similarity(a: &str, b: &str) -> usize {
 
 fn steamgrid(key: &str, file: &str, c: &Choice, done: &mut Vec<String>) -> Result<u32> {
     let get = |path: &str| -> Result<Value> {
-        let v: Value = agent().get(&format!("https://www.steamgriddb.com/api/v2/{path}")).set("Authorization", &format!("Bearer {key}")).call()?.into_json()?;
-        Ok(v["data"].clone())
+        Ok(crate::net::get_json(&format!("https://www.steamgriddb.com/api/v2/{path}"), Some(key))?["data"].take())
     };
     let name = display_name(file);
     if !KINDS.iter().any(|k| needed(c, file, k, done)) { return Ok(0); }
@@ -229,23 +228,17 @@ pub fn add_source(path: &Path) -> Result<String> {
 pub fn test_key(key: &str) -> Result<String> {
     let key = if key.trim().is_empty() { unprotect(&load_settings().steam_grid_key) } else { key.trim().to_string() };
     if key.is_empty() { bail!("Colle d'abord ta clé SteamGridDB."); }
-    match agent().get("https://www.steamgriddb.com/api/v2/search/autocomplete/zelda").set("Authorization", &format!("Bearer {key}")).call() {
-        Ok(r) => {
-            let v: Value = r.into_json()?;
-            if v["success"].as_bool() == Some(true) { Ok("La clé fonctionne.".to_string()) } else { bail!("SteamGridDB refuse cette clé.") }
-        }
-        Err(ureq::Error::Status(401 | 403, _)) => bail!("SteamGridDB refuse cette clé."),
+    match crate::net::get_json("https://www.steamgriddb.com/api/v2/search/autocomplete/zelda", Some(&key)) {
+        Ok(v) if v["success"].as_bool() == Some(true) => Ok("La clé fonctionne.".to_string()),
+        Ok(_) => bail!("SteamGridDB refuse cette clé."),
+        Err(e) if matches!(crate::net::status(&e), Some(401 | 403)) => bail!("SteamGridDB refuse cette clé."),
         Err(e) => bail!("SteamGridDB est injoignable : {e}"),
     }
 }
 
-fn encode(s: &str) -> String {
-    s.bytes().map(|b| if b.is_ascii_alphanumeric() || b"-_.~".contains(&b) { (b as char).to_string() } else { format!("%{b:02X}") }).collect()
-}
-
 fn fill(template: &str, file: &str) -> String {
     let id = Regex::new(r"\[([0-9A-Fa-f]{16})\]").unwrap().captures(file).map(|c| c[1].to_string()).unwrap_or_default();
-    template.replace("{name}", &encode(&words(&display_name(file)).join(" "))).replace("{id}", &id)
+    template.replace("{name}", &crate::net::encode(&words(&display_name(file)).join(" "))).replace("{id}", &id)
 }
 
 fn walk<'a>(v: &'a Value, path: &str) -> &'a Value {
@@ -268,8 +261,7 @@ fn from_source(src: &Source, file: &str, c: &Choice, done: &mut Vec<String>) -> 
     if src.url.is_empty() || !src.images.keys().any(|k| needed(c, file, k, done)) { return Ok(n); }
     let url = fill(&src.url, file);
     if !url.starts_with("https://") { bail!("Adresse refusée."); }
-    let mut text = String::new();
-    agent().get(&url).call()?.into_reader().take(MAX_ANSWER).read_to_string(&mut text)?;
+    let text = crate::net::get_text(&url, MAX_ANSWER)?;
     let answer: Value = serde_json::from_str(&text)?;
     let list = walk(&answer, &src.results);
     let name = display_name(file);
@@ -342,4 +334,26 @@ pub fn update_steam_art(vdf: &Path) -> Result<usize> {
         }
     }
     Ok(count)
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    #[test]
+    fn closest_name_wins() {
+        assert_eq!(super::similarity("Mario Kart World", "MARIO KART WORLD Deluxe"), 100);
+        assert_eq!(super::similarity("Pokémon Légendes", "Pokemon Legendes"), 100);
+        assert!(super::similarity("Mario Kart World", "Mario Party") < 60);
+    }
+
+    #[test]
+    fn source_fields_are_read_by_path() {
+        let v = json!({ "response": { "items": [{ "title": "A", "platforms": ["switch2", "pc"] }] } });
+        assert_eq!(super::walk(&v, "response.items")[0]["title"], "A");
+        assert_eq!(super::walk(&v, ""), &v);
+        assert!(super::field_starts_with(&v["response"]["items"][0]["platforms"], "switch"));
+        assert!(!super::field_starts_with(&json!("ps5"), "switch"));
+        assert!(!super::field_starts_with(&json!(3), "3"));
+    }
 }

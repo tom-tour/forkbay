@@ -1,5 +1,9 @@
 // Sync of saves, profile and settings. Keys and firmware are never sent.
 use crate::core::*;
+use crate::setup::*;
+use crate::files::*;
+use crate::net::{self, encode};
+use crate::sys::*;
 use anyhow::{anyhow, bail, Context, Result};
 use base64::Engine;
 use regex::Regex;
@@ -27,13 +31,16 @@ pub fn sync_files(data: &Path) -> Vec<String> {
     rel
 }
 
-// Removes what depends on the PC or changes on every launch.
 fn normalized_config(path: &Path) -> Result<String> {
-    let t = fs::read_to_string(path)?;
-    let t = Regex::new(r"(?m)^(nand|sdmc|load|dump|tas)_directory=[^\r\n]*").unwrap().replace_all(&t, "${1}_directory=__LOCAL__").into_owned();
+    Ok(normalize(&fs::read_to_string(path)?))
+}
+
+// Removes what depends on the PC or changes on every launch.
+fn normalize(t: &str) -> String {
+    let t = Regex::new(r"(?m)^(nand|sdmc|load|dump|tas)_directory=[^\r\n]*").unwrap().replace_all(t, "${1}_directory=__LOCAL__").into_owned();
     let t = Regex::new(r"(?m)^(Screenshots\\screenshot_path)=[^\r\n]*").unwrap().replace_all(&t, "${1}=__LOCAL__").into_owned();
     let t = Regex::new(r"(?m)^(Paths\\gamedirs\\\d+\\path)=([^\r\n]*)").unwrap().replace_all(&t, |c: &regex::Captures| if c[2].contains(":/") || c[2].starts_with('/') { format!("{}=__LOCAL__", &c[1]) } else { c[0].to_string() }).into_owned();
-    Ok(Regex::new(r"(?m)^(Paths\\recentFiles)=[^\r\n]*").unwrap().replace_all(&t, "${1}=").into_owned())
+    Regex::new(r"(?m)^(Paths\\recentFiles)=[^\r\n]*").unwrap().replace_all(&t, "${1}=").into_owned()
 }
 
 pub fn local_hash(data: &Path) -> Result<String> {
@@ -140,12 +147,13 @@ fn folder_dir(s: &Settings) -> Result<PathBuf> {
 fn google_token(s: &Settings) -> Result<String> {
     let refresh = unprotect(&s.sync.google_refresh_token);
     if refresh.is_empty() { bail!("Compte Google non connecté sur ce PC : clique sur Connecter mon compte Google dans la page Cloud."); }
-    let v: Value = agent().post("https://oauth2.googleapis.com/token").send_form(&[("client_id", &s.sync.google_client_id), ("client_secret", &unprotect(&s.sync.google_client_secret)), ("refresh_token", &refresh), ("grant_type", "refresh_token")])?.into_json()?;
+    let v = net::post_form("https://oauth2.googleapis.com/token", &[("client_id", &s.sync.google_client_id), ("client_secret", &unprotect(&s.sync.google_client_secret)), ("refresh_token", &refresh), ("grant_type", "refresh_token")])?;
     v["access_token"].as_str().map(str::to_string).ok_or_else(|| anyhow!("Google n'a pas renvoyé de jeton."))
 }
 
 fn google_find(token: &str) -> Result<Option<Value>> {
-    let v: Value = agent().get("https://www.googleapis.com/drive/v3/files").query("q", &format!("name='{SYNC_FILE}' and trashed=false")).query("fields", "files(id,appProperties,modifiedTime)").query("spaces", "drive").set("Authorization", &format!("Bearer {token}")).call()?.into_json()?;
+    let url = format!("https://www.googleapis.com/drive/v3/files?q={}&fields={}&spaces=drive", encode(&format!("name='{SYNC_FILE}' and trashed=false")), encode("files(id,appProperties,modifiedTime)"));
+    let v = net::get_json(&url, Some(token))?;
     Ok(v["files"].as_array().and_then(|a| a.first().cloned()))
 }
 
@@ -185,15 +193,11 @@ pub fn google_connect() -> Result<String> {
     let _ = write!(stream, "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{page}", page.len());
     if param("state").as_deref() != Some(state) { bail!("Réponse Google non reconnue : connexion refusée."); }
     let Some(code) = param("code") else { bail!("Connexion refusée par Google."); };
-    let v: Value = agent().post("https://oauth2.googleapis.com/token").send_form(&[("client_id", &s.sync.google_client_id), ("client_secret", &secret), ("code", &code), ("code_verifier", &verifier), ("grant_type", "authorization_code"), ("redirect_uri", &redirect)])?.into_json()?;
+    let v = net::post_form("https://oauth2.googleapis.com/token", &[("client_id", &s.sync.google_client_id), ("client_secret", &secret), ("code", &code), ("code_verifier", &verifier), ("grant_type", "authorization_code"), ("redirect_uri", &redirect)])?;
     let refresh = v["refresh_token"].as_str().ok_or_else(|| anyhow!("Google n'a pas renvoyé de jeton durable."))?;
     s.sync.google_refresh_token = protect(refresh);
     save_settings(&s)?;
     Ok("Compte Google connecté.".into())
-}
-
-fn encode(s: &str) -> String {
-    s.bytes().map(|b| if b.is_ascii_alphanumeric() || b"-_.~".contains(&b) { (b as char).to_string() } else { format!("%{b:02X}") }).collect()
 }
 
 fn decode(s: &str) -> String {
@@ -241,12 +245,10 @@ fn send_remote(s: &Settings, zip_path: &Path, hash: &str, date: u64) -> Result<(
         body.extend(fs::read(zip_path)?);
         body.extend(format!("\r\n--{boundary}--\r\n").into_bytes());
         let ct = format!("multipart/related; boundary={boundary}");
-        let auth = format!("Bearer {token}");
-        match existing {
-            Some(f) => agent().request("PATCH", &format!("https://www.googleapis.com/upload/drive/v3/files/{}?uploadType=multipart", f["id"].as_str().unwrap_or(""))).set("Authorization", &auth).set("Content-Type", &ct).send_bytes(&body)?,
-            None => agent().post("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart").set("Authorization", &auth).set("Content-Type", &ct).send_bytes(&body)?,
+        return match existing {
+            Some(f) => net::send("PATCH", &format!("https://www.googleapis.com/upload/drive/v3/files/{}?uploadType=multipart", f["id"].as_str().unwrap_or("")), &token, &ct, &body),
+            None => net::send("POST", "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", &token, &ct, &body),
         };
-        return Ok(());
     }
     let dir = folder_dir(s)?;
     fs::create_dir_all(&dir)?;
@@ -259,9 +261,7 @@ fn send_remote(s: &Settings, zip_path: &Path, hash: &str, date: u64) -> Result<(
 
 fn receive_remote(s: &Settings, meta: &Meta, out: &Path) -> Result<()> {
     if s.sync.provider == "google" {
-        let mut r = agent().get(&format!("https://www.googleapis.com/drive/v3/files/{}?alt=media", meta.id)).set("Authorization", &format!("Bearer {}", meta.token)).call()?.into_reader();
-        std::io::copy(&mut r, &mut fs::File::create(out)?)?;
-        return Ok(());
+        return net::download(&format!("https://www.googleapis.com/drive/v3/files/{}?alt=media", meta.id), Some(&meta.token), out, 0, &|_| {});
     }
     fs::copy(folder_dir(s)?.join(SYNC_FILE), out).context("Fichier introuvable dans le cloud")?;
     Ok(())
@@ -323,30 +323,6 @@ pub fn format_date(secs: u64) -> String {
     format!("{d:02}/{m:02}/{y} à {:02}:{:02}", rem / 3600, rem % 3600 / 60)
 }
 
-#[cfg(windows)]
-fn local_offset() -> i64 {
-    use windows_sys::Win32::System::Time::{GetTimeZoneInformation, TIME_ZONE_INFORMATION};
-    let mut z: TIME_ZONE_INFORMATION = unsafe { std::mem::zeroed() };
-    let bias = match unsafe { GetTimeZoneInformation(&mut z) } {
-        1 => z.Bias + z.StandardBias,
-        2 => z.Bias + z.DaylightBias,
-        _ => z.Bias,
-    };
-    -(bias as i64) * 60
-}
-
-#[cfg(not(windows))]
-fn local_offset() -> i64 {
-    let out = command("date").arg("+%z").output();
-    out.ok().and_then(|o| {
-        let t = String::from_utf8_lossy(&o.stdout).trim().to_string();
-        let sign = if t.starts_with('-') { -1 } else { 1 };
-        let h: i64 = t.get(1..3)?.parse().ok()?;
-        let m: i64 = t.get(3..5)?.parse().ok()?;
-        Some(sign * (h * 3600 + m * 60))
-    }).unwrap_or(0)
-}
-
 /// Conflict question: both dates, and the user chooses.
 pub fn ask_conflict(local: u64, remote: u64, machine: &str, can_cancel: bool) -> Choice {
     // Scripted answer for the automated tests.
@@ -365,5 +341,22 @@ pub fn ask_conflict(local: u64, remote: u64, machine: &str, can_cancel: bool) ->
         rfd::MessageDialogResult::Custom(t) if t == a => Choice::Local,
         rfd::MessageDialogResult::Custom(t) if t == b => Choice::Remote,
         _ => Choice::Cancel,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn paths_and_recent_files_do_not_count_as_changes() {
+        let a = "nand_directory=C:/A/nand\nPaths\\recentFiles=C:/A/x.nsp\nPaths\\gamedirs\\4\\path=C:/A/Roms\nresolution_setup=2\n";
+        let b = "nand_directory=/home/b/nand\nPaths\\recentFiles=\nPaths\\gamedirs\\4\\path=/home/b/Roms\nresolution_setup=2\n";
+        assert_eq!(super::normalize(a), super::normalize(b));
+        assert_ne!(super::normalize(a), super::normalize(&b.replace("resolution_setup=2", "resolution_setup=3")));
+    }
+
+    #[test]
+    fn answers_from_google_are_decoded() {
+        assert_eq!(super::decode("a%20b+c%C3%A9"), "a b cé");
+        assert_eq!(super::decode("%zz"), "%zz");
     }
 }

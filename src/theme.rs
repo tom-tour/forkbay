@@ -94,3 +94,19 @@ pub fn set(a: &Value) -> Result<()> {
     }
     save_settings(&s)
 }
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    #[test]
+    fn themes_keep_only_colours() {
+        let t = super::clean(&json!({ "name": "My <b>theme</b>", "a": "#ABCDEF", "b": "#000000", "script": "alert(1)" })).unwrap();
+        assert_eq!(t["name"], "My bthemeb");
+        assert_eq!(t["a"], "#abcdef");
+        assert!(t.get("script").is_none());
+        assert!(super::clean(&json!({ "name": "x", "a": "red", "b": "#000000" })).is_err());
+        assert!(super::clean(&json!({ "name": "x", "a": "#000000", "b": "#000000", "bg": "#000000" })).is_err());
+        assert!(super::clean(&json!({ "name": "  ", "a": "#000000", "b": "#000000" })).is_err());
+    }
+}

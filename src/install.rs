@@ -1,5 +1,7 @@
 // First start: lets the user keep the program where it is, or move it somewhere better.
 use crate::core::*;
+use crate::files::*;
+use crate::sys::*;
 use anyhow::{anyhow, bail, Result};
 use serde_json::{json, Value};
 use std::fs;
@@ -120,122 +122,7 @@ fn shortcut_dir(desktop: bool) -> Result<PathBuf> {
     if let Ok(d) = std::env::var("FORKBAY_SHORTCUT_DIR") {
         return Ok(PathBuf::from(d).join(if desktop { "desktop" } else { "menu" }));
     }
-    #[cfg(windows)]
-    {
-        if desktop { return known_desktop(); }
-        let appdata = std::env::var_os("APPDATA").ok_or_else(|| anyhow!("APPDATA"))?;
-        Ok(PathBuf::from(appdata).join("Microsoft\\Windows\\Start Menu\\Programs"))
-    }
-    #[cfg(not(windows))]
-    {
-        Ok(if desktop { home().join("Desktop") } else { local_data_base().join("applications") })
-    }
-}
-
-#[cfg(windows)]
-fn known_desktop() -> Result<PathBuf> {
-    use windows_sys::Win32::System::Com::CoTaskMemFree;
-    use windows_sys::Win32::UI::Shell::{FOLDERID_Desktop, SHGetKnownFolderPath};
-    unsafe {
-        let mut out = std::ptr::null_mut();
-        if SHGetKnownFolderPath(&FOLDERID_Desktop, 0, std::ptr::null_mut(), &mut out) != 0 {
-            bail!("Bureau introuvable.");
-        }
-        let len = (0..).take_while(|&i| *out.add(i) != 0).count();
-        let path = String::from_utf16_lossy(std::slice::from_raw_parts(out, len));
-        CoTaskMemFree(out as *const _);
-        Ok(PathBuf::from(path))
-    }
-}
-
-#[cfg(not(windows))]
-fn write_shortcut(dir: &Path, target: &Path) -> Result<()> {
-    use std::os::unix::fs::PermissionsExt;
-    fs::create_dir_all(dir)?;
-    let icon = target.with_file_name("forkbay.png");
-    fs::write(&icon, include_bytes!("../assets/icon.png"))?;
-    let text = format!("[Desktop Entry]\nType=Application\nName=Forkbay\nComment=Switch 2 emulator manager\nExec=\"{}\"\nPath={}\nIcon={}\nTerminal=false\nCategories=Game;\n", target.display(), target.parent().unwrap_or(target).display(), icon.display());
-    let file = dir.join("forkbay.desktop");
-    fs::write(&file, text)?;
-    fs::set_permissions(&file, fs::Permissions::from_mode(0o755))?;
-    Ok(())
-}
-
-// Windows shortcuts only exist through these two COM interfaces. windows-sys has their
-// identifiers but not their method tables, so the methods used here are laid out by hand.
-#[cfg(windows)]
-fn write_shortcut(dir: &Path, target: &Path) -> Result<()> {
-    use std::ffi::c_void;
-    use std::os::windows::ffi::OsStrExt;
-    use windows_sys::core::GUID;
-    use windows_sys::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED};
-    type Set = unsafe extern "system" fn(*mut c_void, *const u16) -> i32;
-    #[repr(C)]
-    struct ShellLink {
-        query: unsafe extern "system" fn(*mut c_void, *const GUID, *mut *mut c_void) -> i32,
-        add_ref: usize,
-        release: unsafe extern "system" fn(*mut c_void) -> u32,
-        get_path: usize,
-        get_id_list: usize,
-        set_id_list: usize,
-        get_description: usize,
-        set_description: Set,
-        get_working_dir: usize,
-        set_working_dir: Set,
-        get_arguments: usize,
-        set_arguments: usize,
-        get_hotkey: usize,
-        set_hotkey: usize,
-        get_show: usize,
-        set_show: usize,
-        get_icon: usize,
-        set_icon: unsafe extern "system" fn(*mut c_void, *const u16, i32) -> i32,
-        set_relative: usize,
-        resolve: usize,
-        set_path: Set,
-    }
-    #[repr(C)]
-    struct PersistFile {
-        query: usize,
-        add_ref: usize,
-        release: unsafe extern "system" fn(*mut c_void) -> u32,
-        class_id: usize,
-        is_dirty: usize,
-        load: usize,
-        save: unsafe extern "system" fn(*mut c_void, *const u16, i32) -> i32,
-    }
-    const CLSID_SHELL_LINK: GUID = GUID::from_u128(0x00021401_0000_0000_c000_000000000046);
-    const IID_SHELL_LINK: GUID = GUID::from_u128(0x000214f9_0000_0000_c000_000000000046);
-    const IID_PERSIST_FILE: GUID = GUID::from_u128(0x0000010b_0000_0000_c000_000000000046);
-    fn wide(p: &std::ffi::OsStr) -> Vec<u16> { p.encode_wide().chain([0]).collect() }
-
-    fs::create_dir_all(dir)?;
-    let file = wide(dir.join("Forkbay.lnk").as_os_str());
-    let exe = wide(target.as_os_str());
-    let work = wide(target.parent().unwrap_or(target).as_os_str());
-    let about = wide(std::ffi::OsStr::new("Switch 2 emulator manager"));
-    unsafe {
-        CoInitializeEx(std::ptr::null(), COINIT_APARTMENTTHREADED as u32);
-        let mut link: *mut c_void = std::ptr::null_mut();
-        if CoCreateInstance(&CLSID_SHELL_LINK, std::ptr::null_mut(), CLSCTX_INPROC_SERVER, &IID_SHELL_LINK, &mut link) != 0 || link.is_null() {
-            bail!("Raccourci impossible.");
-        }
-        let v = &**(link as *mut *const ShellLink);
-        let mut ok = (v.set_path)(link, exe.as_ptr()) == 0 && (v.set_working_dir)(link, work.as_ptr()) == 0;
-        (v.set_description)(link, about.as_ptr());
-        (v.set_icon)(link, exe.as_ptr(), 0);
-        let mut persist: *mut c_void = std::ptr::null_mut();
-        if ok && (v.query)(link, &IID_PERSIST_FILE, &mut persist) == 0 && !persist.is_null() {
-            let p = &**(persist as *mut *const PersistFile);
-            ok = (p.save)(persist, file.as_ptr(), 1) == 0;
-            (p.release)(persist);
-        } else {
-            ok = false;
-        }
-        (v.release)(link);
-        if !ok { bail!("Raccourci impossible."); }
-    }
-    Ok(())
+    crate::sys::shortcut_folder(desktop)
 }
 
 /// Opens the new copy, which removes the old one once this process has gone.

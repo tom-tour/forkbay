@@ -1,6 +1,8 @@
 // Finds emulator data already on this PC and imports only what the user ticks.
 // The source is never modified, and files already present are never overwritten.
 use crate::core::*;
+use crate::files::*;
+use crate::setup::*;
 use anyhow::{bail, Result};
 use serde_json::{json, Value};
 use std::fs;
@@ -185,4 +187,15 @@ pub fn import(source: &Path, wanted: &[String]) -> Result<String> {
         return Ok("Rien de nouveau à importer : ce qui existe déjà n'est jamais écrasé.".into());
     }
     Ok(format!("Importé : {}.", done.join(", ")))
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn one_section_of_an_ini_file() {
+        let text = "[Controls]\nvibration=1\n[Network]\nnet=2\n";
+        assert_eq!(super::section_lines(text, "Network").as_deref(), Some("[Network]\nnet=2\n"));
+        assert_eq!(super::section_lines(text, "Controls").as_deref(), Some("[Controls]\nvibration=1\n"));
+        assert_eq!(super::section_lines(text, "Audio"), None);
+    }
 }

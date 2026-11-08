@@ -17,6 +17,7 @@ jobs:
       - run: rustup update stable --no-self-update && rustup default stable
       # No path remapping here: these are the runner's paths, and remapped builds were flagged far more often by Defender.
       - run: cargo build --release --locked
+      - run: cargo test --release --locked
       - name: Test the app
         shell: pwsh
         run: ./ci/run-windows.ps1 -Bin target/release/forkbay.exe
@@ -40,6 +41,7 @@ jobs:
         run: |
           export RUSTFLAGS="--remap-path-prefix=$HOME/.cargo=/cargo --remap-path-prefix=$HOME/.rustup=/rustup --remap-path-prefix=$GITHUB_WORKSPACE=/src"
           cargo build --release --locked
+          cargo test --release --locked
       - name: Test the app on a virtual screen
         run: |
           sudo apt-get install -y xvfb imagemagick x11-utils dbus

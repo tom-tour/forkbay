@@ -47,20 +47,7 @@ pub fn system() -> String {
     if let Ok(l) = std::env::var("FORKBAY_LANG") {
         return l.to_lowercase();
     }
-    #[cfg(windows)]
-    {
-        use windows_sys::Win32::Globalization::GetUserDefaultLocaleName;
-        let mut buf = [0u16; 85];
-        let n = unsafe { GetUserDefaultLocaleName(buf.as_mut_ptr(), buf.len() as i32) };
-        if n > 1 {
-            return String::from_utf16_lossy(&buf[..n as usize - 1]).to_lowercase();
-        }
-        String::new()
-    }
-    #[cfg(not(windows))]
-    {
-        ["LC_ALL", "LC_MESSAGES", "LANG"].iter().find_map(|v| std::env::var(v).ok().filter(|s| !s.is_empty())).unwrap_or_default().to_lowercase()
-    }
+    crate::sys::system_locale()
 }
 
 /// The setting when it names a known language, otherwise the system language, otherwise English.
@@ -146,4 +133,16 @@ pub fn page_locale() -> Value {
     let code = current();
     let tables: Vec<Value> = chain(&code).iter().map(|l| json!({ "ui": l.raw["ui"], "patterns": l.raw["uiPatterns"] })).collect();
     json!({ "code": code, "tables": tables })
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn every_built_in_message_pattern_is_valid() {
+        for (code, text) in super::EMBEDDED {
+            let l = super::parse(code, text).unwrap_or_else(|| panic!("{code}.json is not valid JSON"));
+            let raw = l.raw["messages"].as_array().map_or(0, Vec::len);
+            assert_eq!(l.messages.len(), raw, "{code}.json: some message patterns do not compile");
+        }
+    }
 }

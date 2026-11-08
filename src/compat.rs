@@ -1,6 +1,7 @@
 // Recommendations per game, from the community guide riyadhHDA/wichforks (MIT).
 // They are suggestions: nothing is changed unless the user picks one.
 use crate::core::*;
+use crate::games::*;
 use anyhow::{anyhow, Result};
 use serde_json::{json, Value};
 use std::fs;
@@ -9,7 +10,7 @@ const BASE: &str = "https://raw.githubusercontent.com/riyadhHDA/wichforks/main/"
 pub const GUIDE_URL: &str = "https://github.com/riyadhHDA/wichforks";
 
 fn get(path: &str) -> Result<String> {
-    Ok(agent().get(&format!("{BASE}{path}")).call().map_err(|e| anyhow!("Réseau : {e}"))?.into_string()?)
+    crate::net::get_text(&format!("{BASE}{path}"), 10 * 1024 * 1024).map_err(|e| anyhow!("Réseau : {e}"))
 }
 
 fn cache_path() -> std::path::PathBuf {
@@ -106,7 +107,7 @@ fn has_word(text: &str, word: &str) -> bool {
 
 /// Graphics card maker, to filter the suggestions.
 pub fn gpu_vendor() -> String {
-    let name = crate::report::gpu_name().to_lowercase();
+    let name = crate::sys::gpu_name().to_lowercase();
     for (k, v) in [("nvidia", "NVIDIA"), ("geforce", "NVIDIA"), ("radeon", "AMD"), ("amd", "AMD"), ("intel", "Intel")] {
         if name.contains(k) { return v.to_string(); }
     }

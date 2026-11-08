@@ -1,8 +1,11 @@
 // Bug reports: gathers what is needed to reproduce a problem, without anything personal.
 // Nothing leaves the computer here: the user reads the text and decides to send it.
 use crate::core::*;
+use crate::games::*;
+use crate::setup::*;
+use crate::sys::*;
 use anyhow::Result;
-use regex::{NoExpand, Regex};
+use regex::Regex;
 use serde_json::{json, Value};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -23,8 +26,9 @@ pub fn sanitize(text: &str) -> String {
     for (path, label) in &known {
         if path.len() < 4 { continue; }
         for variant in [path.clone(), path.replace('\\', "/"), path.replace('/', "\\")] {
-            let re = Regex::new(&format!("(?i){}", regex::escape(&variant))).unwrap();
-            out = re.replace_all(&out, NoExpand(label)).into_owned();
+            // Only a whole folder name: C:\Users\S must not swallow the start of C:\Users\Sam.
+            let re = Regex::new(&format!(r"(?i){}(\W|$)", regex::escape(&variant))).unwrap();
+            out = re.replace_all(&out, |c: &regex::Captures| format!("{label}{}", &c[1])).into_owned();
         }
     }
     // Any other user folder, on any drive.
@@ -44,69 +48,6 @@ pub fn sanitize(text: &str) -> String {
     // Lines that could carry a key or a token never stay.
     out = Regex::new(r"(?im)^.*(_key\b|prod\.keys\s*=|title\.keys\s*=|\btoken\b|\bsecret\b|\bpassword\b|refresh_token|client_secret|username=|nickname=).*$").unwrap().replace_all(&out, "<line removed>").into_owned();
     out
-}
-
-#[cfg(not(windows))]
-fn first_line(mut c: std::process::Command) -> String {
-    c.output().ok().map(|o| String::from_utf8_lossy(&o.stdout).lines().map(str::trim).filter(|l| !l.is_empty()).collect::<Vec<_>>().join("; ")).unwrap_or_default()
-}
-
-#[cfg(windows)]
-fn system_info() -> (String, String, String, String) {
-    (windows_name(), windows_cpu(), gpu_name(), windows_memory())
-}
-
-#[cfg(windows)]
-fn registry_text(key: &winreg::RegKey, name: &str) -> String {
-    key.get_value::<String, _>(name).unwrap_or_default().trim().to_string()
-}
-
-#[cfg(windows)]
-fn windows_name() -> String {
-    let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
-    hklm.open_subkey(r"SOFTWARE\Microsoft\Windows NT\CurrentVersion").map(|k| format!("{} (build {})", registry_text(&k, "ProductName"), registry_text(&k, "CurrentBuild"))).unwrap_or_default()
-}
-
-#[cfg(windows)]
-fn windows_cpu() -> String {
-    let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
-    hklm.open_subkey(r"HARDWARE\DESCRIPTION\System\CentralProcessor\0").map(|k| registry_text(&k, "ProcessorNameString")).unwrap_or_default()
-}
-
-#[cfg(windows)]
-fn windows_memory() -> String {
-    use windows_sys::Win32::System::SystemInformation::{GlobalMemoryStatusEx, MEMORYSTATUSEX};
-    let mut m: MEMORYSTATUSEX = unsafe { std::mem::zeroed() };
-    m.dwLength = std::mem::size_of::<MEMORYSTATUSEX>() as u32;
-    if unsafe { GlobalMemoryStatusEx(&mut m) } == 0 { return String::new(); }
-    format!("{} GB", (m.ullTotalPhys as f64 / 1_073_741_824.0).round() as u64)
-}
-
-/// Graphics cards from the registry, which needs no helper program.
-#[cfg(windows)]
-pub fn gpu_name() -> String {
-    let hklm = winreg::RegKey::predef(winreg::enums::HKEY_LOCAL_MACHINE);
-    let Ok(class) = hklm.open_subkey(r"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}") else { return String::new() };
-    class.enum_keys().flatten().filter_map(|n| class.open_subkey(n).ok()).filter_map(|k| {
-        let name = registry_text(&k, "DriverDesc");
-        (!name.is_empty()).then(|| format!("{name} (driver {})", registry_text(&k, "DriverVersion")))
-    }).collect::<Vec<_>>().join("; ")
-}
-
-#[cfg(not(windows))]
-fn system_info() -> (String, String, String, String) {
-    let os = fs::read_to_string("/etc/os-release").ok().and_then(|t| t.lines().find(|l| l.starts_with("PRETTY_NAME=")).map(|l| l[12..].trim_matches('"').to_string())).unwrap_or_else(|| "Linux".into());
-    let cpu = fs::read_to_string("/proc/cpuinfo").ok().and_then(|t| t.lines().find(|l| l.starts_with("model name")).and_then(|l| l.split(':').nth(1)).map(|s| s.trim().to_string())).unwrap_or_default();
-    let mut c = command("sh");
-    c.args(["-c", "lspci 2>/dev/null | grep -Ei 'vga|3d|display' | cut -d: -f3-"]);
-    let gpu = first_line(c);
-    let ram = fs::read_to_string("/proc/meminfo").ok().and_then(|t| t.lines().next().and_then(|l| l.split_whitespace().nth(1)).and_then(|k| k.parse::<u64>().ok())).map(|k| format!("{} GB", k / 1_048_576)).unwrap_or_default();
-    (os, cpu, gpu, ram)
-}
-
-#[cfg(not(windows))]
-pub fn gpu_name() -> String {
-    system_info().2
 }
 
 fn tail(path: &Path, lines: usize) -> Option<String> {
@@ -159,4 +100,19 @@ pub fn save(text: &str) -> Result<()> {
     fs::create_dir_all(manager_dir())?;
     fs::write(manager_dir().join("bug-report.txt"), sanitize(text))?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn reports_lose_personal_details() {
+        let text = "mail me@example.com\nheader_key = AABBCC\nrefresh_token=xyz\nC:\\Users\\Someone\\game.nsp\n/home/someone/game.nsp\ndriver 31.0.15.5222\nserver 192.168.1.20\nbuild_id=BCF5E512";
+        let out = super::sanitize(text);
+        for gone in ["example.com", "AABBCC", "xyz", "Someone", "someone", "192.168"] {
+            assert!(!out.contains(gone), "{gone} stayed in: {out}");
+        }
+        for kept in ["<email>", "C:\\Users\\<user>\\game.nsp", "/home/<user>/game.nsp", "driver 31.0.15.5222", "<ip>", "BCF5E512"] {
+            assert!(out.contains(kept), "{kept} missing from: {out}");
+        }
+    }
 }
