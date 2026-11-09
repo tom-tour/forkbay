@@ -96,14 +96,15 @@ fn installed(name: &str) -> String {
 }
 
 fn api_url(e: &Emu) -> String {
-    if e.source == "forgejo" { format!("{}/api/v1/repos/{}/releases?limit=10", e.base, e.repo) } else { format!("https://api.github.com/repos/{}/releases?per_page=40", e.repo) }
+    if e.source == "forgejo" { format!("{}/api/v1/repos/{}/releases?limit=40", e.base, e.repo) } else { format!("https://api.github.com/repos/{}/releases?per_page=40", e.repo) }
 }
 
 fn page_url(e: &Emu) -> String {
     if e.source == "forgejo" { format!("{}/{}/releases", e.base, e.repo) } else { format!("https://github.com/{}/releases", e.repo) }
 }
 
-pub fn latest(e: &Emu) -> Result<Release> {
+/// Releases usable on this system, newest first.
+pub fn releases(e: &Emu) -> Result<Vec<Release>> {
     let wanted = if cfg!(windows) { &e.asset } else { &e.linux_asset };
     if wanted.is_empty() {
         bail!("Pas de version pour ce système.");
@@ -111,32 +112,54 @@ pub fn latest(e: &Emu) -> Result<Release> {
     let wanted = Regex::new(wanted)?;
     let exclude = if e.asset_exclude.is_empty() { None } else { Some(Regex::new(&e.asset_exclude)?) };
     let tag = Regex::new(if e.tag.is_empty() { "." } else { &e.tag })?;
-    let releases = crate::net::get_json(&api_url(e), None).map_err(|err| anyhow!("Réseau : {err}"))?;
-    let mut best: Option<Release> = None;
-    for r in releases.as_array().into_iter().flatten() {
+    let list = crate::net::get_json(&api_url(e), None).map_err(|err| anyhow!("Réseau : {err}"))?;
+    let mut found: Vec<Release> = vec![];
+    for r in list.as_array().into_iter().flatten() {
         let t = r["tag_name"].as_str().unwrap_or("");
-        if r["draft"].as_bool().unwrap_or(false) || !tag.is_match(t) {
+        if r["draft"].as_bool().unwrap_or(false) || !tag.is_match(t) || found.iter().any(|f| f.tag == t) {
             continue;
         }
         let Some(a) = r["assets"].as_array().into_iter().flatten().find(|a| {
             let n = a["name"].as_str().unwrap_or("");
             wanted.is_match(n) && !exclude.as_ref().is_some_and(|x| x.is_match(n))
         }) else { continue };
-        let date = r["published_at"].as_str().unwrap_or("").to_string();
-        if best.as_ref().is_none_or(|b| date > b.date) {
-            best = Some(Release {
-                tag: t.into(),
-                date,
-                url: a["browser_download_url"].as_str().unwrap_or("").into(),
-                size: a["size"].as_u64().unwrap_or(0),
-                digest: a["digest"].as_str().unwrap_or("").into(),
-                page: r["html_url"].as_str().unwrap_or("").into(),
-                asset: a["name"].as_str().unwrap_or("").into(),
-                notes: r["body"].as_str().unwrap_or("").chars().take(4000).collect(),
-            });
-        }
+        found.push(Release {
+            tag: t.into(),
+            date: r["published_at"].as_str().unwrap_or("").to_string(),
+            url: a["browser_download_url"].as_str().unwrap_or("").into(),
+            size: a["size"].as_u64().unwrap_or(0),
+            digest: a["digest"].as_str().unwrap_or("").into(),
+            page: r["html_url"].as_str().unwrap_or("").into(),
+            asset: a["name"].as_str().unwrap_or("").into(),
+            notes: r["body"].as_str().unwrap_or("").chars().take(4000).collect(),
+        });
     }
-    best.ok_or_else(|| anyhow!("Aucune version trouvée pour ce système."))
+    found.sort_by(|a, b| b.date.cmp(&a.date));
+    if found.is_empty() {
+        bail!("Aucune version trouvée pour ce système.");
+    }
+    Ok(found)
+}
+
+pub fn latest(e: &Emu) -> Result<Release> {
+    Ok(releases(e)?.remove(0))
+}
+
+/// The versions one can switch to: every release, and the ones already kept in Old Versions.
+pub fn versions(name: &str) -> Result<Value> {
+    let e = list().into_iter().find(|x| x.name == name).ok_or_else(|| anyhow!("Émulateur inconnu : {name}"))?;
+    let inst = installed(name);
+    let mut old = old_versions(name);
+    let (rels, error) = if e.source == "local" { (vec![], String::new()) } else {
+        match releases(&e) { Ok(r) => (r, String::new()), Err(err) => (vec![], err.to_string()) }
+    };
+    let mut rows: Vec<Value> = rels.iter().map(|r| {
+        // A kept version is named "<emulator> <tag>": switching to it needs no download.
+        let kept = old.iter().position(|o| o == &format!("{name} {}", r.tag)).map(|i| old.remove(i)).unwrap_or_default();
+        json!({ "tag": r.tag, "date": r.date.get(..10).unwrap_or(""), "size": r.size, "old": kept, "current": r.tag == inst, "notes": r.notes })
+    }).collect();
+    rows.extend(old.into_iter().map(|o| json!({ "tag": o.strip_prefix(&format!("{name} ")).unwrap_or(&o), "date": "", "size": 0, "old": o, "current": false, "notes": "" })));
+    Ok(json!({ "versions": rows, "error": error }))
 }
 
 pub fn status() -> Value {
@@ -164,7 +187,7 @@ pub fn status() -> Value {
     json!(rows)
 }
 
-pub fn install(name: &str) -> Result<String> {
+pub fn install(name: &str, tag: &str) -> Result<String> {
     let e = list().into_iter().find(|x| x.name == name).ok_or_else(|| anyhow!("Émulateur inconnu : {name}"))?;
     if e.source == "local" {
         bail!("{name} est une copie locale : elle se met à jour à la main.");
@@ -172,13 +195,15 @@ pub fn install(name: &str) -> Result<String> {
     if any_running() {
         bail!("Ferme les émulateurs avant d'installer.");
     }
-    let rel = latest(&e)?;
+    let rel = if tag.is_empty() { latest(&e)? } else {
+        releases(&e)?.into_iter().find(|r| r.tag == tag).ok_or_else(|| anyhow!("Cette version n'existe plus."))?
+    };
     crate::log::info(&format!("install {name} {}", rel.tag));
     let folder = root().join(&e.name);
     let present = find_exe(&folder).is_some();
     let inst = installed(&e.name);
     if present && inst == rel.tag {
-        return Ok(format!("{name} est déjà à jour ({inst})."));
+        return Ok(if tag.is_empty() { format!("{name} est déjà à jour ({inst}).") } else { format!("{name} est déjà en version {inst}.") });
     }
     if !rel.url.starts_with("https://") {
         bail!("Adresse refusée.");

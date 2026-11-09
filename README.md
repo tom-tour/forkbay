@@ -39,7 +39,7 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **One data folder:** every emulator uses the same saves, keys, firmware and settings.
 - **Portable or installed:** keep your data next to the tool, in your user folder, or anywhere you choose.
 - **One emulator per game:** pick it once, and Steam follows your choice.
-- **Updates:** compares each emulator with its latest release, shows the release notes first, and keeps the previous version so you can roll back. On Windows, downloads are also scanned with Microsoft Defender.
+- **Updates:** tells you at startup when an emulator has a new version, shows the release notes first, and keeps the previous version so you can roll back. You can also install any published version of an emulator, older ones included. On Windows, downloads are also scanned with Microsoft Defender.
 - **A shader cache per emulator:** a cache left by another fork can give a black screen, so each emulator keeps its own, across its updates. A button empties it if an update ever breaks the graphics.
 - **Automatic copies:** saves, profile and settings are copied before you play and before an emulator changes version, with or without the cloud. You can restore them from **Settings**.
 - **Your own emulators:** add one from a GitHub repository or from a local program. On Linux, an emulator installed by your package manager (AUR, for example) is used where it is, with the same shared data.
@@ -140,7 +140,7 @@ Les captures d'écran sont [en haut de la page](#forkbay).
 - **Un seul dossier de données :** tous les émulateurs utilisent les mêmes sauvegardes, clés, firmware et réglages.
 - **Portable ou installé :** tes données restent à côté de l'outil, dans ton dossier utilisateur, ou où tu veux.
 - **Un émulateur par jeu :** tu le choisis une fois, et Steam suit ce choix.
-- **Mises à jour :** compare chaque émulateur à sa dernière version, affiche d'abord les notes de version et garde la précédente pour pouvoir y revenir. Sous Windows, les téléchargements sont aussi analysés avec Microsoft Defender.
+- **Mises à jour :** te prévient au démarrage quand un émulateur a une nouvelle version, affiche d'abord les notes de version et garde la précédente pour pouvoir y revenir. Tu peux aussi installer n'importe quelle version publiée d'un émulateur, y compris les plus anciennes. Sous Windows, les téléchargements sont aussi analysés avec Microsoft Defender.
 - **Un cache de shaders par émulateur :** un cache laissé par un autre fork peut donner un écran noir, donc chaque émulateur garde le sien, d'une mise à jour à l'autre. Un bouton le vide si une mise à jour casse un jour les graphismes.
 - **Copies automatiques :** les sauvegardes, le profil et les réglages sont copiés avant de jouer et avant qu'un émulateur change de version, avec ou sans cloud. Tu peux les restaurer depuis **Réglages**.
 - **Tes propres émulateurs :** ajoutes-en un depuis un dépôt GitHub ou depuis un programme local. Sous Linux, un émulateur installé par ton gestionnaire de paquets (AUR, par exemple) est utilisé sur place, avec les mêmes données partagées.

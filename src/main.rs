@@ -73,7 +73,7 @@ fn launch(game: Option<&str>, forced: Option<&str>) -> Result<()> {
     };
     if emu::find_exe(&root().join(&emu_name)).is_none() {
         if !confirm(&format!("{emu_name} n'est pas installé. L'installer maintenant ?")) { return Ok(()); }
-        emu::install(&emu_name)?;
+        emu::install(&emu_name, "")?;
     }
     let path = match game {
         Some(g) => {

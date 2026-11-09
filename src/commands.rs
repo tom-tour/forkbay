@@ -84,7 +84,8 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
             state()?
         }
         "emu_status" => emu::status(),
-        "emu_install" => msg(emu::install(&s_arg(a, "name"))?),
+        "emu_install" => msg(emu::install(&s_arg(a, "name"), &s_arg(a, "tag"))?),
+        "emu_versions" => emu::versions(&s_arg(a, "name"))?,
         "emu_add_github" => msg(emu::add_github(s_arg(a, "name").trim(), &s_arg(a, "repo"), s_arg(a, "filter").trim())?),
         "emu_add_local" => msg(emu::add_local(s_arg(a, "name").trim(), Path::new(&s_arg(a, "exe")))?),
         "emu_rollback" => msg(emu::rollback(&s_arg(a, "name"), &s_arg(a, "version"))?),

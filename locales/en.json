@@ -115,6 +115,14 @@
   "Vérifier": "Check",
   "Installer la mise à jour": "Install update",
   "Vérifier au démarrage": "Check at startup",
+  "Vérifier au démarrage, pour l'outil et les émulateurs": "Check at startup, for the tool and the emulators",
+  "Choisir une version": "Choose a version",
+  "Recherche des versions...": "Looking for versions...",
+  "Une version plus récente peut moins bien faire tourner un jeu. La version actuelle reste dans Old Versions, et une copie de tes sauvegardes est faite avant.": "A newer version can run a game worse. The current version stays in Old Versions, and your saves are copied first.",
+  "Versions en ligne non disponibles.": "Online versions not available.",
+  "Déjà sur le disque": "Already on disk",
+  "Installée": "Installed",
+  "Aucune autre version.": "No other version.",
   "Liens": "Links",
   "Page GitHub": "GitHub page",
   "Soutenir sur Ko-fi": "Support on Ko-fi",
@@ -720,6 +728,22 @@
   [
    "^(.+) est déjà à jour \\((.+)\\)\\.$",
    "$1 is already up to date ($2)."
+  ],
+  [
+   "^(.+) est déjà en version (.+)\\.$",
+   "$1 is already on version $2."
+  ],
+  [
+   "^Nouvelle version disponible : (.+)$",
+   "New version available: $1"
+  ],
+  [
+   "^Nouvelles versions disponibles : (.+)$",
+   "New versions available: $1"
+  ],
+  [
+   "^(\\d+) Mo$",
+   "$1 MB"
   ],
   [
    "^Téléchargement incomplet : taille différente\\.$",
