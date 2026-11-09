@@ -85,6 +85,10 @@ fn launch(game: Option<&str>, forced: Option<&str>) -> Result<()> {
     };
     let idle = !emu::any_running();
     if idle {
+        // Before the copy and the cloud check, so that this one-time change is not a new version of the data.
+        if let Err(e) = config::turn_off_emulator_updates() {
+            log::error(&format!("emulator update prompt: {e}"));
+        }
         if let Err(e) = backup::auto() {
             log::error(&format!("automatic copy: {e}"));
             if !confirm(&format!("Copie automatique impossible :\n{e}\n\nJouer quand même ?")) { return Ok(()); }

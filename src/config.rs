@@ -121,6 +121,18 @@ fn follow_common(lines: &mut Vec<String>, section: &str, key: &str) {
     group(lines, section, key);
 }
 
+/// Forkbay updates the emulators itself: their own update prompt is turned off before each start,
+/// so that a version is never replaced without being checked and kept.
+pub fn turn_off_emulator_updates() -> Result<()> {
+    let path = common_path();
+    let (mut lines, crlf) = load(&path);
+    if read(&lines, "UI", "check_for_updates").as_deref() == Some("false") {
+        return Ok(());
+    }
+    write(&mut lines, "UI", "check_for_updates", "false", false);
+    save(&path, &lines, crlf)
+}
+
 fn load(path: &Path) -> (Vec<String>, bool) {
     let text = fs::read_to_string(path).unwrap_or_default();
     let crlf = text.contains("\r\n") || !path.exists();

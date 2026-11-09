@@ -217,12 +217,19 @@ pub fn status() -> Value {
     let rows: Vec<Value> = list().iter().filter(|e| e.user || find_exe(&root().join(&e.name)).is_some() || !(if cfg!(windows) { &e.asset } else { &e.linux_asset }).is_empty()).map(|e| {
         let folder = root().join(&e.name);
         let present = find_exe(&folder).is_some();
-        let inst = installed(&e.name);
         let local = e.source == "local";
-        let mut row = json!({ "name": e.name, "about": e.about, "present": present, "installed": inst, "latest": "", "date": "", "size": 0, "page": page_url(e), "upToDate": false, "error": "", "user": e.user, "local": local, "notes": "", "old": old_versions(&e.name), "shaders": shader_cache_size(&data_path(), &e.name) });
+        let rels = if local { Ok(vec![]) } else { releases(e) };
+        if let (true, Ok(r)) = (present, rels.as_ref()) {
+            check_outside(&e.name, r);
+        }
+        // Stays until Forkbay installs a version again: the one before was not kept.
+        let outside = folder.join("outside.txt").exists();
+        let inst = installed(&e.name);
+        let mut row = json!({ "name": e.name, "about": e.about, "present": present, "installed": inst, "latest": "", "date": "", "size": 0, "page": page_url(e), "upToDate": false, "error": "", "user": e.user, "local": local, "notes": "", "old": old_versions(&e.name), "shaders": shader_cache_size(&data_path(), &e.name), "outside": outside });
         if !local {
-            match latest(e) {
-                Ok(l) => {
+            match rels {
+                Ok(r) => {
+                    let l = &r[0];
                     row["latest"] = json!(l.tag);
                     row["date"] = json!(l.date.get(..10).unwrap_or(""));
                     row["size"] = json!(l.size);
@@ -238,6 +245,69 @@ pub fn status() -> Value {
     json!(rows)
 }
 
+/// Size and date of an emulator's program. A change means it was replaced, maybe by the
+/// emulator's own updater.
+fn program_stamp(folder: &Path) -> String {
+    let Some(m) = find_exe(folder).and_then(|p| fs::metadata(p).ok()) else { return String::new() };
+    let secs = m.modified().ok().and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok()).map(|d| d.as_secs()).unwrap_or(0);
+    format!("{} {secs}", m.len())
+}
+
+/// Which of these releases is written inside the program: the emulators keep their version
+/// name in it ("daily-20261107", "Fritchii-v5.5"). The longest name wins, so "v5.5" beats "v5".
+fn tag_in_program(bytes: &[u8], tags: &[String]) -> Option<String> {
+    let mut sorted: Vec<&String> = tags.iter().filter(|t| t.len() >= 4).collect();
+    sorted.sort_by_key(|t| std::cmp::Reverse(t.len()));
+    if sorted.is_empty() {
+        return None;
+    }
+    let alts: Vec<String> = sorted.iter().map(|t| regex::escape(&t.replace('-', " ")).replace(' ', "[- ]")).collect();
+    let re = regex::bytes::Regex::new(&format!("(?i)({})", alts.join("|"))).ok()?;
+    let mut best: Option<String> = None;
+    for m in re.find_iter(bytes) {
+        // "fritchii-v5" inside "fritchii-v5.5" is not a match.
+        let next = bytes.get(m.end()).copied().unwrap_or(0);
+        let after = bytes.get(m.end() + 1).copied().unwrap_or(0);
+        let prev = if m.start() > 0 { bytes[m.start() - 1] } else { 0 };
+        if next.is_ascii_alphanumeric() || (next == b'.' && after.is_ascii_digit()) || prev.is_ascii_alphanumeric() {
+            continue;
+        }
+        let found = String::from_utf8_lossy(m.as_bytes()).to_lowercase();
+        let tag = sorted.iter().find(|t| t.to_lowercase().replace('-', " ") == found.replace('-', " ")).map(|t| t.to_string());
+        if tag.as_ref().is_some_and(|t| best.as_ref().is_none_or(|b| t.len() > b.len())) {
+            best = tag;
+        }
+    }
+    best
+}
+
+/// Notices an emulator replaced outside Forkbay, and writes the version it now has.
+/// Returns that version when it changed.
+fn check_outside(name: &str, releases: &[Release]) -> Option<String> {
+    let folder = root().join(name);
+    let now = program_stamp(&folder);
+    let saved = fs::read_to_string(folder.join("stamp.txt")).unwrap_or_default();
+    if now.is_empty() || saved.trim() == now {
+        return None;
+    }
+    let tags: Vec<String> = releases.iter().map(|r| r.tag.clone()).collect();
+    let found = find_exe(&folder).and_then(|exe| fs::read(exe).ok()).and_then(|b| tag_in_program(&b, &tags));
+    let _ = fs::write(folder.join("stamp.txt"), &now);
+    let inst = installed(name);
+    match found {
+        // Without a stamp yet, this is only the first look at a version Forkbay installed itself.
+        Some(t) if t != inst => {
+            let _ = fs::write(folder.join("version.txt"), &t);
+            crate::log::info(&format!("{name}: replaced outside Forkbay, {inst} -> {t}"));
+            if !saved.is_empty() || !inst.is_empty() {
+                let _ = fs::write(folder.join("outside.txt"), format!("{inst} -> {t}"));
+            }
+            (!saved.is_empty() || !inst.is_empty()).then_some(t)
+        }
+        _ => None,
+    }
+}
+
 pub fn install(name: &str, tag: &str) -> Result<String> {
     let e = list().into_iter().find(|x| x.name == name).ok_or_else(|| anyhow!("Émulateur inconnu : {name}"))?;
     if e.source == "local" {
@@ -246,8 +316,10 @@ pub fn install(name: &str, tag: &str) -> Result<String> {
     if any_running() {
         bail!("Ferme les émulateurs avant d'installer.");
     }
-    let rel = if tag.is_empty() { latest(&e)? } else {
-        releases(&e)?.into_iter().find(|r| r.tag == tag).ok_or_else(|| anyhow!("Cette version n'existe plus."))?
+    let all = releases(&e)?;
+    check_outside(&e.name, &all);
+    let rel = if tag.is_empty() { all.into_iter().next().ok_or_else(|| anyhow!("Aucune version trouvée pour ce système."))? } else {
+        all.into_iter().find(|r| r.tag == tag).ok_or_else(|| anyhow!("Cette version n'existe plus."))?
     };
     crate::log::info(&format!("install {name} {}", rel.tag));
     let folder = root().join(&e.name);
@@ -312,6 +384,7 @@ pub fn install(name: &str, tag: &str) -> Result<String> {
     }
     fs::write(folder.join("version.txt"), &rel.tag)?;
     fs::write(folder.join("exe.txt"), &exe_name)?;
+    let _ = fs::write(folder.join("stamp.txt"), program_stamp(&folder));
     set_emulator_link(&folder, &data_path())?;
     let _ = fs::remove_dir_all(&work);
     let _ = fs::remove_dir(&parent);
@@ -535,11 +608,16 @@ pub fn run(emu: &str, game: Option<&Path>, key: &str) -> Result<()> {
     }
     #[cfg(not(windows))]
     linux_portable(&mut c, &dir)?;
-    // Not while another emulator runs: its cache would change under it.
+    // Not while another emulator runs: its cache and settings would change under it.
     if any_running() {
         crate::log::info("shader cache unchanged: another emulator is running");
-    } else if let Err(e) = point_shader_cache(&data_path(), emu) {
-        crate::log::error(&format!("shader cache: {e}"));
+    } else {
+        if let Err(e) = point_shader_cache(&data_path(), emu) {
+            crate::log::error(&format!("shader cache: {e}"));
+        }
+        if let Err(e) = crate::config::turn_off_emulator_updates() {
+            crate::log::error(&format!("emulator update prompt: {e}"));
+        }
     }
     crate::log::info(&format!("start {emu}{}", if full { " full screen" } else { "" }));
     let mut child = c.spawn()?;
@@ -615,6 +693,17 @@ mod tests {
         assert!(super::installed_in_system(Path::new("/opt/lichii/lichii"), home, false));
         assert!(!super::installed_in_system(Path::new("/home/sam/Emus/Eglantine/eglantine"), home, false));
         assert!(!super::installed_in_system(Path::new("C:/Emus/eglantine.exe"), Path::new("C:/Users/sam"), true));
+    }
+
+    #[test]
+    fn the_version_written_in_a_program_is_found() {
+        let tags: Vec<String> = ["fritchii-v5", "fritchii-v5.5", "frizti-v3", "daily-20261107"].map(String::from).to_vec();
+        let find = |text: &str| super::tag_in_program(text.as_bytes(), &tags);
+        assert_eq!(find("\0Fritchii-v5.5\0").as_deref(), Some("fritchii-v5.5"));
+        assert_eq!(find("\0Fritchii-v5\0 about").as_deref(), Some("fritchii-v5"));
+        assert_eq!(find("Frizti v3\0").as_deref(), Some("frizti-v3"));
+        assert_eq!(find("build daily-20261107 ok").as_deref(), Some("daily-20261107"));
+        assert_eq!(find("Fritchii-v5.6 and xdaily-20261107"), None);
     }
 
     #[test]

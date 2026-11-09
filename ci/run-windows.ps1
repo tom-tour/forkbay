@@ -253,6 +253,7 @@ $r = App $rootG 'emu_settings_set' @{ key = 'nand_directory'; value = 1 }; Check
 function StartG { $env:FORKBAY_ROOT = $rootG; $p = Start-Process -FilePath $Bin -ArgumentList '--launch', '"Roms/Run Game [0400000000000002].nup"' -PassThru; for ($i = 0; $i -lt 60; $i++) { Start-Sleep -Milliseconds 500; $script:s = App $rootG 'game_session'; if ($script:s.value.session.file) { break } }; return $p }
 function StopWait($p) { for ($i = 0; $i -lt 40 -and -not $p.HasExited; $i++) { Start-Sleep -Milliseconds 500 }; return $p.HasExited }
 $p = StartG; Check 'running game known' ($s.value.session.file -like 'Run Game*' -and $s.value.session.emu -eq 'Fritchii') ($s | ConvertTo-Json -Compress -Depth 3)
+$t = Get-Content $ini -Raw; Check 'emulator update prompt turned off' ($t -match '(?m)^check_for_updates=false' -and $t -match '(?m)^other=keep') $t
 $r = App $rootG 'emu_settings_set' @{ key = 'language_index'; value = 3 }; Check 'settings refused while an emulator is open' (-not $r.ok)
 $r = App $rootG 'game_close' @{ force = $false }; Check 'close requested' $r.ok $r.error; Check 'game closed normally' (StopWait $p); $s = App $rootG 'game_session'; Check 'session ended' (-not $s.value.session)
 $p = StartG; $r = App $rootG 'game_close' @{ force = $true }; Check 'forced close' ($r.ok -and (StopWait $p)) $r.error

@@ -116,6 +116,7 @@
   "Installer la mise à jour": "Install update",
   "Vérifier au démarrage": "Check at startup",
   "Vérifier au démarrage, pour l'outil et les émulateurs": "Check at startup, for the tool and the emulators",
+  "Mis à jour en dehors de Forkbay : la version précédente n'a pas été gardée.": "Updated outside Forkbay: the previous version was not kept.",
   "Choisir une version": "Choose a version",
   "Recherche des versions...": "Looking for versions...",
   "Une version plus récente peut moins bien faire tourner un jeu. La version actuelle reste dans Old Versions, et une copie de tes sauvegardes est faite avant.": "A newer version can run a game worse. The current version stays in Old Versions, and your saves are copied first.",
