@@ -239,6 +239,10 @@ pub fn install(name: &str) -> Result<String> {
     set_emulator_link(&folder, &data_path())?;
     let _ = fs::remove_dir_all(&work);
     let _ = fs::remove_dir(&parent);
+    let pruned = prune_old(&root().join("Old Versions"), &old_versions(&e.name), KEEP_OLD);
+    if pruned > 0 {
+        crate::log::info(&format!("{}: {pruned} old version(s) removed, the {KEEP_OLD} newest are kept", e.name));
+    }
     Ok(if present { format!("{name} : {label} -> {} (vérifié : {checked}). Ancienne version gardée dans Old Versions.", rel.tag) } else { format!("{name} {} installé (vérifié : {checked}).", rel.tag) })
 }
 
@@ -261,18 +265,49 @@ fn retire(folder: &Path, name: &str, label: &str) -> Result<PathBuf> {
         n += 1;
     }
     fs::rename(folder, &old)?;
+    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+    let _ = fs::write(old.join("retired.txt"), now.to_string());
     Ok(old)
 }
 
-/// Versions of this emulator kept in Old Versions, newest name first.
+/// How many replaced versions of each emulator stay in Old Versions.
+const KEEP_OLD: usize = 2;
+
+/// When a version was put aside: written at that moment, or the folder's date for older ones.
+fn retired_at(dir: &Path) -> u64 {
+    fs::read_to_string(dir.join("retired.txt")).ok().and_then(|s| s.trim().parse().ok())
+        .or_else(|| fs::metadata(dir).and_then(|m| m.modified()).ok().and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok()).map(|d| d.as_secs()))
+        .unwrap_or(0)
+}
+
+/// Sorts versions kept in this folder, the last one put aside first.
+fn newest_first(old_root: &Path, mut found: Vec<String>) -> Vec<String> {
+    found.sort_by_cached_key(|v| (std::cmp::Reverse(retired_at(&old_root.join(v))), std::cmp::Reverse(v.clone())));
+    found
+}
+
+/// Deletes the versions beyond the newest `keep` ones, and returns how many went.
+fn prune_old(old_root: &Path, versions: &[String], keep: usize) -> usize {
+    versions.iter().skip(keep).filter(|v| {
+        let dir = old_root.join(v);
+        // A kept version never has its own data: a real folder there means something unexpected, so it stays.
+        match fs::symlink_metadata(dir.join("user")) {
+            Ok(m) if !is_link(&m) => return false,
+            Ok(_) => if remove_link(&dir.join("user")).is_err() { return false },
+            Err(_) => {}
+        }
+        fs::remove_dir_all(&dir).is_ok()
+    }).count()
+}
+
+/// Versions of this emulator kept in Old Versions, the last one put aside first.
 pub fn old_versions(name: &str) -> Vec<String> {
     let names: Vec<String> = list().into_iter().map(|e| e.name).collect();
-    let mut found: Vec<String> = fs::read_dir(root().join("Old Versions")).map(|rd| rd.flatten().filter(|e| find_exe(&e.path()).is_some()).map(|e| e.file_name().to_string_lossy().into_owned()).collect()).unwrap_or_default();
+    let old_root = root().join("Old Versions");
+    let mut found: Vec<String> = fs::read_dir(&old_root).map(|rd| rd.flatten().filter(|e| find_exe(&e.path()).is_some()).map(|e| e.file_name().to_string_lossy().into_owned()).collect()).unwrap_or_default();
     // "Lichii Upstream 1.0" belongs to Lichii Upstream, not to Lichii.
     found.retain(|d| names.iter().filter(|n| d.starts_with(&format!("{n} "))).max_by_key(|n| n.len()).is_some_and(|n| n == name));
-    found.sort();
-    found.reverse();
-    found
+    newest_first(&old_root, found)
 }
 
 /// Puts a version from Old Versions back, and keeps the current one there.
@@ -504,5 +539,24 @@ mod tests {
         assert!(super::installed_in_system(Path::new("/opt/lichii/lichii"), home, false));
         assert!(!super::installed_in_system(Path::new("/home/sam/Emus/Eglantine/eglantine"), home, false));
         assert!(!super::installed_in_system(Path::new("C:/Emus/eglantine.exe"), Path::new("C:/Users/sam"), true));
+    }
+
+    #[test]
+    fn only_the_newest_old_versions_are_kept() {
+        let root = std::env::temp_dir().join(format!("forkbay-prune-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        for (v, at) in [("Emu a", "300"), ("Emu b", "100"), ("Emu c", "200")] {
+            std::fs::create_dir_all(root.join(v)).unwrap();
+            std::fs::write(root.join(v).join("retired.txt"), at).unwrap();
+        }
+        std::fs::create_dir_all(root.join("Emu b").join("user")).unwrap();
+        let order = super::newest_first(&root, vec!["Emu b".into(), "Emu a".into(), "Emu c".into()]);
+        assert_eq!(order, ["Emu a", "Emu c", "Emu b"]);
+        // "Emu b" is beyond the limit but holds a real data folder: it is left alone.
+        assert_eq!(super::prune_old(&root, &order, 2), 0);
+        std::fs::remove_dir(root.join("Emu b").join("user")).unwrap();
+        assert_eq!(super::prune_old(&root, &order, 2), 1);
+        assert!(!root.join("Emu b").exists() && root.join("Emu a").exists() && root.join("Emu c").exists());
+        let _ = std::fs::remove_dir_all(&root);
     }
 }

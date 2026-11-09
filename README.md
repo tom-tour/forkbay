@@ -111,7 +111,7 @@ The program is new and not code-signed, so an antivirus can flag it by mistake, 
 
 - **Linux:** emulators are launched from their AppImage, with their folders pointed at the shared data. Lichii by Frizti has no Linux build.
 - **Moving the folder:** on Windows, Steam shortcuts find a new drive letter on their own, through a small copy of the program kept next to Steam's shortcut file (`forkbay-launcher.exe`). After any other move, open the **Steam** page and click **Apply to Steam**.
-- Emulation of these games is experimental and changes daily: a newer emulator can run a game worse. The previous version stays in `Files/Old Versions`.
+- Emulation of these games is experimental and changes daily: a newer emulator can run a game worse. The two previous versions stay in `Files/Old Versions`, older ones are deleted.
 
 ## Credits
 
@@ -212,7 +212,7 @@ Le programme est récent et n'est pas signé : un antivirus peut le signaler par
 
 - **Linux :** les émulateurs sont lancés depuis leur AppImage, avec leurs dossiers redirigés vers les données partagées. Lichii par Frizti n'a pas de version Linux.
 - **Déplacer le dossier :** sous Windows, les raccourcis Steam retrouvent seuls une nouvelle lettre de disque, grâce à une petite copie du programme gardée à côté du fichier de raccourcis de Steam (`forkbay-launcher.exe`). Après tout autre déplacement, ouvre la page **Steam** et clique sur **Enregistrer dans Steam**.
-- L'émulation de ces jeux est expérimentale et change chaque jour : un émulateur plus récent peut moins bien faire tourner un jeu. La version précédente reste dans `Files/Old Versions`.
+- L'émulation de ces jeux est expérimentale et change chaque jour : un émulateur plus récent peut moins bien faire tourner un jeu. Les deux versions précédentes restent dans `Files/Old Versions`, les plus anciennes sont supprimées.
 
 ## Remerciements
 
