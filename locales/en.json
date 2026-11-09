@@ -407,6 +407,24 @@
   "Comme partout": "Common",
   "Comme partout :": "Common:",
   "Propre au jeu": "This game only",
+  "Réglés dans l'émulateur": "Set in the emulator",
+  "Ce jeu a aussi ses propres valeurs pour ces réglages. Forkbay ne sait pas les changer : modifie-les dans l'émulateur, ou remets-les comme partout.": "This game also has its own values for these settings. Forkbay cannot change them: edit them in the emulator, or set them back to common.",
+  "Mémoire émulée": "Emulated memory",
+  "Processeur multicœur": "Multicore CPU",
+  "Précision du processeur": "CPU accuracy",
+  "Précision du GPU": "GPU accuracy",
+  "Format d'image": "Aspect ratio",
+  "Filtre de mise à l'échelle": "Scaling filter",
+  "Anticrénelage": "Anti-aliasing",
+  "Filtrage anisotrope": "Anisotropic filtering",
+  "Moteur de shaders": "Shader backend",
+  "Shaders asynchrones": "Asynchronous shaders",
+  "Cache de shaders sur le disque": "Disk shader cache",
+  "Décodage ASTC": "ASTC decoding",
+  "Décodage vidéo": "Video decoding",
+  "Netteté FSR": "FSR sharpness",
+  "Sortie audio": "Audio output",
+  "Vitesse des cœurs synchronisée": "Synchronized core speed",
   "Propre à ce jeu": "Set for this game",
   "Réglages communs à tous les jeux": "Settings common to all games",
   "Ferme l'émulateur avant de changer un réglage.": "Close the emulator before changing a setting.",
@@ -534,10 +552,6 @@
    {
     ", copie hors ligne": ", offline copy"
    }
-  ],
-  [
-   "^L'émulateur garde aussi (\\d+) autre\\(s\\) réglage\\(s\\) propre\\(s\\) à ce jeu : change-les dans l'émulateur\\.$",
-   "The emulator also keeps $1 other setting(s) for this game: change them in the emulator."
   ],
   [
    "^\\+(\\d+) dans l'émulateur$",

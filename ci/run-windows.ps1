@@ -282,6 +282,11 @@ $r = App $rootG 'game_settings_set' @{ file = $g; key = 'use_docked_mode'; value
 $r = App $rootG 'game_settings_set' @{ file = $g; key = 'language_index'; value = 99 }; Check 'game value out of range refused' (-not $r.ok)
 [IO.File]::WriteAllText("$rootG\Roms\No Id Game.nup", 'x'); $r = App $rootG 'game_settings_get' @{ file = 'No Id Game.nup' }; Check 'game without id explained' ((-not $r.ok) -and $r.error -match '0100000000010000')
 $r = App $rootG 'game_settings_set' @{ file = '..\x [0400000000000009].nup'; key = 'volume'; value = 10 }; Check 'unknown game refused for settings' (-not $r.ok)
+$mem = "use_multi_core\use_global=true`r`nmemory_layout_mode\use_global=false`r`nmemory_layout_mode\default=true`r`nmemory_layout_mode=2`r`n"; $t = [IO.File]::ReadAllText($gi); $t = if ($t.Contains("[Core]`r`n")) { $t.Replace("[Core]`r`n", "[Core]`r`n$mem") } else { $t + "[Core]`r`n$mem" }; [IO.File]::WriteAllText($gi, $t)
+$r = App $rootG 'game_settings_get' @{ file = $g }; $o = @($r.value.otherList); Check 'setting changed in the emulator named' ($r.ok -and $o.Count -eq 1 -and $o[0].key -eq 'memory_layout_mode' -and $o[0].section -eq 'Core' -and $o[0].name -match '^M.moire .mul.e$') ($r | ConvertTo-Json -Compress -Depth 4)
+$r = App $rootG 'game_settings_other_common' @{ file = $g; section = 'Core'; key = 'use_multi_core' }; Check 'setting not changed for the game refused' (-not $r.ok)
+$r = App $rootG 'game_settings_other_common' @{ file = $g; section = 'Core'; key = 'memory_layout_mode' }; $t = [IO.File]::ReadAllText($gi); Check 'setting changed in the emulator follows the common one again' ($r.ok -and $t.Contains("memory_layout_mode\use_global=true`r`n") -and -not $t.Contains('memory_layout_mode=2') -and $t.Contains('use_multi_core\use_global=true')) $t
+$r = App $rootG 'game_settings_get' @{ file = $g }; Check 'nothing left from the emulator' ($r.value.others -eq 0) ($r | ConvertTo-Json -Compress -Depth 4)
 "-- image sources"
 $r = App $rootG 'art_sources'; Check 'sources listed with SteamGridDB' ((@($r.value).name -join ',') -eq 'Source A,SteamGridDB' -and -not $r.value[1].ok) ($r | ConvertTo-Json -Compress)
 $r = App $rootG 'art_source_enable' @{ name = 'Source A'; enabled = $false }; $r2 = App $rootG 'state'; Check 'source turned off' ($r.ok -and @($r2.value.artSources).Count -eq 0)

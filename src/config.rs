@@ -184,13 +184,60 @@ pub fn game_get(file: &str) -> Result<Value> {
     let path = game_path(file)?;
     let (lines, _) = load(&path);
     let own: serde_json::Map<String, Value> = keys().into_iter().map(|k| (k.to_string(), if is_own(&lines, k) { json!(value(&lines, k)) } else { Value::Null })).collect();
-    Ok(json!({ "own": own, "common": get(), "others": others(&lines) }))
+    let list: Vec<Value> = other_list(&lines).into_iter().map(|(section, key)| {
+        let name = OTHER_NAMES.iter().find(|n| n.0 == key).map(|n| n.1);
+        json!({ "section": section, "key": key, "name": name })
+    }).collect();
+    Ok(json!({ "own": own, "common": get(), "others": list.len(), "otherList": list }))
 }
 
-/// Settings changed for a game in the emulator that the page does not show.
+/// Names of settings the page cannot change, for the list of those a game has of its own.
+const OTHER_NAMES: [(&str, &str); 16] = [
+    ("memory_layout_mode", "Mémoire émulée"),
+    ("use_multi_core", "Processeur multicœur"),
+    ("cpu_accuracy", "Précision du processeur"),
+    ("gpu_accuracy", "Précision du GPU"),
+    ("aspect_ratio", "Format d'image"),
+    ("scaling_filter", "Filtre de mise à l'échelle"),
+    ("anti_aliasing", "Anticrénelage"),
+    ("max_anisotropy", "Filtrage anisotrope"),
+    ("shader_backend", "Moteur de shaders"),
+    ("use_asynchronous_shaders", "Shaders asynchrones"),
+    ("use_disk_shader_cache", "Cache de shaders sur le disque"),
+    ("astc_decode_mode", "Décodage ASTC"),
+    ("nvdec_emulation", "Décodage vidéo"),
+    ("fsr_sharpening_slider", "Netteté FSR"),
+    ("output_engine", "Sortie audio"),
+    ("sync_core_speed", "Vitesse des cœurs synchronisée"),
+];
+
+/// Settings changed for a game in the emulator that the page does not show: section and name.
+fn other_list(lines: &[String]) -> Vec<(String, String)> {
+    let shown: Vec<&str> = keys().iter().flat_map(|k| lines_of(k)).map(|(_, k)| k).collect();
+    let mut section = String::new();
+    let mut out = vec![];
+    for l in lines {
+        if let Some(s) = l.trim().strip_prefix('[').and_then(|s| s.strip_suffix(']')) {
+            section = s.to_string();
+        } else if let Some(k) = l.trim().strip_suffix("\\use_global=false") {
+            if !shown.contains(&k) { out.push((section.clone(), k.to_string())); }
+        }
+    }
+    out
+}
+
 fn others(lines: &[String]) -> usize {
-    let shown: Vec<String> = keys().iter().flat_map(|k| lines_of(k)).map(|(_, k)| format!("{k}\\use_global=false")).collect();
-    lines.iter().filter(|l| l.ends_with("\\use_global=false") && !shown.contains(l)).count()
+    other_list(lines).len()
+}
+
+/// Makes a game follow the common value again for a setting the page does not show.
+pub fn game_other_common(file: &str, section: &str, key: &str) -> Result<()> {
+    not_running()?;
+    let path = game_path(file)?;
+    let (mut lines, crlf) = load(&path);
+    if !other_list(&lines).iter().any(|(s, k)| s == section && k == key) { bail!("Réglage inconnu."); }
+    follow_common(&mut lines, section, key);
+    save(&path, &lines, crlf)
 }
 
 /// Games with settings of their own, for the list on the emulators page.
@@ -295,5 +342,14 @@ mod tests {
     fn other_settings_are_counted() {
         let lines: Vec<String> = "[Core]\nmemory_layout_mode\\use_global=false\nmemory_layout_mode=2\n[System]\nuse_docked_mode\\use_global=false".lines().map(str::to_string).collect();
         assert_eq!(others(&lines), 1);
+        assert_eq!(other_list(&lines), vec![("Core".to_string(), "memory_layout_mode".to_string())]);
+    }
+
+    #[test]
+    fn other_setting_follows_common_again() {
+        let mut lines: Vec<String> = "[Core]\nuse_multi_core\\use_global=true\nmemory_layout_mode\\use_global=false\nmemory_layout_mode\\default=true\nmemory_layout_mode=2\nuse_speed_limit\\use_global=true".lines().map(str::to_string).collect();
+        follow_common(&mut lines, "Core", "memory_layout_mode");
+        assert_eq!(text(&lines), "[Core]\nuse_multi_core\\use_global=true\nmemory_layout_mode\\use_global=true\nuse_speed_limit\\use_global=true");
+        assert_eq!(others(&lines), 0);
     }
 }
