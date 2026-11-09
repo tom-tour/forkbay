@@ -63,7 +63,7 @@ impl Default for Settings {
             steam_grid_key: String::new(),
             data_location: "portable".into(),
             custom_data_path: String::new(),
-            default_emulator: "Lichii".into(),
+            default_emulator: "Fritchii".into(),
             games: BTreeMap::new(),
             sync: Sync { provider: "folder".into(), keep_backups: 10, ..Default::default() },
             auto_backup: true,
@@ -109,6 +109,11 @@ pub fn load_settings() -> Settings {
         Err(_) => Settings::default(),
     };
     crate::theme::migrate(&mut s);
+    // Emulators renamed since these settings were saved.
+    s.default_emulator = crate::emu::current_name(&s.default_emulator);
+    for e in s.games.values_mut() {
+        if !e.is_empty() { *e = crate::emu::current_name(e); }
+    }
     s
 }
 

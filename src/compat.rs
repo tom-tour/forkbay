@@ -82,6 +82,11 @@ fn repo_of(e: &crate::emu::Emu) -> String {
     if e.source == "forgejo" { norm_repo(&format!("{}/{}", e.base, e.repo)) } else { norm_repo(&format!("https://github.com/{}", e.repo)) }
 }
 
+/// The repository and the ones it was published under before: the guide may still use an old address.
+fn repos_of(e: &crate::emu::Emu) -> Vec<String> {
+    std::iter::once(repo_of(e)).chain(e.old_repos.iter().map(|r| norm_repo(&format!("https://github.com/{r}")))).collect()
+}
+
 /// Reads the fork names written in a table cell.
 fn picks(cell: &str, forks: &[Value], vendor: &str) -> Vec<Value> {
     let lower = cell.to_lowercase();
@@ -90,7 +95,7 @@ fn picks(cell: &str, forks: &[Value], vendor: &str) -> Vec<Value> {
     for f in forks {
         if !fork_key(f).iter().any(|k| !k.is_empty() && has_word(&lower, k)) { continue; }
         let repo = norm_repo(f["repo"].as_str().unwrap_or(""));
-        let known = list.iter().find(|e| !e.repo.is_empty() && repo_of(e) == repo).map(|e| e.name.clone());
+        let known = list.iter().find(|e| !e.repo.is_empty() && repos_of(e).contains(&repo)).map(|e| e.name.clone());
         let installed = known.as_ref().is_some_and(|n| crate::emu::find_exe(&root().join(n)).is_some());
         let gpu_ok = vendor.is_empty() || f["gpu"].as_array().is_none_or(|g| g.iter().any(|x| x.as_str().unwrap_or("").to_lowercase().contains(&vendor.to_lowercase())));
         let platform = if cfg!(windows) { "windows" } else { "linux" };
@@ -130,7 +135,7 @@ pub fn recommendations() -> Result<Value> {
         games.insert(file, json!({ "guideName": row[0], "first": picks(&row[1], &forks, &vendor), "also": picks(&row[2], &forks, &vendor), "evidence": row[3], "reports": related.len(), "reportsSameGpu": same_gpu }));
     }
     let catalogue: Vec<Value> = {
-        let known: Vec<String> = crate::emu::list().iter().filter(|e| !e.repo.is_empty()).map(repo_of).collect();
+        let known: Vec<String> = crate::emu::list().iter().filter(|e| !e.repo.is_empty()).flat_map(repos_of).collect();
         forks.iter().filter(|f| { let r = norm_repo(f["repo"].as_str().unwrap_or("")); !known.contains(&r) && r.starts_with("https://github.com/") })
             .filter(|f| { let p = if cfg!(windows) { "windows" } else { "linux" }; f["platforms"].as_array().is_some_and(|l| l.iter().any(|x| x.as_str().unwrap_or("").to_lowercase().contains(p))) })
             .map(|f| json!({ "name": f["name"], "repo": f["repo"], "bestFor": f["best_for"], "notes": f["notes"], "confidence": f["confidence"] })).collect()

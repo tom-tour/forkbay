@@ -17,7 +17,7 @@ fn state() -> Result<Value> {
     let s = load_settings();
     let data = data_path();
     let games: Vec<Value> = rom_files().iter().map(|f| json!({ "file": f, "name": display_name(f), "emu": game_emulator(&s, f), "cover": art::cover_uri(f), "own": config::has_own(f), "hasId": config::game_id(f).is_some() })).collect();
-    let emus: Vec<Value> = emu::list().iter().map(|e| json!({ "name": e.name, "present": emu::find_exe(&root().join(&e.name)).is_some() })).collect();
+    let emus: Vec<Value> = emu::list().iter().map(|e| json!({ "name": e.name, "present": emu::find_exe(&root().join(&e.name)).is_some(), "available": e.user || !(if cfg!(windows) { &e.asset } else { &e.linux_asset }).is_empty() })).collect();
     Ok(json!({
         "setupDone": s.setup_done, "theme": s.theme, "mode": s.mode, "gradient": s.gradient, "customSurfaces": s.custom_surfaces, "userThemes": s.user_themes, "customColors": s.custom_colors, "fullscreen": FULLSCREEN.load(Ordering::Relaxed), "padTest": std::env::var("FORKBAY_PADTEST").unwrap_or_default(), "secTest": std::env::var("FORKBAY_SECTEST").is_ok(), "uiTest": std::env::var("FORKBAY_UITEST").unwrap_or_default(), "installPrompt": install::needed(), "fullscreenGames": s.fullscreen_games, "gameDirs": s.game_dirs, "coverSources": art::source_names(), "artSources": art::offered(&s), "artChoice": { "kinds": s.art_kinds, "source": s.art_source, "replace": s.art_replace }, "language": i18n::current(), "languageSetting": s.language, "languages": i18n::languages(), "termsAccepted": s.terms_accepted >= 1, "autoUpdateCheck": s.auto_update_check, "version": update::version(),
         "dataLocation": s.data_location, "customDataPath": s.custom_data_path,

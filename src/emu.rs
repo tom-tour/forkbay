@@ -23,6 +23,10 @@ pub struct Emu {
     pub linux_asset: String,
     pub about: String,
     pub user: bool,
+    /// Repositories this emulator was published under before.
+    pub old_repos: Vec<String>,
+    /// Names Forkbay gave this emulator before.
+    pub old_names: Vec<String>,
 }
 
 pub struct Release {
@@ -59,6 +63,52 @@ pub fn list() -> Vec<Emu> {
         }
     }
     all
+}
+
+/// The name an emulator has now, for a name saved by an older Forkbay ("Lichii" is now "Fritchii").
+/// A folder still holding an emulator under the old name keeps it.
+pub fn current_name(name: &str) -> String {
+    let all = list();
+    if all.iter().any(|e| e.name == name) || find_exe(&root().join(name)).is_some() {
+        return name.to_string();
+    }
+    all.into_iter().find(|e| e.old_names.iter().any(|o| o == name)).map(|e| e.name).unwrap_or_else(|| name.to_string())
+}
+
+/// Gives a renamed emulator its new name on disk: its folder, its kept versions and its shader cache.
+/// Only a folder holding a version of that emulator (or of no known version) moves.
+pub fn migrate_renamed() {
+    for e in list() {
+        let Ok(tag) = Regex::new(if e.tag.is_empty() { "." } else { &e.tag }) else { continue };
+        for old in &e.old_names {
+            let (from, to) = (root().join(old), root().join(&e.name));
+            if find_exe(&from).is_none() || to.exists() || !{ let v = installed(old); v.is_empty() || tag.is_match(&v) } {
+                continue;
+            }
+            if any_running() {
+                crate::log::info(&format!("{old} not renamed to {}: an emulator is running", e.name));
+                return;
+            }
+            if let Err(err) = fs::rename(&from, &to) {
+                crate::log::error(&format!("{old} not renamed to {}: {err}", e.name));
+                continue;
+            }
+            crate::log::info(&format!("{old} renamed to {}", e.name));
+            let shaders = data_path().join("cache").join("shaders");
+            if shaders.join(old).is_dir() && !shaders.join(&e.name).exists() {
+                let _ = fs::rename(shaders.join(old), shaders.join(&e.name));
+            }
+            let kept = root().join("Old Versions");
+            for d in fs::read_dir(&kept).map(|rd| rd.flatten().collect::<Vec<_>>()).unwrap_or_default() {
+                let n = d.file_name().to_string_lossy().into_owned();
+                if let Some(label) = n.strip_prefix(&format!("{old} ")) {
+                    if tag.is_match(label) && !kept.join(format!("{} {label}", e.name)).exists() {
+                        let _ = fs::rename(d.path(), kept.join(format!("{} {label}", e.name)));
+                    }
+                }
+            }
+        }
+    }
 }
 
 pub fn find_exe(folder: &Path) -> Option<PathBuf> {
@@ -112,7 +162,7 @@ pub fn releases(e: &Emu) -> Result<Vec<Release>> {
     let wanted = Regex::new(wanted)?;
     let exclude = if e.asset_exclude.is_empty() { None } else { Some(Regex::new(&e.asset_exclude)?) };
     let tag = Regex::new(if e.tag.is_empty() { "." } else { &e.tag })?;
-    let list = crate::net::get_json(&api_url(e), None).map_err(|err| anyhow!("Réseau : {err}"))?;
+    let list = crate::net::get_json_cached(&api_url(e), 300).map_err(|err| if err.to_string().starts_with("GitHub") { err } else { anyhow!("Réseau : {err}") })?;
     let mut found: Vec<Release> = vec![];
     for r in list.as_array().into_iter().flatten() {
         let t = r["tag_name"].as_str().unwrap_or("");
@@ -163,7 +213,8 @@ pub fn versions(name: &str) -> Result<Value> {
 }
 
 pub fn status() -> Value {
-    let rows: Vec<Value> = list().iter().map(|e| {
+    // An emulator with no build for this system is only shown once installed.
+    let rows: Vec<Value> = list().iter().filter(|e| e.user || find_exe(&root().join(&e.name)).is_some() || !(if cfg!(windows) { &e.asset } else { &e.linux_asset }).is_empty()).map(|e| {
         let folder = root().join(&e.name);
         let present = find_exe(&folder).is_some();
         let inst = installed(&e.name);
@@ -386,7 +437,7 @@ fn check_name(name: &str) -> Result<()> {
     if list().iter().any(|e| e.name.eq_ignore_ascii_case(name)) {
         bail!("Un émulateur s'appelle déjà {name}.");
     }
-    if ["Data", "Roms", "Roms Dumps", "Manager", "Save Backups", "Old Versions", "Covers", "Unverified"].iter().any(|r| r.eq_ignore_ascii_case(name)) {
+    if ["Data", "Roms", "Roms Dumps", "Manager", "Save Backups", "Old Versions", "Covers", "Unverified"].iter().any(|r| r.eq_ignore_ascii_case(name)) || list().iter().any(|e| e.old_names.iter().any(|o| o.eq_ignore_ascii_case(name))) {
         bail!("Ce nom est réservé : {name}.");
     }
     Ok(())

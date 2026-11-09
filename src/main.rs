@@ -186,6 +186,7 @@ fn main() {
     }
     log::install_panic_hook();
     update::cleanup();
+    emu::migrate_renamed();
     let mut args: Vec<String> = std::env::args().skip(1).collect();
     if args.first().map(String::as_str) == Some("--cleanup-install") {
         if let Some(old) = args.get(1).cloned() {
@@ -204,8 +205,8 @@ fn main() {
         return;
     }
     if args.first().map(String::as_str) == Some("--version") { if let Some(f) = args.get(1) { let _ = std::fs::write(f, env!("CARGO_PKG_VERSION")); } return; }
-    let result = if let Some(g) = get("--launch") { launch(Some(g), get("--emu")) }
-        else if let Some(e) = get("--open") { launch(None, Some(e)) }
+    let result = if let Some(g) = get("--launch") { launch(Some(g), get("--emu").map(emu::current_name).as_deref()) }
+        else if let Some(e) = get("--open") { launch(None, Some(&emu::current_name(e))) }
         else { log::info(&format!("start {}", update::version())); run_gui(args.iter().any(|a| a == "--fullscreen") || (args.iter().any(|a| a == "--steam-ui") && steam::big_picture())).map_err(|e| anyhow!(e)) };
     if let Err(e) = result { log::error(&e.to_string()); notify(&e.to_string()); }
 }

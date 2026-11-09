@@ -180,8 +180,8 @@
   "Émulateur": "Emulator",
   "Tu peux en installer d'autres plus tard.": "You can install others later.",
   "Aucun émulateur installé": "No emulator installed",
-  "Lichii est le plus polyvalent sous Windows, à essayer en premier.": "Lichii is the most versatile on Windows: try it first.",
-  "Installer Lichii": "Install Lichii",
+  "Fritchii est le plus polyvalent sous Windows, à essayer en premier.": "Fritchii is the most versatile on Windows: try it first.",
+  "Installer Fritchii": "Install Fritchii",
   "Tes jeux": "Your games",
   "Ouvrir le dossier": "Open folder",
   "Options": "Options",
@@ -212,7 +212,7 @@
   "Installation, import, mises à jour, Steam, cloud, fenêtre. Un plantage ou un problème d'image dans un jeu vient de l'émulateur : consulte son projet, depuis le bouton Versions de la page Émulateurs.": "Setup, import, updates, Steam, cloud, the window. A crash or a graphics problem in a game is caused by the emulator: check its project, using the Releases button on the Emulators page.",
   "Utile si l'outil n'arrive pas à lancer un émulateur. Les 200 dernières lignes, anonymisées.": "Useful if the tool cannot start an emulator. The last 200 lines, with personal details removed.",
   "Remerciements": "Thanks",
-  "Cet outil n'existerait pas sans les projets Eden, Eglantine, Lichii, Frizti, PokeDinner et Orchid, le guide communautaire wichforks, SteamGridDB et les bibliothèques libres qu'il utilise.": "This tool would not exist without the Eden, Eglantine, Lichii, Frizti, PokeDinner and Orchid projects, the wichforks community guide, SteamGridDB and the open source libraries it uses.",
+  "Cet outil n'existerait pas sans les projets Eden, Eglantine, Lichii, Fritchii, PokeDinner, Orchid, SmileyTatsu, Selevet et Eglantine Steam Deck, le guide communautaire wichforks, SteamGridDB et les bibliothèques libres qu'il utilise.": "This tool would not exist without the Eden, Eglantine, Lichii, Fritchii, PokeDinner, Orchid, SmileyTatsu, Selevet and Eglantine Steam Deck projects, the wichforks community guide, SteamGridDB and the open source libraries it uses.",
   "Licences des bibliothèques": "Library licenses",
   "Cet outil ne fournit ni clés, ni firmware, ni jeux : ils doivent venir de ta propre console. Il n'est lié à aucun fabricant de consoles.": "This tool provides no keys, firmware or games: they must come from your own console. It is not affiliated with any console maker.",
   "Utiliser": "Use",
@@ -508,7 +508,10 @@
    "^(.*) · Installée : (.*?)( · Disponible : (.*))?$",
    "$1 · Installed: $2$3",
    {
-    "Fork Frizti : le plus polyvalent": "Frizti fork: the most versatile",
+    "Fork Lichii de Frizti : le plus polyvalent": "Frizti's Lichii fork: the most versatile",
+    "Fork Eglantine conseillé pour Mario Kart World": "Eglantine fork recommended for Mario Kart World",
+    "Fork Eglantine conseillé pour Donkey Kong Bananza, optimisé pour les processeurs Zen 3": "Eglantine fork recommended for Donkey Kong Bananza, tuned for Zen 3 processors",
+    "Eglantine corrigé pour le Steam Deck": "Eglantine with fixes for the Steam Deck",
     "Fork centré sur Pokopia": "Fork focused on Pokopia",
     "Projet Lichii d'origine, sorties fréquentes": "Original Lichii project, frequent releases",
     "Correctifs visuels pour Zelda": "Visual fixes for Zelda",
@@ -732,6 +735,10 @@
   [
    "^(.+) est déjà en version (.+)\\.$",
    "$1 is already on version $2."
+  ],
+  [
+   "^GitHub limite le nombre de vérifications par heure : réessaie un peu plus tard\\.$",
+   "GitHub limits how many checks can be made per hour: try again a bit later."
   ],
   [
    "^Nouvelle version disponible : (.+)$",

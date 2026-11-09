@@ -198,7 +198,7 @@ $r2 = App $rootC 'report_collect' @{ game = ''; log = $false }; Check 'system de
 $r = App $rootC 'backup_restore' @{ name = '..\..\Data' }; Check 'bad copy name refused' (-not $r.ok)
 $r = App $rootC 'backup_set' @{ enabled = $false }; [IO.File]::WriteAllText($sc, 'four'); $before = @((App $rootC 'backup_list').value.copies).Count; PlayC; Check 'option can be turned off' (@((App $rootC 'backup_list').value.copies).Count -eq $before)
 $of = "$rootC\Old Versions\Fake v1"; New-Item -ItemType Directory -Force $of, "$rootC\Old Versions\Lichii Upstream v9" | Out-Null; foreach ($d in $of, "$rootC\Old Versions\Lichii Upstream v9") { Copy-Item "$work\fake\fake.exe" "$d\fake.exe"; [IO.File]::WriteAllText("$d\exe.txt", 'fake.exe'); [IO.File]::WriteAllText("$d\version.txt", 'v1') }; [IO.File]::WriteAllText("$rootC\Fake\version.txt", 'v2')
-$r = App $rootC 'emu_status'; $fk = @($r.value) | Where-Object name -eq 'Fake'; Check 'older version listed' (@($fk.old) -contains 'Fake v1'); $li = @($r.value) | Where-Object name -eq 'Lichii'; Check 'other emulator not mixed in' (@($li.old).Count -eq 0)
+$r = App $rootC 'emu_status'; $fk = @($r.value) | Where-Object name -eq 'Fake'; Check 'older version listed' (@($fk.old) -contains 'Fake v1'); $li = @($r.value) | Where-Object name -eq 'Lichii Upstream'; Check 'other emulator not mixed in' ((@($li.old) -contains 'Lichii Upstream v9') -and -not (@($fk.old) -contains 'Lichii Upstream v9'))
 $r = App $rootC 'emu_versions' @{ name = 'Fake' }; $v = @($r.value.versions) | Where-Object old -eq 'Fake v1'; Check 'kept version offered in the version list' ($r.ok -and $v -and $v.tag -eq 'v1') $r.error
 $r = App $rootC 'emu_versions' @{ name = 'Nope' }; Check 'version list of an unknown emulator refused' (-not $r.ok)
 $r = App $rootC 'emu_rollback' @{ name = 'Fake'; version = '..\..\Data' }; Check 'bad version refused' (-not $r.ok)
@@ -206,14 +206,14 @@ $r = App $rootC 'emu_rollback' @{ name = 'Fake'; version = 'Fake v1' }; Check 'r
 "-- window protection"
 $env:FORKBAY_ROOT = $rootC; $env:FORKBAY_SELFTEST = "$work\sec.txt"; $env:FORKBAY_SECTEST = '1'; $w = Start-Process -FilePath $Bin -PassThru; $sec = ''; for ($i = 0; $i -lt 40 -and $sec -notmatch 'nav=blocked'; $i++) { Start-Sleep -Milliseconds 750; if (Test-Path "$work\sec.txt") { $sec = Get-Content "$work\sec.txt" -Raw } }; Stop-Process -Id $w.Id -Force -ErrorAction SilentlyContinue; Remove-Item Env:\FORKBAY_SELFTEST, Env:\FORKBAY_SECTEST; Check 'page cannot reach or navigate to the web' ($sec -match 'csp=blocked nav=blocked') $sec
 "-- full screen, game folders and images"
-$rootF = "$work\F\Files"; New-Item -ItemType Directory -Force "$rootF\Roms", "$rootF\Lichii", "$work\games\Sub Folder" | Out-Null
+$rootF = "$work\F\Files"; New-Item -ItemType Directory -Force "$rootF\Roms", "$rootF\Fritchii", "$work\games\Sub Folder" | Out-Null
 [IO.File]::WriteAllText("$work\games\Sub Folder\Other Game [0400000000000001].nsp", 'x'); [IO.File]::WriteAllText("$work\games\ignored.txt", 'x')
-[IO.File]::WriteAllText("$rootF\Lichii\args.bat", "@echo %* > ""$work\args.txt""`r`n"); [IO.File]::WriteAllText("$rootF\Lichii\exe.txt", 'args.bat')
+[IO.File]::WriteAllText("$rootF\Fritchii\args.bat", "@echo %* > ""$work\args.txt""`r`n"); [IO.File]::WriteAllText("$rootF\Fritchii\exe.txt", 'args.bat')
 $r = App $rootF 'state'; $r = App $rootF 'game_dir_add' @{ path = "$work\games" }; Check 'games folder added' ($r.value.message -match '^Dossier ajout.* : 1 ') ($r | ConvertTo-Json -Compress)
 $r = App $rootF 'game_dir_add' @{ path = "$work\games" }; Check 'same folder refused' (-not $r.ok)
 $r = App $rootF 'game_dir_add' @{ path = "$rootF\Roms" }; Check 'Roms folder refused' (-not $r.ok)
 $r = App $rootF 'state'; $ext = @($r.value.games)[0]; Check 'game found in subfolder, not moved' ($ext.name -eq 'Other Game' -and (Test-Path -LiteralPath "$work\games\Sub Folder\Other Game [0400000000000001].nsp") -and @(Get-ChildItem "$rootF\Roms").Count -eq 0) ($r | ConvertTo-Json -Compress -Depth 3)
-$r = App $rootF 'set_game_emu' @{ file = $ext.file; emu = 'Lichii' }
+$r = App $rootF 'set_game_emu' @{ file = $ext.file; emu = 'Fritchii' }
 function PlayF { if (Test-Path "$work\args.txt") { Remove-Item "$work\args.txt" }; $env:FORKBAY_ROOT = $rootF; Start-Process -FilePath $Bin -ArgumentList '--launch', ('"' + $ext.file + '"') -Wait; Start-Sleep -Milliseconds 300; if (Test-Path "$work\args.txt") { Get-Content "$work\args.txt" -Raw } else { '' } }
 $a = PlayF; Check 'game launched in full screen' ($a -match '^-f -g ' -and $a -match 'Other Game') $a
 App $rootF 'set_fullscreen_games' @{ enabled = $false } | Out-Null; $a = PlayF; Check 'full screen can be turned off' ($a -match '^-g ' -and $a -notmatch '-f ') $a; App $rootF 'set_fullscreen_games' @{ enabled = $true } | Out-Null
@@ -237,8 +237,8 @@ App $rootF 'game_dir_add' @{ path = "$work\games" } | Out-Null; App $rootF 'fini
 $env:FORKBAY_ROOT = $rootF; $env:FORKBAY_SELFTEST = "$work\ui.txt"; $env:FORKBAY_UITEST = "$work\any name.png"; Remove-Item -LiteralPath "$rootF\Covers\Other Game-grid.jpg" -ErrorAction SilentlyContinue; $w = Start-Process -FilePath $Bin -PassThru; $ui = ''; for ($i = 0; $i -lt 60 -and $ui -notmatch 'drop='; $i++) { Start-Sleep -Milliseconds 500; if (Test-Path "$work\ui.txt") { $ui = Get-Content "$work\ui.txt" -Raw } }; if (-not $w.HasExited) { Stop-Process -Id $w.Id -Force }; Remove-Item Env:\FORKBAY_SELFTEST, Env:\FORKBAY_UITEST
 Check 'F11 and dropping an image in the window' ($ui -match 'on=true off=false drop=ok') $ui
 "-- emulator settings, running game and image choices"
-$rootG = "$work\G\Files"; New-Item -ItemType Directory -Force "$rootG\Roms", "$rootG\Data\config", "$rootG\Lichii" | Out-Null
-[IO.File]::WriteAllText("$rootG\Roms\Run Game [0400000000000002].nup", 'x'); Copy-Item $Bin "$rootG\Lichii\emu.exe"; [IO.File]::WriteAllText("$rootG\Lichii\exe.txt", 'emu.exe')
+$rootG = "$work\G\Files"; New-Item -ItemType Directory -Force "$rootG\Roms", "$rootG\Data\config", "$rootG\Fritchii" | Out-Null
+[IO.File]::WriteAllText("$rootG\Roms\Run Game [0400000000000002].nup", 'x'); Copy-Item $Bin "$rootG\Fritchii\emu.exe"; [IO.File]::WriteAllText("$rootG\Fritchii\exe.txt", 'emu.exe')
 $ini = "$rootG\Data\config\qt-config.ini"; [IO.File]::WriteAllText($ini, "[Core]`r`nuse_speed_limit\default=true`r`nuse_speed_limit=true`r`nspeed_limit\default=true`r`nspeed_limit=100`r`n[System]`r`nlanguage_index\default=true`r`nlanguage_index=1`r`nregion_index=1`r`n[UI]`r`nother=keep`r`n")
 $r = App $rootG 'state'; $r = App $rootG 'emu_settings_get'; Check 'settings read' ($r.value.language_index -eq 1 -and $r.value.speed -eq 100 -and $r.value.volume -eq 100) ($r | ConvertTo-Json -Compress)
 $r = App $rootG 'emu_settings_set' @{ key = 'language_index'; value = 2 }; $t = [IO.File]::ReadAllText($ini); Check 'game language written for the emulators' ($r.ok -and $t.Contains("language_index\default=false`r`nlanguage_index=2`r`n")) $t
@@ -252,13 +252,13 @@ $r = App $rootG 'emu_settings_set' @{ key = 'backend'; value = 2 }; Check 'rende
 $r = App $rootG 'emu_settings_set' @{ key = 'nand_directory'; value = 1 }; Check 'unknown setting refused' (-not $r.ok)
 function StartG { $env:FORKBAY_ROOT = $rootG; $p = Start-Process -FilePath $Bin -ArgumentList '--launch', '"Roms/Run Game [0400000000000002].nup"' -PassThru; for ($i = 0; $i -lt 60; $i++) { Start-Sleep -Milliseconds 500; $script:s = App $rootG 'game_session'; if ($script:s.value.session.file) { break } }; return $p }
 function StopWait($p) { for ($i = 0; $i -lt 40 -and -not $p.HasExited; $i++) { Start-Sleep -Milliseconds 500 }; return $p.HasExited }
-$p = StartG; Check 'running game known' ($s.value.session.file -like 'Run Game*' -and $s.value.session.emu -eq 'Lichii') ($s | ConvertTo-Json -Compress -Depth 3)
+$p = StartG; Check 'running game known' ($s.value.session.file -like 'Run Game*' -and $s.value.session.emu -eq 'Fritchii') ($s | ConvertTo-Json -Compress -Depth 3)
 $r = App $rootG 'emu_settings_set' @{ key = 'language_index'; value = 3 }; Check 'settings refused while an emulator is open' (-not $r.ok)
 $r = App $rootG 'game_close' @{ force = $false }; Check 'close requested' $r.ok $r.error; Check 'game closed normally' (StopWait $p); $s = App $rootG 'game_session'; Check 'session ended' (-not $s.value.session)
 $p = StartG; $r = App $rootG 'game_close' @{ force = $true }; Check 'forced close' ($r.ok -and (StopWait $p)) $r.error
 $r = App $rootG 'game_close' @{ force = $true }; Check 'nothing to close' (-not $r.ok)
-[IO.File]::WriteAllText("$rootG\Manager\session.json", '{"file":"x","emu":"Lichii","exe":"emu.exe","pid":4000000}'); $s = App $rootG 'game_session'; Check 'stale session ignored' ((-not $s.value.session) -and -not (Test-Path "$rootG\Manager\session.json"))
-[IO.File]::WriteAllText("$rootG\Manager\session.json", ('{"file":"x","emu":"Lichii","exe":"emu.exe","pid":' + $PID + '}')); $s = App $rootG 'game_session'; Check 'another program with that number is not a game' (-not $s.value.session)
+[IO.File]::WriteAllText("$rootG\Manager\session.json", '{"file":"x","emu":"Fritchii","exe":"emu.exe","pid":4000000}'); $s = App $rootG 'game_session'; Check 'stale session ignored' ((-not $s.value.session) -and -not (Test-Path "$rootG\Manager\session.json"))
+[IO.File]::WriteAllText("$rootG\Manager\session.json", ('{"file":"x","emu":"Fritchii","exe":"emu.exe","pid":' + $PID + '}')); $s = App $rootG 'game_session'; Check 'another program with that number is not a game' (-not $s.value.session)
 $g = 'Run Game [0400000000000002].nup'; $png = [Convert]::FromBase64String('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEBgIApD5fRAAAAABJRU5ErkJggg=='); [IO.File]::WriteAllBytes("$work\tile.png", $png)
 foreach ($k in 'grid', 'logo') { $r = App $rootG 'set_image' @{ file = $g; kind = $k; path = "$work\tile.png" } }
 $r = App $rootG 'game_images' @{ file = $g }; Check 'all images visible' ($r.value.grid -like 'data:image/png*' -and $r.value.logo -like 'data:image/png*' -and -not $r.value.hero) ($r | ConvertTo-Json -Compress)
@@ -307,6 +307,19 @@ $keep = "$work\Keep"; New-Item -ItemType Directory -Force "$keep\Files\Data" | O
 Start-Process -FilePath $new -ArgumentList '--cleanup-install', "`"$keep\Forkbay.exe`"", '--version', "`"$work\v.txt`"" -Wait; Check 'data of an old copy is kept' (Test-Path "$keep\Files\Data")
 $stay = "$work\Stay"; New-Item -ItemType Directory -Force $stay | Out-Null; Copy-Item $Bin "$stay\Forkbay.exe"; $r = Inst "$stay\Forkbay.exe" 'install_stay'; $r = Inst "$stay\Forkbay.exe" 'state'; Check 'staying here is remembered' ($r.ok -and -not $r.value.installPrompt -and (Test-Path "$stay\Files\Roms")) ($r | ConvertTo-Json -Compress -Depth 2)
 Remove-Item Env:\FORKBAY_INSTALLTEST, Env:\FORKBAY_SHORTCUT_DIR
+"-- renamed emulators"
+$rootH = "$work\H\Files"; New-Item -ItemType Directory -Force "$rootH\Roms", "$rootH\Lichii", "$rootH\Old Versions\Lichii frizti-v2", "$rootH\Data\cache\shaders\Lichii", "$rootH\Manager" | Out-Null
+foreach ($d in "$rootH\Lichii", "$rootH\Old Versions\Lichii frizti-v2") { Copy-Item "$work\fake\fake.exe" "$d\fake.exe"; [IO.File]::WriteAllText("$d\exe.txt", 'fake.exe') }
+[IO.File]::WriteAllText("$rootH\Lichii\version.txt", 'frizti-v3'); [IO.File]::WriteAllText("$rootH\Data\cache\shaders\Lichii\vulkan.bin", 's')
+[IO.File]::WriteAllText("$rootH\Manager\settings.json", '{"setupDone":true,"defaultEmulator":"Lichii","games":{"Roms/A.nsp":"Lichii","Roms/B.nsp":"Eglantine"}}')
+$r = App $rootH 'state'
+Check 'renamed emulator folder moved' ((Test-Path "$rootH\Fritchii\fake.exe") -and -not (Test-Path "$rootH\Lichii"))
+Check 'its kept version and shader cache follow' ((Test-Path "$rootH\Old Versions\Fritchii frizti-v2\fake.exe") -and (Test-Path "$rootH\Data\cache\shaders\Fritchii\vulkan.bin"))
+Check 'saved choices use the new name' ($r.value.defaultEmulator -eq 'Fritchii') ($r.value.defaultEmulator)
+$r = App $rootH 'emu_status'; $fr = @($r.value) | Where-Object name -eq 'Fritchii'; Check 'renamed emulator installed with its version' ($fr.present -and $fr.installed -eq 'frizti-v3' -and @($fr.old) -contains 'Fritchii frizti-v2')
+$r = App $rootH 'emu_add_github' @{ name = 'Lichii'; repo = 'a/b' }; Check 'old name kept free' (-not $r.ok)
+$rootI = "$work\I\Files"; New-Item -ItemType Directory -Force "$rootI\Roms", "$rootI\Lichii" | Out-Null; Copy-Item "$work\fake\fake.exe" "$rootI\Lichii\fake.exe"; [IO.File]::WriteAllText("$rootI\Lichii\exe.txt", 'fake.exe'); [IO.File]::WriteAllText("$rootI\Lichii\version.txt", 'build-40')
+App $rootI 'state' | Out-Null; Check 'another emulator in that folder is not renamed' ((Test-Path "$rootI\Lichii\fake.exe") -and -not (Test-Path "$rootI\Fritchii"))
 Remove-Item Env:\FORKBAY_ROOT, Env:\FORKBAY_SEARCH, Env:\FORKBAY_STEAM -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
 if ($script:fail) { 'RESULT: FAILED' } else { 'RESULT: all passed' }

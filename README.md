@@ -109,13 +109,13 @@ The program is new and not code-signed, so an antivirus can flag it by mistake, 
 
 ## Limits
 
-- **Linux:** emulators are launched from their AppImage, with their folders pointed at the shared data. Lichii by Frizti has no Linux build.
+- **Linux:** emulators are launched from their AppImage, with their folders pointed at the shared data. Fritchii (Frizti's Lichii fork) and Selevet have no Linux build; Eglantine Steam Deck is Linux only.
 - **Moving the folder:** on Windows, Steam shortcuts find a new drive letter on their own, through a small copy of the program kept next to Steam's shortcut file (`forkbay-launcher.exe`). After any other move, open the **Steam** page and click **Apply to Steam**.
 - Emulation of these games is experimental and changes daily: a newer emulator can run a game worse. The two previous versions stay in `Files/Old Versions`, older ones are deleted.
 
 ## Credits
 
-This tool builds on the work of the Eden, Eglantine, Lichii, Frizti, PokeDinner and Orchid projects, the [wichforks](https://github.com/riyadhHDA/wichforks) community guide (MIT) and SteamGridDB. The licenses of the bundled libraries are in [assets/THIRD-PARTY.txt](assets/THIRD-PARTY.txt) and on the About page.
+This tool builds on the work of the Eden, Eglantine, Lichii, Fritchii, PokeDinner, Orchid, SmileyTatsu, Selevet and Eglantine Steam Deck projects, the [wichforks](https://github.com/riyadhHDA/wichforks) community guide (MIT) and SteamGridDB. The licenses of the bundled libraries are in [assets/THIRD-PARTY.txt](assets/THIRD-PARTY.txt) and on the About page.
 
 Report bugs in the tool through its **Report a bug** page. Problems inside a game should go to the emulator's own project. For security problems, see [SECURITY.md](SECURITY.md). To help, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -210,13 +210,13 @@ Le programme est récent et n'est pas signé : un antivirus peut le signaler par
 
 ## Limites
 
-- **Linux :** les émulateurs sont lancés depuis leur AppImage, avec leurs dossiers redirigés vers les données partagées. Lichii par Frizti n'a pas de version Linux.
+- **Linux :** les émulateurs sont lancés depuis leur AppImage, avec leurs dossiers redirigés vers les données partagées. Fritchii (le fork Lichii de Frizti) et Selevet n'ont pas de version Linux ; Eglantine Steam Deck n'existe que sous Linux.
 - **Déplacer le dossier :** sous Windows, les raccourcis Steam retrouvent seuls une nouvelle lettre de disque, grâce à une petite copie du programme gardée à côté du fichier de raccourcis de Steam (`forkbay-launcher.exe`). Après tout autre déplacement, ouvre la page **Steam** et clique sur **Enregistrer dans Steam**.
 - L'émulation de ces jeux est expérimentale et change chaque jour : un émulateur plus récent peut moins bien faire tourner un jeu. Les deux versions précédentes restent dans `Files/Old Versions`, les plus anciennes sont supprimées.
 
 ## Remerciements
 
-Cet outil repose sur le travail des projets Eden, Eglantine, Lichii, Frizti, PokeDinner et Orchid, du guide communautaire [wichforks](https://github.com/riyadhHDA/wichforks) (MIT) et de SteamGridDB. Les licences des bibliothèques incluses sont dans [assets/THIRD-PARTY.txt](assets/THIRD-PARTY.txt) et sur la page À propos.
+Cet outil repose sur le travail des projets Eden, Eglantine, Lichii, Fritchii, PokeDinner, Orchid, SmileyTatsu, Selevet et Eglantine Steam Deck, du guide communautaire [wichforks](https://github.com/riyadhHDA/wichforks) (MIT) et de SteamGridDB. Les licences des bibliothèques incluses sont dans [assets/THIRD-PARTY.txt](assets/THIRD-PARTY.txt) et sur la page À propos.
 
 Les bugs de l'outil se signalent ici, via sa page **Signaler un bug**. Les problèmes dans un jeu concernent le projet de l'émulateur. Pour les problèmes de sécurité, consulte [SECURITY.md](SECURITY.md). Pour participer, consulte [CONTRIBUTING.md](CONTRIBUTING.md).
 

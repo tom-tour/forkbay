@@ -48,6 +48,52 @@ pub fn get_json(url: &str, auth: Option<&str>) -> Result<Value> {
     Ok(get(url, auth)?.body_mut().read_json()?)
 }
 
+/// A JSON answer kept on disk: reused for `fresh_secs`, then asked again with its ETag,
+/// which GitHub answers with 304 without counting it in its hourly limit.
+/// When the server refuses or cannot be reached, the last copy is used.
+pub fn get_json_cached(url: &str, fresh_secs: u64) -> Result<Value> {
+    use sha2::{Digest, Sha256};
+    let dir = crate::core::manager_dir().join("cache");
+    let key: String = Sha256::digest(url.as_bytes()).iter().take(12).map(|b| format!("{b:02x}")).collect();
+    let file = dir.join(format!("{key}.json"));
+    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+    let saved: Option<Value> = fs::read_to_string(&file).ok().and_then(|t| serde_json::from_str(&t).ok()).filter(|v: &Value| v["url"] == url);
+    if let Some(s) = &saved {
+        if now.saturating_sub(s["time"].as_u64().unwrap_or(0)) < fresh_secs {
+            return Ok(s["body"].clone());
+        }
+    }
+    let save = |etag: &str, body: &Value| {
+        let _ = fs::create_dir_all(&dir);
+        let _ = fs::write(&file, serde_json::json!({ "url": url, "time": now, "etag": etag, "body": body }).to_string());
+    };
+    let mut r = agent().get(url);
+    if let Some(tag) = saved.as_ref().and_then(|s| s["etag"].as_str()).filter(|t| !t.is_empty()) {
+        r = r.header("If-None-Match", tag);
+    }
+    match run(r.call()) {
+        Ok(resp) if resp.status().as_u16() == 304 && saved.is_some() => {
+            let s = saved.unwrap();
+            save(s["etag"].as_str().unwrap_or(""), &s["body"]);
+            Ok(s["body"].clone())
+        }
+        Ok(mut resp) => {
+            let etag = resp.headers().get("etag").and_then(|v| v.to_str().ok()).unwrap_or("").to_string();
+            let body: Value = resp.body_mut().read_json()?;
+            save(&etag, &body);
+            Ok(body)
+        }
+        Err(e) => match saved {
+            Some(s) => {
+                crate::log::info(&format!("{url}: {e}, last copy used"));
+                Ok(s["body"].clone())
+            }
+            None if matches!(status(&e), Some(403 | 429)) => Err(anyhow!("GitHub limite le nombre de vérifications par heure : réessaie un peu plus tard.")),
+            None => Err(e),
+        },
+    }
+}
+
 /// A text answer, cut at `limit` bytes.
 pub fn get_text(url: &str, limit: u64) -> Result<String> {
     let mut text = String::new();
