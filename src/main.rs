@@ -16,6 +16,7 @@ mod import;
 mod install;
 mod log;
 mod net;
+mod pad;
 mod report;
 mod setup;
 mod steam;

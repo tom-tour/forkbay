@@ -44,6 +44,7 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **Automatic copies:** saves, profile and settings are copied before you play and before an emulator changes version, with or without the cloud. You can restore them from **Settings**.
 - **Your own emulators:** add one from a GitHub repository or from a local program. On Linux, an emulator installed by your package manager (AUR, for example) is used where it is, with the same shared data.
 - **Steam:** adds games to your library and leaves your other shortcuts alone.
+- **One controller setup for every emulator:** the emulators share your controls, but some do not know a controller by the same id as the others, so it stops responding when you switch. Forkbay remembers the id each emulator sees and adapts your controls before each start: set your controller up once, and it follows you. The Controller tab shows which emulators already know it, and opens an emulator in a window to set it up.
 - **Game details:** the gear on a cover opens the game's settings and images.
 - **Console and picture settings:** game language, region, handheld or TV mode, resolution, vertical sync, speed limit, graphics engine and volume, on the **Emulators** page for all your games, or for one game only from its details.
 - **Running games:** a game in progress shows as running, with a button to close it.
@@ -145,6 +146,7 @@ Les captures d'écran sont [en haut de la page](#forkbay).
 - **Copies automatiques :** les sauvegardes, le profil et les réglages sont copiés avant de jouer et avant qu'un émulateur change de version, avec ou sans cloud. Tu peux les restaurer depuis **Réglages**.
 - **Tes propres émulateurs :** ajoutes-en un depuis un dépôt GitHub ou depuis un programme local. Sous Linux, un émulateur installé par ton gestionnaire de paquets (AUR, par exemple) est utilisé sur place, avec les mêmes données partagées.
 - **Steam :** ajoute les jeux à ta bibliothèque sans toucher à tes autres raccourcis.
+- **Une seule configuration de manette pour tous les émulateurs :** les émulateurs partagent tes contrôles, mais certains ne reconnaissent pas une manette sous le même identifiant que les autres, et elle ne répond plus quand tu changes d'émulateur. Forkbay retient l'identifiant que voit chaque émulateur et adapte tes contrôles avant chaque lancement : règle ta manette une fois, elle te suit. L'onglet Manette montre quels émulateurs la connaissent déjà, et ouvre un émulateur en fenêtre pour la régler.
 - **Fiche du jeu :** l'engrenage sur une jaquette ouvre les réglages et les images du jeu.
 - **Réglages de console et d'image :** langue des jeux, région, mode portable ou TV, résolution, synchronisation verticale, limite de vitesse, moteur graphique et volume, dans la page **Émulateurs** pour tous tes jeux, ou pour un seul jeu depuis sa fiche.
 - **Jeux en cours :** un jeu lancé est indiqué comme en cours, avec un bouton pour le fermer.

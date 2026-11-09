@@ -150,6 +150,7 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
             json!({})
         }
         "game_settings_other_common" => { config::game_other_common(&s_arg(a, "file"), &s_arg(a, "section"), &s_arg(a, "key"))?; json!({}) }
+        "pad_status" => pad::status(),
         "custom_games" => config::custom_games(),
         "art_sources" => art::source_list(&load_settings()),
         "art_source_enable" => { art::set_enabled(&s_arg(a, "name"), a["enabled"].as_bool().unwrap_or(true))?; json!({}) }

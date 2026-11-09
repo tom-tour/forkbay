@@ -407,6 +407,27 @@
   "Comme partout": "Common",
   "Comme partout :": "Common:",
   "Propre au jeu": "This game only",
+  "Manette": "Controller",
+  "Tes manettes": "Your controllers",
+  "Régler la manette": "Set up the controller",
+  "Joueur": "Player",
+  "Joueurs": "Players",
+  "Pas encore vue par :": "Not seen yet by:",
+  "Ouvrir l'émulateur": "Open the emulator",
+  "Installe d'abord un émulateur.": "Install an emulator first.",
+  "Aucune manette dans tes contrôles pour l'instant : règle-la une fois avec le bouton ci-dessous.": "No controller in your controls yet: set it up once with the button below.",
+  "Tous les émulateurs utilisent les mêmes contrôles. Mais certains ne reconnaissent pas une manette sous le même nom que les autres : elle ne répond plus quand tu changes d'émulateur. Forkbay retient comment chaque émulateur voit ta manette et adapte tes contrôles avant chaque lancement.": "All emulators use the same controls. But some do not know a controller by the same name as the others: it stops responding when you switch emulators. Forkbay remembers how each emulator sees your controller and adapts your controls before each start.",
+  "Si ta manette ne répond pas dans un émulateur qui ne l'a pas encore vue, règle-la une fois dans cet émulateur : Forkbay s'en souviendra.": "If your controller does not respond in an emulator that has not seen it yet, set it up once in that emulator: Forkbay will remember it.",
+  "Ouvre l'émulateur : il s'ouvre en fenêtre, sans jeu.": "Open the emulator: it opens in a window, without a game.",
+  "Va dans le menu « Emulation », puis « Configure », onglet « Controls ».": "Go to the “Emulation” menu, then “Configure”, “Controls” tab.",
+  "Choisis ta manette dans « Input Device » : toutes les touches se remplissent.": "Pick your controller in “Input Device”: every button is filled in.",
+  "Valide avec « OK » et ferme l'émulateur. Forkbay retient ta manette pour cet émulateur.": "Confirm with “OK” and close the emulator. Forkbay remembers your controller for this emulator.",
+  "Manette Xbox 360": "Xbox 360 controller",
+  "Manette Xbox": "Xbox controller",
+  "Manette DualShock 4": "DualShock 4 controller",
+  "Manette DualSense": "DualSense controller",
+  "Manette Pro Switch": "Switch Pro Controller",
+  "Manette 8BitDo": "8BitDo controller",
   "Réglés dans l'émulateur": "Set in the emulator",
   "Ce jeu a aussi ses propres valeurs pour ces réglages. Forkbay ne sait pas les changer : modifie-les dans l'émulateur, ou remets-les comme partout.": "This game also has its own values for these settings. Forkbay cannot change them: edit them in the emulator, or set them back to common.",
   "Mémoire émulée": "Emulated memory",
@@ -554,8 +575,24 @@
    }
   ],
   [
+   "^Manette ([0-9a-f]{4}:[0-9a-f]{4})$",
+   "Controller $1"
+  ],
+  [
    "^\\+(\\d+) dans l'émulateur$",
    "+$1 in the emulator"
+  ],
+  [
+   "^Nouvelle version disponible : (.+)$",
+   "New version available: $1"
+  ],
+  [
+   "^Nouvelles versions disponibles : (.+)$",
+   "New versions available: $1"
+  ],
+  [
+   "^(\\d+) Mo$",
+   "$1 MB"
   ]
  ],
  "messages": [
@@ -754,18 +791,6 @@
   [
    "^GitHub limite le nombre de vérifications par heure : réessaie un peu plus tard\\.$",
    "GitHub limits how many checks can be made per hour: try again a bit later."
-  ],
-  [
-   "^Nouvelle version disponible : (.+)$",
-   "New version available: $1"
-  ],
-  [
-   "^Nouvelles versions disponibles : (.+)$",
-   "New versions available: $1"
-  ],
-  [
-   "^(\\d+) Mo$",
-   "$1 MB"
   ],
   [
    "^Téléchargement incomplet : taille différente\\.$",

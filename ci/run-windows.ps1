@@ -252,10 +252,18 @@ $r = App $rootG 'emu_settings_set' @{ key = 'backend'; value = 2 }; Check 'rende
 $r = App $rootG 'emu_settings_set' @{ key = 'nand_directory'; value = 1 }; Check 'unknown setting refused' (-not $r.ok)
 function StartG { $env:FORKBAY_ROOT = $rootG; $p = Start-Process -FilePath $Bin -ArgumentList '--launch', '"Roms/Run Game [0400000000000002].nup"' -PassThru; for ($i = 0; $i -lt 60; $i++) { Start-Sleep -Milliseconds 500; $script:s = App $rootG 'game_session'; if ($script:s.value.session.file) { break } }; return $p }
 function StopWait($p) { for ($i = 0; $i -lt 40 -and -not $p.HasExited; $i++) { Start-Sleep -Milliseconds 500 }; return $p.HasExited }
+"-- controllers"
+$idA = '030000005e0400008e02000010017801'; $idB = '030000005e0400008e02000014017801'; $idC = '030000005e0400008e02000012017801'
+[IO.File]::AppendAllText($ini, "[Controls]`r`nplayer_0_button_a=`"engine:sdl,pad:0,button:0,guid:$idA,port:0`"`r`nplayer_0_button_b=`"engine:keyboard,code:66`"`r`nplayer_1_button_a=`"engine:sdl,pad:0,button:0,guid:$idA,port:0`"`r`n")
+New-Item -ItemType Directory -Force "$rootG\Manager" | Out-Null; [IO.File]::WriteAllText("$rootG\Manager\controllers.json", ('{"Fritchii":{"030000005e0400008e02000000007801":"' + $idB + '"}}'))
+$r = App $rootG 'pad_status'; $c = @($r.value.controllers); Check 'controller listed with its players' ($r.ok -and $c.Count -eq 1 -and $c[0].name -eq 'Manette Xbox 360' -and (@($c[0].players) -join ',') -eq '1,2' -and (@($c[0].known) -join ',') -eq 'Fritchii') ($r | ConvertTo-Json -Compress -Depth 4)
 $p = StartG; Check 'running game known' ($s.value.session.file -like 'Run Game*' -and $s.value.session.emu -eq 'Fritchii') ($s | ConvertTo-Json -Compress -Depth 3)
 $t = Get-Content $ini -Raw; Check 'emulator update prompt turned off' ($t -match '(?m)^check_for_updates=false' -and $t -match '(?m)^other=keep') $t
+$t = [IO.File]::ReadAllText($ini); Check 'controller named as this emulator sees it' ($t.Contains("guid:$idB") -and -not $t.Contains("guid:$idA") -and $t.Contains('engine:keyboard,code:66')) $t
+[IO.File]::WriteAllText($ini, [IO.File]::ReadAllText($ini).Replace("player_0_button_a=`"engine:sdl,pad:0,button:0,guid:$idB", "player_0_button_a=`"engine:sdl,pad:0,button:1,guid:$idC"))
 $r = App $rootG 'emu_settings_set' @{ key = 'language_index'; value = 3 }; Check 'settings refused while an emulator is open' (-not $r.ok)
 $r = App $rootG 'game_close' @{ force = $false }; Check 'close requested' $r.ok $r.error; Check 'game closed normally' (StopWait $p); $s = App $rootG 'game_session'; Check 'session ended' (-not $s.value.session)
+$t = [IO.File]::ReadAllText("$rootG\Manager\controllers.json"); Check 'controller set in the emulator remembered' ($t.Contains($idC) -and -not $t.Contains($idB)) $t
 $p = StartG; $r = App $rootG 'game_close' @{ force = $true }; Check 'forced close' ($r.ok -and (StopWait $p)) $r.error
 $r = App $rootG 'game_close' @{ force = $true }; Check 'nothing to close' (-not $r.ok)
 [IO.File]::WriteAllText("$rootG\Manager\session.json", '{"file":"x","emu":"Fritchii","exe":"emu.exe","pid":4000000}'); $s = App $rootG 'game_session'; Check 'stale session ignored' ((-not $s.value.session) -and -not (Test-Path "$rootG\Manager\session.json"))

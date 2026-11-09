@@ -609,7 +609,8 @@ pub fn run(emu: &str, game: Option<&Path>, key: &str) -> Result<()> {
     #[cfg(not(windows))]
     linux_portable(&mut c, &dir)?;
     // Not while another emulator runs: its cache and settings would change under it.
-    if any_running() {
+    let idle = !any_running();
+    if !idle {
         crate::log::info("shader cache unchanged: another emulator is running");
     } else {
         if let Err(e) = point_shader_cache(&data_path(), emu) {
@@ -618,7 +619,12 @@ pub fn run(emu: &str, game: Option<&Path>, key: &str) -> Result<()> {
         if let Err(e) = crate::config::turn_off_emulator_updates() {
             crate::log::error(&format!("emulator update prompt: {e}"));
         }
+        if let Err(e) = crate::pad::adapt(emu) {
+            crate::log::error(&format!("controllers: {e}"));
+        }
     }
+    // What the controls were, to see afterwards which ones were set in this emulator.
+    let pads = idle.then(crate::pad::before);
     crate::log::info(&format!("start {emu}{}", if full { " full screen" } else { "" }));
     let mut child = c.spawn()?;
     let exe_name = exe.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
@@ -626,6 +632,11 @@ pub fn run(emu: &str, game: Option<&Path>, key: &str) -> Result<()> {
     let _ = fs::write(session_file(), json!({ "file": key, "emu": emu, "exe": exe_name, "pid": child.id() }).to_string());
     let status = child.wait();
     let _ = fs::remove_file(session_file());
+    if let Some(b) = pads {
+        if let Err(e) = crate::pad::learn(emu, &b) {
+            crate::log::error(&format!("controllers: {e}"));
+        }
+    }
     let status = status?;
     if !status.success() { crate::log::error(&format!("{emu} stopped with {status}")); } else { crate::log::info(&format!("{emu} closed")); }
     Ok(())
