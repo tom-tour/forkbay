@@ -54,7 +54,7 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **Self-updates** from GitHub releases, with an About page for the license and links.
 - **Themes:** a dark, light or black mode with a theme on top, gradients on or off, your own colors, and themes you can import and export.
 - **Full screen:** games start in full screen unless you turn it off. The tool's Steam shortcut is full screen in Big Picture and Gaming Mode, and a window on the desktop. F11 switches.
-- **Controller support**, and a Steam shortcut to the tool itself.
+- **Controller navigation** in the tool itself, and a Steam shortcut to it.
 - **An error log** that leaves out paths, names and secrets.
 
 ## What you need
@@ -156,7 +156,7 @@ Les captures d'écran sont [en haut de la page](#forkbay).
 - **Mise à jour de l'outil lui-même** depuis les versions publiées sur GitHub, avec une page À propos pour la licence et les liens.
 - **Thèmes :** un mode sombre, clair ou noir avec un thème par-dessus, dégradés activables, tes propres couleurs, et des thèmes à importer et exporter.
 - **Plein écran :** les jeux démarrent en plein écran, sauf si tu le désactives. Le raccourci Steam de l'outil est en plein écran dans Big Picture et en mode Jeu, et en fenêtre sur le bureau. F11 passe de l'un à l'autre.
-- **Prise en charge de la manette**, et un raccourci Steam vers l'outil lui-même.
+- **Navigation à la manette** dans l'outil lui-même, et un raccourci Steam vers l'outil.
 - **Un journal d'erreurs** sans chemins, sans noms et sans secrets.
 
 ## Ce qu'il te faut

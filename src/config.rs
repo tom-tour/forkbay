@@ -254,7 +254,9 @@ pub fn custom_games() -> Value {
 
 pub fn has_own(file: &str) -> bool {
     let Some(path) = game_ini(file) else { return false };
-    path.is_file() && { let (lines, _) = load(&path); keys().iter().any(|k| is_own(&lines, k)) || others(&lines) > 0 }
+    // A controller profile given to one of its players counts too.
+    let profile = |lines: &[String]| lines.iter().any(|l| l.contains("_profile_name=") && !l.trim_end().ends_with('='));
+    path.is_file() && { let (lines, _) = load(&path); keys().iter().any(|k| is_own(&lines, k)) || others(&lines) > 0 || profile(&lines) }
 }
 
 fn check(key: &str, value: u32) -> Result<()> {
