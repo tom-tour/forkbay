@@ -589,7 +589,8 @@
   "Ctrl": "Ctrl",
   "Alt": "Alt",
   "Verr. maj": "Caps Lock",
-  "Espace": "Space"
+  "Espace": "Space",
+  "Clique sur une touche du dessin ou de la liste pour la régler.": "Click a button on the drawing or in the list to set it."
  },
  "uiPatterns": [
   [

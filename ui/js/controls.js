@@ -69,18 +69,27 @@ function ctlPlayerHtml(){const P=CTL.players[CTLTAB],T=ctlPlayer(),c=T.controls,
   const b=(label,name,on=1,dis=0)=>on?`<div class="bind${dis?' off':''}"><span class="bl">${label}</span><button class="bv" data-k="${name}" ${dis?'disabled':''} onclick="ctlCapture(this)">${bindHtml(c.buttons[name])}</button><button class="bm" data-k="${name}" ${dis?'disabled':''} onclick="ctlMenu(this)" aria-label="Options">⋯</button></div>`:'';
   const thr=n=>{const p=pParse(c.buttons[n]);return p.threshold!==undefined&&p.axis!==undefined?`<div class="bind slim"><span class="bl muted small">Seuil</span><input type="range" min="0" max="100" value="${Math.round(Number(p.threshold)*100)}" data-k="${n}" onchange="ctlThreshold(this)"><span class="muted small">${Math.round(Number(p.threshold)*100)} %</span></div>`:''};
   const stick=(id,title,pressName,pressOn=1)=>{const s=pParse(c.sticks[id]);const pad=isPadStick(s);
-   return`<div class="grp ctlg"><h3>${title}</h3><div class="stickv" id="sv-${id}"><i></i></div>${['up','down','left','right'].map(d=>`<div class="bind"><span class="bl">${{up:'Haut',down:'Bas',left:'Gauche',right:'Droite'}[d]}</span><button class="bv" data-s="${id}" data-d="${d}" onclick="ctlCapture(this)">${stickHtml(c.sticks[id],d)}</button><button class="bm" data-s="${id}" data-d="${d}" onclick="ctlMenu(this)" aria-label="Options">⋯</button></div>`).join('')}${b('Appui',pressName,1,!pressOn)}
+   return`<div class="grp ctlg"><h3>${title}</h3>${['up','down','left','right'].map(d=>`<div class="bind"><span class="bl">${{up:'Haut',down:'Bas',left:'Gauche',right:'Droite'}[d]}</span><button class="bv" data-s="${id}" data-d="${d}" onclick="ctlCapture(this)">${stickHtml(c.sticks[id],d)}</button><button class="bm" data-s="${id}" data-d="${d}" onclick="ctlMenu(this)" aria-label="Options">⋯</button></div>`).join('')}${b('Appui',pressName,1,!pressOn)}
     ${pad?`<div class="bind slim"><span class="bl muted small">Zone morte</span><input type="range" min="0" max="100" value="${Math.round(Number(s.deadzone??0.15)*100)}" data-s="${id}" data-f="deadzone" onchange="ctlStickValue(this)"><span class="muted small">${Math.round(Number(s.deadzone??0.15)*100)} %</span></div><div class="bind slim"><span class="bl muted small">Portée</span><input type="range" min="25" max="150" value="${Math.round(Number(s.range??0.95)*100)}" data-s="${id}" data-f="range" onchange="ctlStickValue(this)"><span class="muted small">${Math.round(Number(s.range??0.95)*100)} %</span></div>`
      :`<div class="bind"><span class="bl">Modificateur</span><button class="bv" data-s="${id}" data-d="modifier" onclick="ctlCapture(this)">${bindHtml(s.modifier)}</button><button class="bm" data-s="${id}" data-d="modifier" onclick="ctlMenu(this)" aria-label="Options">⋯</button></div><div class="bind slim"><span class="bl muted small">Portée du modificateur</span><input type="range" min="0" max="100" value="${Math.round(Number(s.modifier_scale??0.5)*100)}" data-s="${id}" data-f="modifier_scale" onchange="ctlStickValue(this)"><span class="muted small">${Math.round(Number(s.modifier_scale??0.5)*100)} %</span></div>`}</div>`};
   const mot=(name,title)=>`<div class="bind"><span class="bl">${title}</span><button class="bv" data-m="${name}" onclick="ctlCapture(this)">${bindHtml(c.motions[name])}</button><button class="bm" data-m="${name}" onclick="ctlMenu(this)" aria-label="Options">⋯</button></div>`;
-  const colL=`${L.lstick?stick('lstick',gc?'Stick de contrôle':'Stick gauche','button_lstick',!gc):''}${L.dpad?`<div class="grp ctlg"><h3>Croix</h3>${b('Haut','button_dup')}${b('Bas','button_ddown')}${b('Gauche','button_dleft')}${b('Droite','button_dright')}</div>`:''}`;
-  const colM=`${L.left?`<div class="grp ctlg"><h3>Gâchettes gauches</h3>${b(gc?'L':'ZL','button_zl')}${thr('button_zl')}${b('L','button_l',1,gc)}</div>`:''}${L.right?`<div class="grp ctlg"><h3>Gâchettes droites</h3>${b(gc?'R':'ZR','button_zr')}${thr('button_zr')}${b(gc?'Z':'R','button_r')}</div>`:''}
-   <div class="grp ctlg"><h3>Boutons du milieu</h3>${b('Moins','button_minus',L.minus)}${b(gc?'Start / Pause':'Plus','button_plus',L.plus)}${b('Home','button_home',L.home,gc)}${b('Capture','button_screenshot',L.capture)}</div>
-   ${L.slsrl||L.slsrr?`<div class="grp ctlg"><h3>SL / SR</h3>${L.slsrl?b('SL','button_slleft')+b('SR','button_srleft'):''}${L.slsrr?b('SL','button_slright')+b('SR','button_srright'):''}</div>`:''}
+  const mid=(keys)=>{const rows=keys.filter(k=>k[2]).map(k=>b(k[0],k[1],1,k[3]));return rows.length?`<div class="grp ctlg"><h3>Boutons du milieu</h3>${rows.join('')}</div>`:''};
+  const colL=`${L.left?`<div class="grp ctlg"><h3>Gâchettes gauches</h3>${b(gc?'L':'ZL','button_zl')}${thr('button_zl')}${b('L','button_l',1,gc)}</div>`:''}
+   ${mid([['Moins','button_minus',L.minus],['Capture','button_screenshot',L.capture]])}
+   ${L.lstick?stick('lstick',gc?'Stick de contrôle':'Stick gauche','button_lstick',!gc):''}
+   ${L.dpad?`<div class="grp ctlg"><h3>Croix</h3>${b('Haut','button_dup')}${b('Bas','button_ddown')}${b('Gauche','button_dleft')}${b('Droite','button_dright')}</div>`:''}
+   ${L.slsrl?`<div class="grp ctlg"><h3>SL / SR</h3>${b('SL','button_slleft')}${b('SR','button_srleft')}</div>`:''}`;
+  const colR=`${L.right?`<div class="grp ctlg"><h3>Gâchettes droites</h3>${b(gc?'R':'ZR','button_zr')}${thr('button_zr')}${b(gc?'Z':'R','button_r')}</div>`:''}
+   ${mid([[gc?'Start / Pause':'Plus','button_plus',L.plus],['Home','button_home',L.home,gc]])}
+   ${L.face?`<div class="grp ctlg"><h3>Boutons</h3>${b('A','button_a')}${b('B','button_b')}${b('X','button_x')}${b('Y','button_y')}</div>`:''}
+   ${L.rstick?stick('rstick',gc?'Stick C':'Stick droit','button_rstick',!gc):''}
+   ${L.slsrr?`<div class="grp ctlg"><h3>SL / SR</h3>${b('SL','button_slright')}${b('SR','button_srright')}</div>`:''}
    ${L.motl||L.motr?`<div class="grp ctlg"><h3>Gyroscope</h3>${L.motl?mot('motionleft',L.motr?'Gauche':'Gyroscope'):''}${L.motr?mot('motionright',L.motl?'Droite':'Gyroscope'):''}</div>`:''}`;
-  const colR=`${L.face?`<div class="grp ctlg"><h3>Boutons</h3>${b('A','button_a')}${b('B','button_b')}${b('X','button_x')}${b('Y','button_y')}</div>`:''}${L.rstick?stick('rstick',gc?'Stick C':'Stick droit','button_rstick',!gc):''}`;
+  const center=`<div class="padstage"><div class="padart">${padSvg(type)}</div><p class="muted small" style="text-align:center">Clique sur une touche du dessin ou de la liste pour la régler.</p></div>`;
   const bottom=`<div class="card" style="margin-top:14px"><div class="row wrap between" style="gap:14px"><div class="row wrap" style="gap:14px;align-items:center"><label class="check"><input type="checkbox" ${T.vibration?'checked':''} onchange="ctlVibration(this.checked)"> <span>Vibrations</span></label><span class="muted small">Force</span><input type="range" min="0" max="100" value="${T.vibrationStrength}" onchange="ctlVibrationStrength(this.value)"><span class="muted small">${T.vibrationStrength} %</span></div><div class="row" style="gap:8px"><button class="btn" onclick="ctlDefaults()">Valeurs par défaut</button><button class="btn" onclick="ctlClear()">Tout effacer</button></div></div></div>`;
-  return top+`<div class="ctlcols"><div>${colL}</div><div>${colM}</div><div>${colR}</div></div>`+bottom}
+  // A single Joy-Con has controls on one side only: no empty column.
+  const hasL=colL.trim()!=='',hasR=colR.trim()!=='';
+  return top+`<div class="ctlpad${hasL&&hasR?'':' two'}">${hasL?`<div class="ctlside">${colL}</div>`:''}${center}${hasR?`<div class="ctlside">${colR}</div>`:''}</div>`+bottom}
 
 function ctlAdvanced(){const a=CTL.advanced;const row=(k,t,d)=>`<div class="set"><div class="l"><b>${t}</b>${d?`<p class="muted small">${d}</p>`:''}</div><div class="v"><input type="checkbox" ${a[k]?'checked':''} onchange="ctlAdv('${k}',this.checked)"></div></div>`;
   return`<div class="card"><h2>Console</h2><div class="set"><div class="l"><b>Mode de la console</b><p class="muted small">Le mode portable va avec le type de manette « Portable » du joueur 1.</p></div><div class="v"><div class="seg small"><button class="${CTL.docked?'on':''}" onclick="ctlDocked(true)">TV</button><button class="${CTL.docked?'':'on'}" onclick="ctlDocked(false)">Portable</button></div></div></div></div>
@@ -118,7 +127,7 @@ function ctlTarget(el){return el.dataset.s?{stick:el.dataset.s,dir:el.dataset.d}
 async function ctlCapture(el){if(CTLCAP)return;if(CTL.running)return toast('Ferme d\'abord l\'émulateur.',true);ctlCloseMenu();const t=ctlTarget(el);
   const kind=t.motion?'motion':t.stick&&t.dir!='modifier'?'stick':'button';const dev=$('ctlDev').value;
   const pads=dev!='kb',keys=dev==''||dev=='kb';const parts=dev.split(':');const args={kind};if(parts[0]=='pad'&&!parts[3]){args.guid=parts[1];args.port=Number(parts[2])}
-  el.innerHTML='<span>'+(kind=='motion'?'Secoue la manette…':kind=='stick'?'Bouge le stick…':'Appuie…')+'</span>';el.classList.add('wait');
+  el.innerHTML='<span>'+(kind=='motion'?'Secoue la manette…':kind=='stick'?'Bouge le stick…':'Appuie…')+'</span>';el.classList.add('wait');document.querySelectorAll(t.stick?`#ctl .padart [data-s="${t.stick}"]`:t.button?`#ctl .padart [data-k="${t.button}"]`:'#ctl .none').forEach(x=>x.classList.add('wait'));
   if(kind=='stick')$('statusText').textContent='Pousse le stick vers la droite, puis vers le haut. Pour inverser les axes, commence par le haut.';
   CTLCAP={el,t,kind,keys,until:Date.now()+(kind=='button'?4000:6000)};window.PADHOLD=true;ctlLiveStop();
   if(pads){try{await call('controls_capture',args)}catch(e){return ctlEnd(null,e.message)}}
@@ -174,7 +183,9 @@ function ctlActive(t){const p=pParse(t);if(!p.engine)return false;let on=false;
 function ctlStickPos(t){const p=pParse(t);if(p.engine=='analog_from_button'){const d=k=>ctlActive(p[k])?1:0;return[d('right')-d('left'),d('up')-d('down')]}if(p.engine!='sdl')return null;const st=CTLSTATES.find(x=>x.guid==p.guid&&x.port==Number(p.port||0));if(!st)return null;let x=(st.axes[p.axis_x]||0)+Number(p.offset_x||0),y=-((st.axes[p.axis_y]||0))+Number(p.offset_y||0);if(p.invert_x=='-')x=-x;if(p.invert_y=='-')y=-y;return[x,y]}
 function ctlRefreshLive(){const T=ctlPlayer();if(!T||CTLTAB=='adv')return;const c=T.controls;
   document.querySelectorAll('#ctl .bv').forEach(b=>{let on=false;if(b.dataset.k)on=ctlActive(c.buttons[b.dataset.k]);else if(b.dataset.s){const s=pParse(c.sticks[b.dataset.s]);if(b.dataset.d=='modifier')on=ctlActive(s.modifier);else{const pos=ctlStickPos(c.sticks[b.dataset.s]);if(pos){const[x,y]=pos;on={left:x<-0.5,right:x>0.5,up:y>0.5,down:y<-0.5}[b.dataset.d]}}}b.classList.toggle('live',!!on)});
-  for(const id of['lstick','rstick']){const v=$('sv-'+id);if(!v)continue;const pos=ctlStickPos(c.sticks[id])||[0,0];const dot=v.querySelector('i');dot.style.transform=`translate(${Math.max(-1,Math.min(1,pos[0]))*22}px,${-Math.max(-1,Math.min(1,pos[1]))*22}px)`}}
+  // The drawing: pressed parts light up, and the sticks move.
+  document.querySelectorAll('#ctl .padart [data-k]').forEach(e=>e.classList.toggle('live',ctlActive(c.buttons[e.dataset.k])));
+  document.querySelectorAll('#ctl .padart [data-s]').forEach(e=>{const pos=ctlStickPos(c.sticks[e.dataset.s])||[0,0];const cap=e.querySelector('.cap');if(cap)cap.setAttribute('transform',`translate(${Math.max(-1,Math.min(1,pos[0]))*9} ${-Math.max(-1,Math.min(1,pos[1]))*9})`);e.classList.toggle('live',Math.hypot(pos[0],pos[1])>0.5)})}
 
 // --- A game's own profiles (ConfigureInputPerGame) ---
 async function loadGameCtl(){const el=$('gameCtl');if(!el)return;let g;try{g=await call('game_profiles',{file:IMGFILE})}catch(e){el.innerHTML='';return}
@@ -182,3 +193,39 @@ async function loadGameCtl(){const el=$('gameCtl');if(!el)return;let g;try{g=awa
   const row=i=>`<div class="set"><div class="l"><b><span>Joueur</span> ${i+1}</b></div><div class="v"><select data-p="${i}" onchange="setGameCtl(this)">${opts(g.players[i])}</select></div></div>`;
   el.innerHTML=`<div class="card" style="margin-top:14px"><h2>Manette pour ce jeu</h2><p class="muted small">Un profil donné à un joueur ne sert que pour ce jeu. Les profils se créent sur la page Manette.</p>${g.profiles.length||g.players.some(Boolean)?row(0)+`<details style="margin-top:6px"><summary class="muted small">Autres joueurs</summary>${[1,2,3,4,5,6,7].map(row).join('')}</details>`:'<p class="muted small">Aucun profil pour l\'instant.</p>'}</div>`}
 async function setGameCtl(sel){if(await act('game_profile_set',{file:IMGFILE,player:Number(sel.dataset.p),name:sel.value})){toast(sel.value?'Profil donné à ce joueur pour ce jeu.':'Ce joueur suit de nouveau les contrôles communs.');refresh()}loadGameCtl()}
+
+// --- The drawing of the controller ---
+// Drawn here, one shape per kind of controller; each part is tied to the control it stands for.
+function padSvg(type){const L=layout(type),gc=GC(type);let body='',parts='';
+  const btn=(k,x,y,r,label,cls='')=>`<g class="part ${cls}" data-k="${k}"><circle cx="${x}" cy="${y}" r="${r}"/>${label?`<text x="${x}" y="${y}">${label}</text>`:''}</g>`;
+  const pill=(k,x,y,w,h,label)=>`<g class="part" data-k="${k}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${Math.min(w,h)/2}"/>${label?`<text x="${x+w/2}" y="${y+h/2}">${label}</text>`:''}</g>`;
+  const stk=(id,press,x,y)=>`<g class="part stick" data-s="${id}"><circle cx="${x}" cy="${y}" r="24" class="well"/><g class="cap" data-k="${press}"><circle cx="${x}" cy="${y}" r="15"/><circle cx="${x}" cy="${y}" r="9" class="dimple"/></g></g>`;
+  const dpad=(x,y)=>[['button_dup',0,-15],['button_ddown',0,15],['button_dleft',-15,0],['button_dright',15,0]].map(([k,dx,dy])=>`<g class="part" data-k="${k}"><rect x="${x+dx-8}" y="${y+dy-8}" width="16" height="16" rx="4"/></g>`).join('')+`<rect x="${x-8}" y="${y-8}" width="16" height="16" class="hub"/>`;
+  const face=(x,y)=>gc?btn('button_a',x,y+4,15,'A','big')+btn('button_b',x-25,y+20,9,'B')+btn('button_x',x+25,y-10,9,'X')+btn('button_y',x-6,y-23,9,'Y')
+    :btn('button_x',x,y-22,11,'X')+btn('button_a',x+22,y,11,'A')+btn('button_b',x,y+22,11,'B')+btn('button_y',x-22,y,11,'Y');
+  const joyL=x=>`<path class="shell left" d="M${x+70} 32 H${x+34} C${x+12} 32 ${x} 48 ${x} 72 V180 C${x} 204 ${x+12} 220 ${x+34} 220 H${x+70} Z"/>`;
+  const joyR=x=>`<path class="shell right" d="M${x} 32 H${x+36} C${x+58} 32 ${x+70} 48 ${x+70} 72 V180 C${x+70} 204 ${x+58} 220 ${x+36} 220 H${x} Z"/>`;
+  const leftParts=x=>pill('button_zl',x+4,8,52,12,gc?'L':'ZL')+pill('button_l',x+10,21,50,10,'L')+stk('lstick','button_lstick',x+38,78)+btn('button_minus',x+59,46,7,'−','small')+dpad(x+38,150)+(L.capture?pill('button_screenshot',x+44,190,14,14,''):'');
+  const rightParts=x=>pill('button_zr',x+14,8,52,12,gc?'R':'ZR')+pill('button_r',x+10,21,50,10,'R')+btn('button_plus',x+11,46,7,'+','small')+face(x+32,82)+stk('rstick','button_rstick',x+32,150)+btn('button_home',x+24,196,9,'⌂','home');
+  const rail=(k1,k2,x)=>pill(k1,x,62,9,40,'')+pill(k2,x,150,9,40,'');
+  if(type==1||type==4){const hh=type==4;const lx=hh?40:135,rx=hh?310:215;
+    body=(hh?`<rect class="screen" x="112" y="34" width="196" height="184" rx="8"/>`:'')+joyL(lx)+joyR(rx);parts=leftParts(lx)+rightParts(rx)}
+  else if(type==2){body=joyL(175);parts=leftParts(175)+rail('button_slleft','button_srleft',247)}
+  else if(type==3){body=joyR(175);parts=rightParts(175)+rail('button_slright','button_srright',164)}
+  else{body=`<path class="shell" d="M92 40 C62 40 42 56 36 92 L20 178 C14 214 44 232 70 216 L112 188 H308 L350 216 C376 232 406 214 400 178 L384 92 C378 56 358 40 328 40 Z"/>`;
+    parts=pill('button_zl',70,10,78,14,gc?'L':'ZL')+(gc?'':pill('button_l',78,27,72,12,'L'))+pill('button_zr',272,10,78,14,gc?'R':'ZR')+pill('button_r',270,27,72,12,gc?'Z':'R')
+      +stk('lstick','button_lstick',120,94)+dpad(165,150)+face(298,94)+stk('rstick','button_rstick',255,150)
+      +(L.minus?btn('button_minus',180,72,8,'−','small'):'')+btn('button_plus',gc?210:240,72,8,gc?'':'+','small')+(gc?'':btn('button_home',238,104,9,'⌂','home'))+(L.capture?pill('button_screenshot',176,96,14,14,''):'')}
+  // Framed on the controller itself, so that a single Joy-Con is as large as a whole controller.
+  const box={1:'118 0 184 236',4:'30 0 360 236',2:'160 0 110 236',3:'150 0 110 236'}[type]||'10 0 400 236';
+  return`<svg viewBox="${box}" role="img" aria-label="Manette">${body}${parts}</svg>`}
+function ctlPartClick(e){const part=e.target.closest('.padart .part');if(!part||CTLCAP)return;const k=part.dataset.k||(e.target.closest('.cap')||{dataset:{}}).dataset.k;
+  // A stick: its whole axes are set from the "Right" control, as moving it fills both axes.
+  const sel=part.dataset.s?`#ctl .bv[data-s="${part.dataset.s}"][data-d="right"]`:`#ctl .bv[data-k="${part.dataset.k}"]`;const target=document.querySelector(sel);if(target)ctlCapture(target)}
+function ctlHover(e,on){const t=e.target.closest('#ctl .bind,#ctl .padart .part');if(!t)return;let key='';
+  if(t.classList.contains('part'))key=t.dataset.s?'s:'+t.dataset.s:'k:'+t.dataset.k;else{const v=t.querySelector('.bv');if(!v)return;key=v.dataset.s?'s:'+v.dataset.s:v.dataset.k?'k:'+v.dataset.k:''}
+  document.querySelectorAll('#ctl .hl').forEach(x=>x.classList.remove('hl'));if(!on||!key)return;const[kind,name]=key.split(':');
+  document.querySelectorAll(kind=='s'?`#ctl [data-s="${name}"]`:`#ctl [data-k="${name}"]`).forEach(x=>(x.closest('.bind')||x).classList.add('hl'))}
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#ctl .padart'))ctlPartClick(e)});
+document.addEventListener('mouseover',e=>{if(e.target.closest&&e.target.closest('#ctl'))ctlHover(e,true)});
+document.addEventListener('focusin',e=>{if(e.target.closest&&e.target.closest('#ctl .bind'))ctlHover(e,true)});
