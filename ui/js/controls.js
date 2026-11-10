@@ -75,17 +75,15 @@ function ctlPlayerHtml(){const P=CTL.players[CTLTAB],T=ctlPlayer(),c=T.controls,
   const mot=(name,title)=>`<div class="bind"><span class="bl">${title}</span><button class="bv" data-m="${name}" onclick="ctlCapture(this)">${bindHtml(c.motions[name])}</button><button class="bm" data-m="${name}" onclick="ctlMenu(this)" aria-label="Options">⋯</button></div>`;
   const mid=(keys)=>{const rows=keys.filter(k=>k[2]).map(k=>b(k[0],k[1],1,k[3]));return rows.length?`<div class="grp ctlg"><h3>Boutons du milieu</h3>${rows.join('')}</div>`:''};
   const colL=`${L.left?`<div class="grp ctlg"><h3>Gâchettes gauches</h3>${b(gc?'L':'ZL','button_zl')}${thr('button_zl')}${b('L','button_l',1,gc)}</div>`:''}
-   ${mid([['Moins','button_minus',L.minus],['Capture','button_screenshot',L.capture]])}
    ${L.lstick?stick('lstick',gc?'Stick de contrôle':'Stick gauche','button_lstick',!gc):''}
    ${L.dpad?`<div class="grp ctlg"><h3>Croix</h3>${b('Haut','button_dup')}${b('Bas','button_ddown')}${b('Gauche','button_dleft')}${b('Droite','button_dright')}</div>`:''}
    ${L.slsrl?`<div class="grp ctlg"><h3>SL / SR</h3>${b('SL','button_slleft')}${b('SR','button_srleft')}</div>`:''}`;
   const colR=`${L.right?`<div class="grp ctlg"><h3>Gâchettes droites</h3>${b(gc?'R':'ZR','button_zr')}${thr('button_zr')}${b(gc?'Z':'R','button_r')}</div>`:''}
-   ${mid([[gc?'Start / Pause':'Plus','button_plus',L.plus],['Home','button_home',L.home,gc]])}
    ${L.face?`<div class="grp ctlg"><h3>Boutons</h3>${b('A','button_a')}${b('B','button_b')}${b('X','button_x')}${b('Y','button_y')}</div>`:''}
    ${L.rstick?stick('rstick',gc?'Stick C':'Stick droit','button_rstick',!gc):''}
-   ${L.slsrr?`<div class="grp ctlg"><h3>SL / SR</h3>${b('SL','button_slright')}${b('SR','button_srright')}</div>`:''}
-   ${L.motl||L.motr?`<div class="grp ctlg"><h3>Gyroscope</h3>${L.motl?mot('motionleft',L.motr?'Gauche':'Gyroscope'):''}${L.motr?mot('motionright',L.motl?'Droite':'Gyroscope'):''}</div>`:''}`;
-  const center=`<div class="padstage"><div class="padart">${padSvg(type)}</div><p class="muted small" style="text-align:center">Clique sur une touche du dessin ou de la liste pour la régler.</p></div>`;
+   ${L.slsrr?`<div class="grp ctlg"><h3>SL / SR</h3>${b('SL','button_slright')}${b('SR','button_srright')}</div>`:''}`;
+  const under=`${mid([['Moins','button_minus',L.minus],['Capture','button_screenshot',L.capture],[gc?'Start / Pause':'Plus','button_plus',L.plus],['Home','button_home',L.home,gc]])}${L.motl||L.motr?`<div class="grp ctlg"><h3>Gyroscope</h3>${L.motl?mot('motionleft',L.motr?'Gauche':'Gyroscope'):''}${L.motr?mot('motionright',L.motl?'Droite':'Gyroscope'):''}</div>`:''}`;
+  const center=`<div class="ctlcenter"><div class="padstage"><div class="padart">${padSvg(type)}</div><p class="muted small" style="text-align:center">Clique sur une touche du dessin ou de la liste pour la régler.</p></div>${under}</div>`;
   const bottom=`<div class="card" style="margin-top:14px"><div class="row wrap between" style="gap:14px"><div class="row wrap" style="gap:14px;align-items:center"><label class="check"><input type="checkbox" ${T.vibration?'checked':''} onchange="ctlVibration(this.checked)"> <span>Vibrations</span></label><span class="muted small">Force</span><input type="range" min="0" max="100" value="${T.vibrationStrength}" onchange="ctlVibrationStrength(this.value)"><span class="muted small">${T.vibrationStrength} %</span></div><div class="row" style="gap:8px"><button class="btn" onclick="ctlDefaults()">Valeurs par défaut</button><button class="btn" onclick="ctlClear()">Tout effacer</button></div></div></div>`;
   // A single Joy-Con has controls on one side only: no empty column.
   const hasL=colL.trim()!=='',hasR=colR.trim()!=='';
