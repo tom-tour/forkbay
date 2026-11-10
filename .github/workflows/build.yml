@@ -40,6 +40,8 @@ jobs:
       - name: Build without local paths inside the program
         run: |
           export RUSTFLAGS="--remap-path-prefix=$HOME/.cargo=/cargo --remap-path-prefix=$HOME/.rustup=/rustup --remap-path-prefix=$GITHUB_WORKSPACE=/src"
+          # The same for the C code of SDL.
+          export CFLAGS="-ffile-prefix-map=$HOME/.cargo=/cargo -ffile-prefix-map=$GITHUB_WORKSPACE=/src -ffile-prefix-map=$HOME=/home"
           cargo build --release --locked
           cargo test --release --locked
       - name: Test the app on a virtual screen
