@@ -54,21 +54,21 @@ fn game_path(file: &str) -> Result<PathBuf> {
     game_ini(file).ok_or_else(|| anyhow!("Le nom du fichier de ce jeu ne contient pas son identifiant, comme [0100000000010000] : Forkbay ne sait pas où l'émulateur range ses réglages."))
 }
 
-fn section_range(lines: &[String], section: &str) -> Option<(usize, usize)> {
+pub(crate) fn section_range(lines: &[String], section: &str) -> Option<(usize, usize)> {
     let head = format!("[{section}]");
     let start = lines.iter().position(|l| l.trim() == head)?;
     let end = lines[start + 1..].iter().position(|l| l.starts_with('[')).map_or(lines.len(), |i| start + 1 + i);
     Some((start, end))
 }
 
-fn read(lines: &[String], section: &str, key: &str) -> Option<String> {
+pub(crate) fn read(lines: &[String], section: &str, key: &str) -> Option<String> {
     let (start, end) = section_range(lines, section)?;
     let prefix = format!("{key}=");
     lines[start..end].iter().find_map(|l| l.strip_prefix(prefix.as_str()).map(|v| v.trim().to_string()))
 }
 
 /// Replaces the line that starts with `prefix`, or adds it at the top of the section.
-fn put(lines: &mut Vec<String>, section: &str, prefix: &str, line: String) {
+pub(crate) fn put(lines: &mut Vec<String>, section: &str, prefix: &str, line: String) {
     let start = match section_range(lines, section) {
         Some(r) => r.0,
         None => {
@@ -84,7 +84,7 @@ fn put(lines: &mut Vec<String>, section: &str, prefix: &str, line: String) {
     }
 }
 
-fn drop_line(lines: &mut Vec<String>, section: &str, prefix: &str) {
+pub(crate) fn drop_line(lines: &mut Vec<String>, section: &str, prefix: &str) {
     if let Some((start, end)) = section_range(lines, section) {
         if let Some(i) = lines[start..end].iter().position(|l| l.starts_with(prefix)) { lines.remove(start + i); }
     }
@@ -133,13 +133,13 @@ pub fn turn_off_emulator_updates() -> Result<()> {
     save(&path, &lines, crlf)
 }
 
-fn load(path: &Path) -> (Vec<String>, bool) {
+pub(crate) fn load(path: &Path) -> (Vec<String>, bool) {
     let text = fs::read_to_string(path).unwrap_or_default();
     let crlf = text.contains("\r\n") || !path.exists();
     (text.trim_start_matches('\u{feff}').lines().map(str::to_string).collect(), crlf)
 }
 
-fn save(path: &Path, lines: &[String], crlf: bool) -> Result<()> {
+pub(crate) fn save(path: &Path, lines: &[String], crlf: bool) -> Result<()> {
     fs::create_dir_all(path.parent().ok_or_else(|| anyhow!("config"))?)?;
     if path.is_file() { fs::copy(path, path.with_extension("ini.forkbay-backup"))?; }
     let eol = if crlf { "\r\n" } else { "\n" };
@@ -277,8 +277,22 @@ fn apply(lines: &mut Vec<String>, key: &str, value: u32, game: bool) {
     }
 }
 
+/// Docked (TV) or handheld, read and written like the page's own setting.
+pub(crate) fn docked(lines: &[String]) -> bool {
+    value(lines, "use_docked_mode") == 1
+}
+
+pub(crate) fn set_docked(lines: &mut Vec<String>, docked: bool) {
+    apply(lines, "use_docked_mode", u32::from(docked), false);
+}
+
+/// Where the emulators keep a game's own settings.
+pub(crate) fn game_ini_path(file: &str) -> Result<PathBuf> {
+    game_path(file)
+}
+
 /// The emulators rewrite these files when they close, so they must not be open.
-fn not_running() -> Result<()> {
+pub(crate) fn not_running() -> Result<()> {
     if crate::emu::any_running() { bail!("Ferme d'abord l'émulateur : il écraserait ce réglage en se fermant."); }
     Ok(())
 }

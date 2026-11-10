@@ -9,6 +9,10 @@ use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 
+fn p_arg(a: &Value) -> Result<usize> {
+    a["player"].as_u64().map(|p| p as usize).ok_or_else(|| anyhow!("Joueur inconnu."))
+}
+
 fn s_arg(a: &Value, k: &str) -> String {
     a[k].as_str().unwrap_or("").to_string()
 }
@@ -150,7 +154,29 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
             json!({})
         }
         "game_settings_other_common" => { config::game_other_common(&s_arg(a, "file"), &s_arg(a, "section"), &s_arg(a, "key"))?; json!({}) }
-        "pad_status" => pad::status(),
+        "controls_get" => controls::get(),
+        "controls_devices" => controls::devices()?,
+        "controls_states" => controls::states()?,
+        "controls_set" => { controls::set_control(p_arg(a)?, &s_arg(a, "name"), &s_arg(a, "value"))?; json!({}) }
+        "controls_connected" => { controls::set_connected(p_arg(a)?, a["on"].as_bool().unwrap_or(true))?; json!({}) }
+        "controls_type" => { controls::set_type(p_arg(a)?, a["type"].as_u64().ok_or_else(|| anyhow!("Valeur refusée."))? as u32)?; json!({}) }
+        "controls_vibration" => { controls::set_vibration(p_arg(a)?, a["on"].as_bool(), a["strength"].as_u64().map(|v| v as u32))?; json!({}) }
+        "controls_advanced" => { controls::set_advanced(&s_arg(a, "key"), a["on"].as_bool().unwrap_or(false))?; json!({}) }
+        "controls_docked" => { controls::set_docked(a["on"].as_bool().unwrap_or(true))?; json!({}) }
+        "controls_clear" => { controls::clear(p_arg(a)?)?; json!({}) }
+        "controls_device" => { controls::use_device(p_arg(a)?, &a["device"])?; json!({}) }
+        "controls_capture" => {
+            let only = a["guid"].as_str().map(|g| (g.to_string(), a["port"].as_u64().unwrap_or(0) as usize));
+            controls::capture_begin(&s_arg(a, "kind"), only)?;
+            json!({})
+        }
+        "controls_poll" => controls::capture_poll()?,
+        "controls_stop" => { controls::capture_stop()?; json!({}) }
+        "profile_save" => { controls::save_profile(&s_arg(a, "name"), p_arg(a)?, a["new"].as_bool().unwrap_or(false))?; json!({}) }
+        "profile_load" => { controls::load_profile(&s_arg(a, "name"), p_arg(a)?)?; json!({}) }
+        "profile_delete" => { controls::delete_profile(&s_arg(a, "name"))?; json!({}) }
+        "game_profiles" => controls::game_profiles(&s_arg(a, "file"))?,
+        "game_profile_set" => { controls::set_game_profile(&s_arg(a, "file"), p_arg(a)?, &s_arg(a, "name"))?; json!({}) }
         "custom_games" => config::custom_games(),
         "art_sources" => art::source_list(&load_settings()),
         "art_source_enable" => { art::set_enabled(&s_arg(a, "name"), a["enabled"].as_bool().unwrap_or(true))?; json!({}) }

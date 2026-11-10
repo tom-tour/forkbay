@@ -23,6 +23,8 @@ zip = { version = "9", default-features = false, features = ["deflate"] }
 sha2 = "0.11"
 base64 = "0.23"
 getrandom = "0.4"
+# Controllers, seen exactly as the emulators see them: they are built with this same SDL release.
+sdl3-sys = { version = "=0.6.8", default-features = false, features = ["build-from-source-static", "no-default-subsystems", "sdl-joystick", "sdl-hidapi", "sdl-haptic", "sdl-sensor"] }
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.56"

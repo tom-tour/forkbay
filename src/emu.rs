@@ -619,12 +619,10 @@ pub fn run(emu: &str, game: Option<&Path>, key: &str) -> Result<()> {
         if let Err(e) = crate::config::turn_off_emulator_updates() {
             crate::log::error(&format!("emulator update prompt: {e}"));
         }
-        if let Err(e) = crate::pad::adapt(emu) {
+        if let Err(e) = crate::controls::follow_plugged() {
             crate::log::error(&format!("controllers: {e}"));
         }
     }
-    // What the controls were, to see afterwards which ones were set in this emulator.
-    let pads = idle.then(crate::pad::before);
     crate::log::info(&format!("start {emu}{}", if full { " full screen" } else { "" }));
     let mut child = c.spawn()?;
     let exe_name = exe.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
@@ -632,11 +630,6 @@ pub fn run(emu: &str, game: Option<&Path>, key: &str) -> Result<()> {
     let _ = fs::write(session_file(), json!({ "file": key, "emu": emu, "exe": exe_name, "pid": child.id() }).to_string());
     let status = child.wait();
     let _ = fs::remove_file(session_file());
-    if let Some(b) = pads {
-        if let Err(e) = crate::pad::learn(emu, &b) {
-            crate::log::error(&format!("controllers: {e}"));
-        }
-    }
     let status = status?;
     if !status.success() { crate::log::error(&format!("{emu} stopped with {status}")); } else { crate::log::info(&format!("{emu} closed")); }
     Ok(())

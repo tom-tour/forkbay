@@ -408,26 +408,7 @@
   "Comme partout :": "Common:",
   "Propre au jeu": "This game only",
   "Manette": "Controller",
-  "Tes manettes": "Your controllers",
-  "Régler la manette": "Set up the controller",
   "Joueur": "Player",
-  "Joueurs": "Players",
-  "Pas encore vue par :": "Not seen yet by:",
-  "Ouvrir l'émulateur": "Open the emulator",
-  "Installe d'abord un émulateur.": "Install an emulator first.",
-  "Aucune manette dans tes contrôles pour l'instant : règle-la une fois avec le bouton ci-dessous.": "No controller in your controls yet: set it up once with the button below.",
-  "Tous les émulateurs utilisent les mêmes contrôles. Mais certains ne reconnaissent pas une manette sous le même nom que les autres : elle ne répond plus quand tu changes d'émulateur. Forkbay retient comment chaque émulateur voit ta manette et adapte tes contrôles avant chaque lancement.": "All emulators use the same controls. But some do not know a controller by the same name as the others: it stops responding when you switch emulators. Forkbay remembers how each emulator sees your controller and adapts your controls before each start.",
-  "Si ta manette ne répond pas dans un émulateur qui ne l'a pas encore vue, règle-la une fois dans cet émulateur : Forkbay s'en souviendra.": "If your controller does not respond in an emulator that has not seen it yet, set it up once in that emulator: Forkbay will remember it.",
-  "Ouvre l'émulateur : il s'ouvre en fenêtre, sans jeu.": "Open the emulator: it opens in a window, without a game.",
-  "Va dans le menu « Emulation », puis « Configure », onglet « Controls ».": "Go to the “Emulation” menu, then “Configure”, “Controls” tab.",
-  "Choisis ta manette dans « Input Device » : toutes les touches se remplissent.": "Pick your controller in “Input Device”: every button is filled in.",
-  "Valide avec « OK » et ferme l'émulateur. Forkbay retient ta manette pour cet émulateur.": "Confirm with “OK” and close the emulator. Forkbay remembers your controller for this emulator.",
-  "Manette Xbox 360": "Xbox 360 controller",
-  "Manette Xbox": "Xbox controller",
-  "Manette DualShock 4": "DualShock 4 controller",
-  "Manette DualSense": "DualSense controller",
-  "Manette Pro Switch": "Switch Pro Controller",
-  "Manette 8BitDo": "8BitDo controller",
   "Réglés dans l'émulateur": "Set in the emulator",
   "Ce jeu a aussi ses propres valeurs pour ces réglages. Forkbay ne sait pas les changer : modifie-les dans l'émulateur, ou remets-les comme partout.": "This game also has its own values for these settings. Forkbay cannot change them: edit them in the emulator, or set them back to common.",
   "Mémoire émulée": "Emulated memory",
@@ -484,7 +465,131 @@
   "Images des jeux": "Game images",
   "Tes sources d'images, dont SteamGridDB, et le dossier où sont rangées les images.": "Your image sources, SteamGridDB included, and the folder where images are kept.",
   "Langue, région, mode TV, résolution et le reste sont dans la page Émulateurs.": "Language, region, TV mode, resolution and the rest are on the Emulators page.",
-  "Cartes trouvées :": "Cards found:"
+  "Cartes trouvées :": "Cards found:",
+  "Pour tous les émulateurs : ils partagent les mêmes contrôles et les mêmes profils.": "For every emulator: they share the same controls and profiles.",
+  "Avancé": "Advanced",
+  "Connecté": "Connected",
+  "Type de manette": "Controller type",
+  "Manette utilisée": "Device",
+  "Plusieurs ou aucune": "Several or none",
+  "Clavier": "Keyboard",
+  "Profil": "Profile",
+  "Nouveau": "New",
+  "Supprimer": "Delete",
+  "Manette débranchée": "Unplugged controller",
+  "Autre manette": "Other controller",
+  "Pro Controller": "Pro Controller",
+  "Joy-Con doubles": "Dual Joy-Cons",
+  "Joy-Con gauche": "Left Joy-Con",
+  "Joy-Con droit": "Right Joy-Con",
+  "Manette GameCube": "GameCube Controller",
+  "Aucune manette détectée : branche-la, elle apparaîtra ici.": "No controller found: plug it in and it will show up here.",
+  "Choisir une manette remplit toutes les touches, comme dans les émulateurs. Clique ensuite sur une touche pour la changer, puis appuie sur le bouton voulu. Les touches s'allument quand tu appuies.": "Choosing a controller fills in every button, as in the emulators. Then click a control to change it, and press the button you want. Controls light up as you press them.",
+  "Stick gauche": "Left stick",
+  "Stick droit": "Right stick",
+  "Stick de contrôle": "Control stick",
+  "Stick C": "C-stick",
+  "Haut": "Up",
+  "Bas": "Down",
+  "Gauche": "Left",
+  "Droite": "Right",
+  "Appui": "Pressed",
+  "Modificateur": "Modifier",
+  "Portée du modificateur": "Modifier range",
+  "Zone morte": "Deadzone",
+  "Portée": "Range",
+  "Seuil": "Threshold",
+  "Croix": "D-pad",
+  "Gâchettes gauches": "Left triggers",
+  "Gâchettes droites": "Right triggers",
+  "Boutons du milieu": "Middle buttons",
+  "Moins": "Minus",
+  "Plus": "Plus",
+  "Home": "Home",
+  "Capture": "Capture",
+  "Start / Pause": "Start / Pause",
+  "SL / SR": "SL / SR",
+  "Gyroscope": "Motion",
+  "Boutons": "Buttons",
+  "Vibrations": "Vibration",
+  "Force": "Strength",
+  "Valeurs par défaut": "Defaults",
+  "Tout effacer": "Clear all",
+  "non réglée": "not set",
+  "inconnue": "unknown",
+  "turbo": "turbo",
+  "bascule": "toggle",
+  "inversé": "inverted",
+  "axe inversé": "inverted axis",
+  "Appuie…": "Press a button…",
+  "Bouge le stick…": "Move the stick…",
+  "Secoue la manette…": "Shake the controller…",
+  "Pousse le stick vers la droite, puis vers le haut. Pour inverser les axes, commence par le haut.": "Push the stick right, then up. To swap the axes, start with up.",
+  "Un émulateur est ouvert.": "An emulator is open.",
+  "Ferme-le avant de changer tes contrôles : il les remplacerait par les siens en se fermant.": "Close it before changing your controls: it would replace them with its own when it closes.",
+  "Ferme d'abord l'émulateur.": "Close the emulator first.",
+  "Effacer": "Clear",
+  "Inverser le bouton": "Invert button",
+  "Ne plus inverser": "Stop inverting",
+  "Bouton bascule": "Toggle button",
+  "Ne plus basculer": "Stop toggling",
+  "Turbo": "Turbo",
+  "Arrêter le turbo": "Stop turbo",
+  "Inverser l’axe": "Invert axis",
+  "Axe bascule": "Toggle axis",
+  "Centrer": "Center axis",
+  "Sensibilité du gyroscope…": "Gyro threshold…",
+  "Seuil (0 à 100)": "Threshold (0 to 100)",
+  "OK": "OK",
+  "Cette manette n'est pas branchée.": "This controller is not plugged in.",
+  "Choisis d'abord la manette utilisée.": "Choose the device first.",
+  "Choisis d'abord un profil.": "Choose a profile first.",
+  "Touches remplies.": "Controls filled in.",
+  "Nom du profil": "Profile name",
+  "Créer": "Create",
+  "Supprimer le profil": "Delete the profile",
+  "Profil chargé.": "Profile loaded.",
+  "Profil enregistré.": "Profile saved.",
+  "Profil créé.": "Profile created.",
+  "Profil supprimé.": "Profile deleted.",
+  "Console": "Console",
+  "Le mode portable va avec le type de manette « Portable » du joueur 1.": "Handheld mode goes with the “Handheld” controller type of player 1.",
+  "Pour tous les joueurs": "For every player",
+  "Vibrations précises": "Accurate vibration",
+  "Plus fidèles, mais certaines manettes vibrent moins bien.": "More faithful, but some controllers vibrate less well.",
+  "Naviguer dans les menus de l’émulateur à la manette": "Navigate the emulator's menus with the controller",
+  "Pilotes": "Drivers",
+  "À changer seulement si une manette n'est pas reconnue. Forkbay les applique aussi à sa propre lecture des manettes.": "Change these only if a controller is not recognized. Forkbay also follows them when it reads controllers.",
+  "Pilote Joy-Con de l’émulateur": "Emulator's Joy-Con driver",
+  "Gère lui-même les Joy-Con, avec le gyroscope.": "Handles Joy-Cons itself, with motion.",
+  "Pilote Pro Controller de l’émulateur": "Emulator's Pro Controller driver",
+  "Entrée brute (Raw Input)": "Raw input",
+  "Pour plus de 4 manettes Xbox sous Windows.": "For more than 4 Xbox controllers on Windows.",
+  "D'une manette à l'autre": "From one controller to another",
+  "Tes contrôles sont partagés par tous les émulateurs. Avant chaque partie, si la manette réglée n'est pas branchée mais qu'une du même modèle l'est, Forkbay lui passe tes contrôles : tu peux jouer avec l'une ou l'autre sans rien refaire.": "Your controls are shared by every emulator. Before each game, if the controller they were set with is not plugged in but one of the same model is, Forkbay moves your controls to it: you can play with either one without setting anything again.",
+  "Un jeu peut avoir son propre profil par joueur, depuis l'engrenage sur sa jaquette.": "A game can have its own profile per player, from the gear on its cover.",
+  "Manette pour ce jeu": "Controller for this game",
+  "Un profil donné à un joueur ne sert que pour ce jeu. Les profils se créent sur la page Manette.": "A profile given to a player is only used for this game. Profiles are created on the Controller page.",
+  "Autres joueurs": "Other players",
+  "Aucun profil pour l'instant.": "No profile yet.",
+  "Profil donné à ce joueur pour ce jeu.": "Profile given to this player for this game.",
+  "Ce joueur suit de nouveau les contrôles communs.": "This player follows the common controls again.",
+  "Échap": "Esc",
+  "Tab": "Tab",
+  "Retour arrière": "Backspace",
+  "Entrée": "Enter",
+  "Entrée (pavé)": "Keypad Enter",
+  "Inser": "Insert",
+  "Suppr": "Delete",
+  "Début": "Home",
+  "Fin": "End",
+  "Page préc.": "Page Up",
+  "Page suiv.": "Page Down",
+  "Maj": "Shift",
+  "Ctrl": "Ctrl",
+  "Alt": "Alt",
+  "Verr. maj": "Caps Lock",
+  "Espace": "Space"
  },
  "uiPatterns": [
   [
@@ -575,10 +680,6 @@
    }
   ],
   [
-   "^Manette ([0-9a-f]{4}:[0-9a-f]{4})$",
-   "Controller $1"
-  ],
-  [
    "^\\+(\\d+) dans l'émulateur$",
    "+$1 in the emulator"
   ],
@@ -593,6 +694,40 @@
   [
    "^(\\d+) Mo$",
    "$1 MB"
+  ],
+  [
+   "^Bouton (\\d+)$",
+   "Button $1"
+  ],
+  [
+   "^Axe (\\d+)$",
+   "Axis $1"
+  ],
+  [
+   "^Axe (\\d+)([+−])$",
+   "Axis $1$2"
+  ],
+  [
+   "^Axes (.+)$",
+   "Axes $1"
+  ],
+  [
+   "^Croix (haut|bas|gauche|droite)$",
+   "Hat $1",
+   {
+    "haut": "up",
+    "bas": "down",
+    "gauche": "left",
+    "droite": "right"
+   }
+  ],
+  [
+   "^Souris (.*)$",
+   "Mouse $1"
+  ],
+  [
+   "^Touche (\\d+)$",
+   "Key $1"
   ]
  ],
  "messages": [
@@ -1219,6 +1354,38 @@
   [
    "^Choisis une source d'images$",
    "Choose an image source"
+  ],
+  [
+   "^Ce nom de profil n'est pas valide : évite (.+)$",
+   "This profile name is not valid: avoid $1"
+  ],
+  [
+   "^Un profil porte déjà ce nom\\.$",
+   "A profile already has this name."
+  ],
+  [
+   "^Ce profil n'existe plus\\.$",
+   "This profile no longer exists."
+  ],
+  [
+   "^Joueur inconnu\\.$",
+   "Unknown player."
+  ],
+  [
+   "^Manette inconnue\\.$",
+   "Unknown controller."
+  ],
+  [
+   "^Cette manette n'est plus branchée\\.$",
+   "This controller is no longer plugged in."
+  ],
+  [
+   "^SDL ne répond pas\\.$",
+   "SDL does not respond."
+  ],
+  [
+   "^SDL : (.+)$",
+   "SDL: $1"
   ]
  ],
  "categories": {
