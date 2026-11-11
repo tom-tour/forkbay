@@ -651,7 +651,17 @@
   "Jouable": "Playable",
   "Tourne": "Runs",
   "Se lance": "Loads",
-  "Injouable": "Unplayable"
+  "Injouable": "Unplayable",
+  "Manette dans Forkbay": "Controller in Forkbay",
+  "Les boutons qui servent à te déplacer dans Forkbay. Ils restent dans Forkbay : les émulateurs ne les voient pas, et tes contrôles de jeu ne changent pas.": "The buttons that move you around Forkbay. They stay in Forkbay: the emulators never see them, and your game controls do not change.",
+  "Mêmes boutons que le joueur 1": "Same buttons as player 1",
+  "Se déplacer": "Moving around",
+  "Stick": "Stick",
+  "Valider": "Confirm",
+  "Page précédente": "Previous page",
+  "Page suivante": "Next page",
+  "Sur une liste de choix, appuie sur Valider pour l'ouvrir, puis sur gauche ou droite pour choisir. Valider garde le choix, Retour l'annule.": "On a list of choices, press Confirm to open it, then left or right to choose. Confirm keeps the choice, Back cancels it.",
+  "Gauche ou droite pour choisir, A pour garder, B pour annuler.": "Left or right to choose, A to keep, B to cancel."
  },
  "uiPatterns": [
   [

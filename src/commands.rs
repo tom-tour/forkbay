@@ -182,6 +182,7 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
             json!({})
         }
         "controls_poll" => controls::capture_poll()?,
+        "controls_nav" => { controls::set_nav(&a["controls"])?; json!({}) }
         "controls_release" => { crate::sdl::stop(); json!({}) }
         "controls_stop" => { controls::capture_stop()?; json!({}) }
         "profile_save" => { controls::save_profile(&s_arg(a, "name"), p_arg(a)?, a["new"].as_bool().unwrap_or(false))?; json!({}) }

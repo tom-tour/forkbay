@@ -35,17 +35,21 @@ function layout(type){const all={lstick:1,dpad:1,left:1,minus:1,right:1,plus:1,h
   return all}
 const GC=t=>t==5;
 
-function ctlPlayer(){if(!CTL)return null;const p=CTL.players[CTLTAB];return CTLTAB==0&&p.type==4?CTL.players[8]:p}
+// Forkbay's own controls: player 1's until they are set apart. Kept by Forkbay, the emulators never see them.
+const NAV_KEYS=['button_dup','button_ddown','button_dleft','button_dright','lstick','button_a','button_b','button_y','button_l','button_r'];
+function navMap(){if(CTL.nav)return CTL.nav;let P=CTL.players[0];if(P.type==4)P=CTL.players[8];const c=P.controls,m={};for(const k of NAV_KEYS)m[k]=k=='lstick'?c.sticks.lstick:c.buttons[k];return m}
+function navPlayer(){if(!CTL)return null;const m=navMap(),buttons={};for(const k of NAV_KEYS)if(k!='lstick')buttons[k]=m[k]||'[empty]';return{controls:{buttons,sticks:{lstick:m.lstick||'[empty]'},motions:{}}}}
+function ctlPlayer(){if(!CTL)return null;if(CTLTAB=='nav')return navPlayer();const p=CTL.players[CTLTAB];return CTLTAB==0&&p.type==4?CTL.players[8]:p}
 
 async function loadControls(){const el=$('ctl');if(!el)return;HK=null;try{[CTL,CTLDEV]=await Promise.all([call('controls_get'),call('controls_devices').catch(()=>[])])}catch(e){el.innerHTML=`<div class="card">${esc(e.message)}</div>`;return}renderControls();ctlLiveStart()}
 function stopControls(){ctlLiveStop();ctlCancel();ctlCloseMenu();if(HKCAP){HKCAP=null;window.PADHOLD=false}}
 
-function ctlTabs(){return`<div class="tabs ctltabs" id="ctlTabs">${[0,1,2,3,4,5,6,7].map(i=>`<button class="${CTLTAB===i?'on':''}${CTL.players[i==0&&CTL.players[0].type==4?8:i].connected?'':' off'}" onclick="ctlTab(${i})"><span>Joueur</span> ${i+1}</button>`).join('')}<button class="${CTLTAB=='adv'?'on':''}" onclick="ctlTab('adv')">Avancé</button><button class="${CTLTAB=='keys'?'on':''}" onclick="ctlTab('keys')">Raccourcis</button></div>`}
+function ctlTabs(){return`<div class="tabs ctltabs" id="ctlTabs"><button class="${CTLTAB=='nav'?'on':''}" onclick="ctlTab('nav')">Forkbay</button>${[0,1,2,3,4,5,6,7].map(i=>`<button class="${CTLTAB===i?'on':''}${CTL.players[i==0&&CTL.players[0].type==4?8:i].connected?'':' off'}" onclick="ctlTab(${i})"><span>Joueur</span> ${i+1}</button>`).join('')}<button class="${CTLTAB=='adv'?'on':''}" onclick="ctlTab('adv')">Avancé</button><button class="${CTLTAB=='keys'?'on':''}" onclick="ctlTab('keys')">Raccourcis</button></div>`}
 function ctlTab(t){ctlCancel();if(HKCAP)HKCAP=null,window.PADHOLD=false;CTLTAB=t;renderControls()}
 
 function renderControls(){const el=$('ctl');if(!el||!CTL)return;ctlCloseMenu();
   const warn=CTL.running?'<div class="card" style="margin-bottom:14px"><b>Un émulateur est ouvert.</b><p class="muted small">Ferme-le avant de changer tes contrôles : il les remplacerait par les siens en se fermant.</p></div>':'';
-  el.innerHTML=warn+ctlTabs()+(CTLTAB=='adv'?ctlAdvanced():CTLTAB=='keys'?ctlHotkeys():ctlPlayerHtml());ctlRefreshLive()}
+  el.innerHTML=warn+ctlTabs()+(CTLTAB=='adv'?ctlAdvanced():CTLTAB=='keys'?ctlHotkeys():CTLTAB=='nav'?ctlNavHtml():ctlPlayerHtml());ctlRefreshLive()}
 
 function deviceOf(c){const seen=new Map();const add=t=>{const p=pParse(t);if(!p.engine||p.engine=='analog_from_button'){for(const d of['up','down','left','right','modifier'])if(p[d])add(p[d]);return}if(p.engine=='keyboard'||p.engine=='mouse'){seen.set('kb','kb');return}if(p.guid)seen.set(p.engine+p.guid+':'+(p.port||0),{guid:p.guid,port:Number(p.port||0)})};
   for(const g of['buttons','sticks','motions'])for(const k in c[g])if(!(g=='motions'&&pParse(c[g][k]).engine=='keyboard'))add(c[g][k]);
@@ -89,6 +93,15 @@ function ctlPlayerHtml(){const P=CTL.players[CTLTAB],T=ctlPlayer(),c=T.controls,
   const hasL=colL.trim()!=='',hasR=colR.trim()!=='';
   return top+`<div class="ctlpad${hasL&&hasR?'':' two'}">${hasL?`<div class="ctlside">${colL}</div>`:''}${center}${hasR?`<div class="ctlside">${colR}</div>`:''}</div>`+bottom}
 
+function ctlNavHtml(){const c=ctlPlayer().controls,own=!!CTL.nav,dis=own?'':' disabled';
+  const b=(label,name)=>`<div class="bind${own?'':' off'}"><span class="bl">${label}</span><button class="bv" data-k="${name}"${dis} onclick="ctlCapture(this)">${bindHtml(c.buttons[name])}</button></div>`;
+  return`<div class="card"><h2 style="margin:0 0 6px">Manette dans Forkbay</h2><p class="muted small">Les boutons qui servent à te déplacer dans Forkbay. Ils restent dans Forkbay : les émulateurs ne les voient pas, et tes contrôles de jeu ne changent pas.</p>
+   <label class="check" style="margin-top:10px"><input type="checkbox" ${own?'':'checked'} onchange="ctlNavFollow(this.checked)"> <span>Mêmes boutons que le joueur 1</span></label><input type="hidden" id="ctlDev" value="pads"></div>
+  <div class="ctlpad two"><div class="ctlside"><div class="grp ctlg"><h3>Se déplacer</h3>${b('Haut','button_dup')}${b('Bas','button_ddown')}${b('Gauche','button_dleft')}${b('Droite','button_dright')}<div class="bind${own?'':' off'}"><span class="bl">Stick</span><button class="bv" data-s="lstick" data-d="up"${dis} onclick="ctlCapture(this)">${stickHtml(c.sticks.lstick,'up')}</button></div></div></div>
+   <div class="ctlside"><div class="grp ctlg"><h3>Boutons</h3>${b('Valider','button_a')}${b('Retour','button_b')}${b('Fiche du jeu','button_y')}${b('Page précédente','button_l')}${b('Page suivante','button_r')}</div></div></div>
+  <div class="card" style="margin-top:14px"><p class="muted small">Sur une liste de choix, appuie sur Valider pour l'ouvrir, puis sur gauche ou droite pour choisir. Valider garde le choix, Retour l'annule.</p></div>`}
+async function ctlNavFollow(same){await ctlDo('controls_nav',{controls:same?null:navMap()})}
+
 function ctlAdvanced(){const a=CTL.advanced;const row=(k,t,d)=>`<div class="set"><div class="l"><b>${t}</b>${d?`<p class="muted small">${d}</p>`:''}</div><div class="v"><input type="checkbox" ${a[k]?'checked':''} onchange="ctlAdv('${k}',this.checked)"></div></div>`;
   return`<div class="card"><h2>Console</h2><div class="set"><div class="l"><b>Mode de la console</b><p class="muted small">Le mode portable va avec le type de manette « Portable » du joueur 1.</p></div><div class="v"><div class="seg small"><button class="${CTL.docked?'on':''}" onclick="ctlDocked(true)">TV</button><button class="${CTL.docked?'':'on'}" onclick="ctlDocked(false)">Portable</button></div></div></div></div>
   <div class="card" style="margin-top:14px"><h2>Pour tous les joueurs</h2>${row('vibration_enabled','Vibrations')}${row('enable_accurate_vibrations','Vibrations précises','Plus fidèles, mais certaines manettes vibrent moins bien.')}${row('motion_enabled','Gyroscope')}${row('controller_navigation','Naviguer dans les menus de l\'émulateur à la manette')}</div>
@@ -99,7 +112,7 @@ function ctlAdvanced(){const a=CTL.advanced;const row=(k,t,d)=>`<div class="set"
 async function ctlDo(cmd,args){const r=await act(cmd,args);if(r)await ctlReload();return r}
 async function ctlReload(){try{CTL=await call('controls_get')}catch(e){}renderControls()}
 const ctlIndex=()=>ctlPlayer().index;
-function ctlSet(name,value){return ctlDo('controls_set',{player:ctlIndex(),name,value})}
+function ctlSet(name,value){if(CTLTAB=='nav'){const m=Object.assign({},navMap());m[name]=value;return ctlDo('controls_nav',{controls:m})}return ctlDo('controls_set',{player:ctlIndex(),name,value})}
 function ctlConnected(on){ctlDo('controls_connected',{player:CTLTAB,on})}
 function ctlType(v){ctlDo('controls_type',{player:CTLTAB,type:Number(v)})}
 function ctlVibration(on){ctlDo('controls_vibration',{player:ctlIndex(),on})}

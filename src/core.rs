@@ -45,6 +45,8 @@ pub struct Settings {
     pub art_source: String,
     pub art_replace: bool,
     pub art_disabled: Vec<String>,
+    /// The controls that move around Forkbay itself. None: those of player 1.
+    pub nav_controls: Option<BTreeMap<String, String>>,
 }
 
 impl Default for Settings {
@@ -75,6 +77,7 @@ impl Default for Settings {
             art_source: "all".into(),
             art_replace: false,
             art_disabled: vec![],
+            nav_controls: None,
         }
     }
 }

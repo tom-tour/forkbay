@@ -172,7 +172,7 @@ pub fn get() -> Value {
     let players: Vec<Value> = (0..PLAYERS).map(|p| player_of(&lines, p)).collect();
     let advanced: serde_json::Map<String, Value> = ADVANCED.iter().map(|(k, d)| (k.to_string(), json!(flag(&lines, k, *d)))).collect();
     let docked = crate::config::docked(&lines);
-    json!({ "players": players, "profiles": profile_names(), "advanced": advanced, "docked": docked, "running": crate::emu::any_running() })
+    json!({ "players": players, "profiles": profile_names(), "advanced": advanced, "docked": docked, "running": crate::emu::any_running(), "nav": crate::core::load_settings().nav_controls })
 }
 
 fn change(f: impl FnOnce(&mut Vec<String>) -> Result<()>) -> Result<()> {
@@ -403,6 +403,29 @@ pub fn set_game_profile(file: &str, player: usize, name: &str) -> Result<()> {
         }
     }
     save(&path, &lines, crlf)
+}
+
+// --- Moving around Forkbay ---
+
+/// The controls Forkbay itself reads: the D-pad, the left stick, and the buttons it gives a use to.
+pub const NAV: [&str; 10] = ["button_dup", "button_ddown", "button_dleft", "button_dright", "lstick", "button_a", "button_b", "button_y", "button_l", "button_r"];
+
+/// Forkbay's own controls, kept with its settings: the emulators never see them. None goes back to player 1's.
+pub fn set_nav(controls: &Value) -> Result<()> {
+    let mut s = crate::core::load_settings();
+    s.nav_controls = match controls.as_object() {
+        None => None,
+        Some(m) => {
+            let mut out = std::collections::BTreeMap::new();
+            for (k, v) in m {
+                let v = v.as_str().ok_or_else(|| anyhow!("Valeur refusée."))?;
+                if !NAV.contains(&k.as_str()) || v.len() > 300 || v.contains(['\n', '\r']) { anyhow::bail!("Valeur refusée."); }
+                out.insert(k.clone(), v.to_string());
+            }
+            Some(out)
+        }
+    };
+    crate::core::save_settings(&s)
 }
 
 // --- Controllers ---
