@@ -10,6 +10,6 @@ $('nav').innerHTML=pages.map(([k,l])=>`<button id="n-${k}" onclick="go('${k}')">
 function go(k){pages.forEach(([p])=>{$('p-'+p).classList.toggle('on',p==k);$('n-'+p).classList.toggle('on',p==k)});if(k=='emus'){if(!$('emus').innerHTML)loadEmus();renderCatalogue();if(EMUTAB=='cfg')loadEmuCfg()}if(k=='pad')loadControls();else stopControls();if(k=='steam')loadSteam();if(k=='cloud')renderCloud();if(k=='set')renderSettings();if(k=='about')renderAbout();if(k=='bug'&&!$('bug').innerHTML)renderBug()}
 async function refresh(){S=await call('state');applyTheme();$('quitBtn').style.display=S.fullscreen?'':'none';renderGames();return S}
 async function toggleFs(){const r=await call('toggle_fullscreen');S.fullscreen=r.fullscreen;$('quitBtn').style.display=S.fullscreen?'':'none'}
-const setEmu=(file,emu)=>act('set_game_emu',{file,emu});const play=f=>{act('play',{file:f});$('statusText').textContent='Lancement...'};const openPath=w=>act('open_path',{which:w});
+const setEmu=(file,emu)=>act('set_game_emu',{file,emu});const play=f=>{window.NAVPAUSE=Date.now()+8000;act('play',{file:f});$('statusText').textContent='Lancement...'};const openPath=w=>act('open_path',{which:w});
 window.addEventListener('error',e=>{call('log_js',{text:String(e.message)+' '+(e.lineno||'')}).catch(()=>{})});
 window.addEventListener('unhandledrejection',e=>{call('log_js',{text:String(e.reason&&e.reason.message||e.reason)}).catch(()=>{})});

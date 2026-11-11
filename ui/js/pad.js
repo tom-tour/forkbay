@@ -6,6 +6,30 @@ function padCycle(sel,d){const n=sel.selectedIndex+d;if(n<0||n>=sel.options.leng
 function padPage(d){if($('wiz').style.display=='block')return;const i=pages.findIndex(([p])=>$('p-'+p).classList.contains('on'));const n=(i+d+pages.length)%pages.length;go(pages[n][0]);const b=$('n-'+pages[n][0]);b.focus()}
 window.padAction=name=>{document.documentElement.dataset.pad='1';const cur=document.activeElement;if(['up','down','left','right'].includes(name)){if(cur&&cur.tagName=='SELECT'&&(name=='left'||name=='right'))return padCycle(cur,name=='left'?-1:1);return padMove(name)}if(name=='a'){if(cur&&padItems().includes(cur))cur.click();else padMove('down');return}if(name=='y'){const g=cur&&cur.closest&&cur.closest('.game');if(g)g.querySelector('.gear').click();return}if(name=='b'){if($('imgBox').style.display=='block')return closeBox();if($('wiz').style.display=='block'){if(wi>0)wiz(-1);return}const n=document.querySelector('nav button.on');if(n)n.focus();return}if(name=='lb')padPage(-1);if(name=='rb')padPage(1)};
 const PAD_MAP={12:'up',13:'down',14:'left',15:'right',0:'a',1:'b',3:'y',4:'lb',5:'rb'};let padHeld={},padSeen=false;
-function padPoll(now){if(window.PADHOLD){padHeld={};requestAnimationFrame(padPoll);return}const pads=navigator.getGamepads?[...navigator.getGamepads()].filter(Boolean):[];if(pads.length&&document.hasFocus()){if(!padSeen){padSeen=true;$('padHint').textContent='A / B / Y / LB / RB';}const p=pads[0],on={};for(const k in PAD_MAP)if(p.buttons[k]&&p.buttons[k].pressed)on[PAD_MAP[k]]=1;const x=p.axes[0]||0,y=p.axes[1]||0;if(x<-.6)on.left=1;if(x>.6)on.right=1;if(y<-.6)on.up=1;if(y>.6)on.down=1;for(const n in on){const h=padHeld[n];const move=['up','down','left','right'].includes(n);if(!h||(move&&now-h.t>(h.r?140:420))){padAction(n);padHeld[n]={t:now,r:!!h}}}for(const n in padHeld)if(!on[n])delete padHeld[n]}requestAnimationFrame(padPoll)}
+// The controller is read by Forkbay itself, with the controls of player 1 from the Controller page: A in
+// Forkbay is the button that is A in the games. The browser's own reading stays for a controller those
+// controls do not use. The controller is let go while a game runs and while Forkbay is not in front.
+const NAV_CTL={up:'button_dup',down:'button_ddown',left:'button_dleft',right:'button_dright',a:'button_a',b:'button_b',y:'button_y',lb:'button_l',rb:'button_r'};
+let NAVSTATES=null,navBusy=false,navAt=0,navCtlAt=0,navHeld=false;
+function navFree(){return document.hasFocus()&&!SESSION&&!OTHER&&!(window.NAVPAUSE>Date.now())}
+function navRead(now){if(navBusy||now-navAt<45)return;navBusy=true;navAt=now;
+  if(!CTL&&now-navCtlAt>5000){navCtlAt=now;call('controls_get').then(c=>{if(!CTL)CTL=c}).catch(()=>{})}
+  call('controls_states').then(s=>{NAVSTATES=navFree()?s:null;navHeld=true}).catch(()=>{NAVSTATES=null}).finally(()=>{navBusy=false})}
+function navRelease(){NAVSTATES=null;if(!navHeld)return;navHeld=false;if(!$('p-pad').classList.contains('on')||!document.hasFocus())call('controls_release').catch(()=>{})}
+// What player 1's controller presses now, or null when it is not plugged in or its controls are keys.
+function navFromSdl(){if(!CTL||!NAVSTATES||!NAVSTATES.length)return null;let T=CTL.players[0];if(T.type==4)T=CTL.players[8];const c=T.controls;
+  const sdl=t=>{const p=pParse(t);return p.engine=='sdl'&&NAVSTATES.some(x=>x.guid==p.guid&&x.port==Number(p.port||0))};
+  const stick=pParse(c.sticks.lstick).engine=='sdl'&&sdl(c.sticks.lstick);
+  if(!stick&&!Object.values(NAV_CTL).some(k=>sdl(c.buttons[k])))return null;
+  const on={};for(const n in NAV_CTL)if(sdl(c.buttons[NAV_CTL[n]])&&ctlActive(c.buttons[NAV_CTL[n]],NAVSTATES))on[n]=1;
+  const pos=stick?ctlStickPos(c.sticks.lstick,NAVSTATES):null;if(pos){if(pos[0]<-.6)on.left=1;if(pos[0]>.6)on.right=1;if(pos[1]>.6)on.up=1;if(pos[1]<-.6)on.down=1}return on}
+function navFromBrowser(){const pads=navigator.getGamepads?[...navigator.getGamepads()].filter(Boolean):[];if(!pads.length)return null;const p=pads[0],on={};for(const k in PAD_MAP)if(p.buttons[k]&&p.buttons[k].pressed)on[PAD_MAP[k]]=1;const x=p.axes[0]||0,y=p.axes[1]||0;if(x<-.6)on.left=1;if(x>.6)on.right=1;if(y<-.6)on.up=1;if(y>.6)on.down=1;return on}
+function padPoll(now){if(window.PADHOLD){padHeld={};requestAnimationFrame(padPoll);return}
+  if(navFree())navRead(now);else navRelease();
+  const on=document.hasFocus()?(navFromSdl()||navFromBrowser()):null;
+  if(on){if(!padSeen){padSeen=true;$('padHint').textContent='A / B / Y / L / R';}for(const n in on){const h=padHeld[n];const move=['up','down','left','right'].includes(n);if(!h||(move&&now-h.t>(h.r?140:420))){padAction(n);padHeld[n]={t:now,r:!!h}}}for(const n in padHeld)if(!on[n])delete padHeld[n]}else padHeld={};
+  requestAnimationFrame(padPoll)}
+// Controls changed in an emulator's own window are read again when Forkbay comes back in front.
+window.addEventListener('focus',()=>{if(!$('p-pad').classList.contains('on'))call('controls_get').then(c=>{CTL=c}).catch(()=>{})});
 requestAnimationFrame(padPoll);
 document.addEventListener('keydown',e=>{if(e.key=='F11'){e.preventDefault();return toggleFs()}if(e.key=='Escape'&&$('imgBox').style.display=='block')return closeBox();const t=e.target;if(t&&(t.tagName=='TEXTAREA'||(t.tagName=='INPUT'&&t.type!='checkbox'&&t.type!='radio')))return;const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[e.key];if(!m)return;if(t&&t.tagName=='SELECT'&&(m=='up'||m=='down')){e.preventDefault();return padMove(m)}e.preventDefault();padAction(m)});

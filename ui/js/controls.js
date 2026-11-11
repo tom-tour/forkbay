@@ -169,16 +169,16 @@ async function ctlCenter(id){const s=pParse(ctlPlayer().controls.sticks[id]);con
   const ox=Number(s.offset_x||0),oy=Number(s.offset_y||0);let x=st.axes[s.axis_x]||0,y=st.axes[s.axis_y]||0;if(Math.abs(ox)<0.5){x*=x>0?1+ox:1-ox;y*=y>0?1+oy:1-oy}s.offset_x=fl(-x+ox);s.offset_y=fl(-y+oy);ctlSet(id,pText(s))}
 
 // --- Controls lighting up while pressed ---
-function ctlLiveStart(){ctlLiveStop();CTLLIVE=setInterval(async()=>{if(!$('p-pad').classList.contains('on')||CTLCAP)return;try{CTLSTATES=await call('controls_states')}catch(e){CTLSTATES=[]}ctlRefreshLive()},70)}
+function ctlLiveStart(){ctlLiveStop();CTLLIVE=setInterval(async()=>{if(!$('p-pad').classList.contains('on')||CTLCAP||!document.hasFocus())return;try{CTLSTATES=await call('controls_states')}catch(e){CTLSTATES=[]}ctlRefreshLive()},70)}
 function ctlLiveStop(){if(CTLLIVE){clearInterval(CTLLIVE);CTLLIVE=null}}
-function ctlActive(t){const p=pParse(t);if(!p.engine)return false;let on=false;
+function ctlActive(t,states=CTLSTATES){const p=pParse(t);if(!p.engine)return false;let on=false;
   if(p.engine=='keyboard')on=CTLKEYS.has(Number(p.code));
-  else if(p.engine=='sdl'){const st=CTLSTATES.find(x=>x.guid==p.guid&&x.port==Number(p.port||0));if(!st)return false;
+  else if(p.engine=='sdl'){const st=states.find(x=>x.guid==p.guid&&x.port==Number(p.port||0));if(!st)return false;
     if(p.button!==undefined)on=!!st.buttons[p.button];
     else if(p.hat!==undefined)on=!!((st.hats[p.hat]||0)&({up:1,right:2,down:4,left:8}[p.direction]||0));
     else if(p.axis!==undefined){const v=(st.axes[p.axis]||0)*(p.invert=='-'?-1:1);on=v>Number(p.threshold??0.5)}}
   if(p.inverted=='1'||p.inverted=='true')on=!on;return on}
-function ctlStickPos(t){const p=pParse(t);if(p.engine=='analog_from_button'){const d=k=>ctlActive(p[k])?1:0;return[d('right')-d('left'),d('up')-d('down')]}if(p.engine!='sdl')return null;const st=CTLSTATES.find(x=>x.guid==p.guid&&x.port==Number(p.port||0));if(!st)return null;let x=(st.axes[p.axis_x]||0)+Number(p.offset_x||0),y=-((st.axes[p.axis_y]||0))+Number(p.offset_y||0);if(p.invert_x=='-')x=-x;if(p.invert_y=='-')y=-y;return[x,y]}
+function ctlStickPos(t,states=CTLSTATES){const p=pParse(t);if(p.engine=='analog_from_button'){const d=k=>ctlActive(p[k],states)?1:0;return[d('right')-d('left'),d('up')-d('down')]}if(p.engine!='sdl')return null;const st=states.find(x=>x.guid==p.guid&&x.port==Number(p.port||0));if(!st)return null;let x=(st.axes[p.axis_x]||0)+Number(p.offset_x||0),y=-((st.axes[p.axis_y]||0))+Number(p.offset_y||0);if(p.invert_x=='-')x=-x;if(p.invert_y=='-')y=-y;return[x,y]}
 function ctlRefreshLive(){const T=ctlPlayer();if(!T||CTLTAB=='adv')return;const c=T.controls;
   document.querySelectorAll('#ctl .bv').forEach(b=>{let on=false;if(b.dataset.k)on=ctlActive(c.buttons[b.dataset.k]);else if(b.dataset.s){const s=pParse(c.sticks[b.dataset.s]);if(b.dataset.d=='modifier')on=ctlActive(s.modifier);else{const pos=ctlStickPos(c.sticks[b.dataset.s]);if(pos){const[x,y]=pos;on={left:x<-0.5,right:x>0.5,up:y>0.5,down:y<-0.5}[b.dataset.d]}}}b.classList.toggle('live',!!on)});
   // The drawing: pressed parts light up, and the sticks move.

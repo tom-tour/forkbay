@@ -119,7 +119,7 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
         "selftest_crash" => { if std::env::var("FORKBAY_SELFTEST").is_ok() { panic!("test crash in {}", data_path().display()); } json!({}) }
         "quit" => std::process::exit(0),
         "finish_setup" => { let mut s = load_settings(); s.setup_done = true; save_settings(&s)?; json!({}) }
-        "play" => { std::process::Command::new(std::env::current_exe()?).arg("--launch").arg(game_arg(&s_arg(a, "file"))).spawn()?; json!({}) }
+        "play" => { crate::sdl::stop(); std::process::Command::new(std::env::current_exe()?).arg("--launch").arg(game_arg(&s_arg(a, "file"))).spawn()?; json!({}) }
         "open_emulator" => { std::process::Command::new(std::env::current_exe()?).arg("--open").arg(s_arg(a, "name")).spawn()?; json!({}) }
         "sources" => import::sources(),
         "inspect" => import::inspect(Path::new(&s_arg(a, "path")))?,
@@ -182,6 +182,7 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
             json!({})
         }
         "controls_poll" => controls::capture_poll()?,
+        "controls_release" => { crate::sdl::stop(); json!({}) }
         "controls_stop" => { controls::capture_stop()?; json!({}) }
         "profile_save" => { controls::save_profile(&s_arg(a, "name"), p_arg(a)?, a["new"].as_bool().unwrap_or(false))?; json!({}) }
         "profile_load" => { controls::load_profile(&s_arg(a, "name"), p_arg(a)?)?; json!({}) }
