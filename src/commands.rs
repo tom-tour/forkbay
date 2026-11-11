@@ -182,6 +182,7 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
             json!({})
         }
         "controls_poll" => controls::capture_poll()?,
+        "controls_nav_device" => { controls::nav_device(&a["device"])?; json!({}) }
         "controls_nav" => { controls::set_nav(&a["controls"])?; json!({}) }
         "controls_release" => { crate::sdl::stop(); json!({}) }
         "controls_stop" => { controls::capture_stop()?; json!({}) }

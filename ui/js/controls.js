@@ -94,13 +94,19 @@ function ctlPlayerHtml(){const P=CTL.players[CTLTAB],T=ctlPlayer(),c=T.controls,
   return top+`<div class="ctlpad${hasL&&hasR?'':' two'}">${hasL?`<div class="ctlside">${colL}</div>`:''}${center}${hasR?`<div class="ctlside">${colR}</div>`:''}</div>`+bottom}
 
 function ctlNavHtml(){const c=ctlPlayer().controls,own=!!CTL.nav,dis=own?'':' disabled';
+  // Forkbay reads controllers only: the keyboard has its arrow keys.
+  const dev=deviceOf(c);const devs=CTLDEV.map(d=>['pad:'+d.guid+':'+d.port+(d.guid2?':'+d.guid2:''),d.name]);if(dev.startsWith('pad:')&&!devs.some(d=>d[0]==dev))devs.push([dev,'Manette débranchée']);
   const b=(label,name)=>`<div class="bind${own?'':' off'}"><span class="bl">${label}</span><button class="bv" data-k="${name}"${dis} onclick="ctlCapture(this)">${bindHtml(c.buttons[name])}</button></div>`;
   return`<div class="card"><h2 style="margin:0 0 6px">Manette dans Forkbay</h2><p class="muted small">Les boutons qui servent à te déplacer dans Forkbay. Ils restent dans Forkbay : les émulateurs ne les voient pas, et tes contrôles de jeu ne changent pas.</p>
-   <label class="check" style="margin-top:10px"><input type="checkbox" ${own?'':'checked'} onchange="ctlNavFollow(this.checked)"> <span>Mêmes boutons que le joueur 1</span></label><input type="hidden" id="ctlDev" value="pads"></div>
+   <div class="row wrap" style="gap:14px;align-items:flex-end;margin-top:10px"><label class="check"><input type="checkbox" ${own?'':'checked'} onchange="ctlNavFollow(this.checked)"> <span>Mêmes boutons que le joueur 1</span></label>
+   <div style="flex:1 1 220px"><p class="muted small">Manette utilisée</p><select id="ctlDev"${dis} onchange="ctlNavDevice(this.value)"><option value="pads" ${devs.some(d=>d[0]==dev)?'':'selected'}>Non choisie</option>${devs.map(([v,n])=>`<option value="${attr(v)}" ${v==dev?'selected':''} translate="no">${esc(n)}</option>`).join('')}</select></div>
+   <button class="btn"${dis} onclick="ctlNavDefaults()">Valeurs par défaut</button></div>${CTLDEV.length?'':'<p class="muted small" style="margin-top:10px">Aucune manette détectée : branche-la, elle apparaîtra ici.</p>'}</div>
   <div class="ctlpad two"><div class="ctlside"><div class="grp ctlg"><h3>Se déplacer</h3>${b('Haut','button_dup')}${b('Bas','button_ddown')}${b('Gauche','button_dleft')}${b('Droite','button_dright')}<div class="bind${own?'':' off'}"><span class="bl">Stick</span><button class="bv" data-s="lstick" data-d="up"${dis} onclick="ctlCapture(this)">${stickHtml(c.sticks.lstick,'up')}</button></div></div></div>
    <div class="ctlside"><div class="grp ctlg"><h3>Boutons</h3>${b('Valider','button_a')}${b('Retour','button_b')}${b('Fiche du jeu','button_y')}${b('Page précédente','button_l')}${b('Page suivante','button_r')}</div></div></div>
   <div class="card" style="margin-top:14px"><p class="muted small">Sur une liste de choix, appuie sur Valider pour l'ouvrir, puis sur gauche ou droite pour choisir. Valider garde le choix, Retour l'annule.</p></div>`}
 async function ctlNavFollow(same){await ctlDo('controls_nav',{controls:same?null:navMap()})}
+async function ctlNavDevice(v){const [kind,guid,port,guid2]=v.split(':');if(kind!='pad')return;if(await ctlDo('controls_nav_device',{device:{guid,port:Number(port),guid2}}))toast('Touches remplies.')}
+function ctlNavDefaults(){const v=$('ctlDev').value;if(!v.startsWith('pad:'))return toast("Choisis d'abord la manette utilisée.",true);ctlNavDevice(v)}
 
 function ctlAdvanced(){const a=CTL.advanced;const row=(k,t,d)=>`<div class="set"><div class="l"><b>${t}</b>${d?`<p class="muted small">${d}</p>`:''}</div><div class="v"><input type="checkbox" ${a[k]?'checked':''} onchange="ctlAdv('${k}',this.checked)"></div></div>`;
   return`<div class="card"><h2>Console</h2><div class="set"><div class="l"><b>Mode de la console</b><p class="muted small">Le mode portable va avec le type de manette « Portable » du joueur 1.</p></div><div class="v"><div class="seg small"><button class="${CTL.docked?'on':''}" onclick="ctlDocked(true)">TV</button><button class="${CTL.docked?'':'on'}" onclick="ctlDocked(false)">Portable</button></div></div></div></div>

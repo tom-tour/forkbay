@@ -428,6 +428,19 @@ pub fn set_nav(controls: &Value) -> Result<()> {
     crate::core::save_settings(&s)
 }
 
+/// Forkbay's own controls filled from a controller, as choosing it fills a player's.
+pub fn nav_device(device: &Value) -> Result<()> {
+    let guid = device["guid"].as_str().ok_or_else(|| anyhow!("Manette inconnue."))?.to_string();
+    let port = device["port"].as_u64().unwrap_or(0) as usize;
+    let guid2 = device["guid2"].as_str().map(str::to_string);
+    let mapping = sdl::call(options(), move |s| s.defaults(&guid, port, guid2.as_deref()))??;
+    let controls: serde_json::Map<String, Value> = NAV.iter().map(|n| {
+        let group = if *n == "lstick" { "sticks" } else { "buttons" };
+        (n.to_string(), json!(mapping[group][*n].as_str().unwrap_or("[empty]")))
+    }).collect();
+    set_nav(&Value::Object(controls))
+}
+
 // --- Controllers ---
 
 pub fn devices() -> Result<Value> {
