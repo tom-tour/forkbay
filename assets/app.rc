@@ -4,8 +4,8 @@
 1 24 "app.manifest"
 
 1 VERSIONINFO
-FILEVERSION 0,14,0,0
-PRODUCTVERSION 0,14,0,0
+FILEVERSION 0,15,0,0
+PRODUCTVERSION 0,15,0,0
 FILEOS VOS_NT_WINDOWS32
 FILETYPE VFT_APP
 BEGIN
@@ -17,8 +17,8 @@ BEGIN
       VALUE "FileDescription", "NX2 Launcher - Switch 2 emulator manager"
       VALUE "InternalName", "NX2 Launcher"
       VALUE "ProductName", "NX2 Launcher"
-      VALUE "FileVersion", "0.14.0"
-      VALUE "ProductVersion", "0.14.0"
+      VALUE "FileVersion", "0.15.0"
+      VALUE "ProductVersion", "0.15.0"
       VALUE "OriginalFilename", "NX2 Launcher.exe"
       VALUE "LegalCopyright", "Copyright (C) 2026 tom-tour. GPL-3.0-or-later."
     END
