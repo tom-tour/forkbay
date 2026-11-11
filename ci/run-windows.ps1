@@ -26,6 +26,7 @@ $r = App $rootA 'state'; Check 'state' ($r.ok -and $r.value.games.Count -eq 1) (
 New-Item -ItemType Directory -Force "$rootA\Manager" | Out-Null; [IO.File]::WriteAllText("$rootA\Manager\playtime.json", '{"0400000000000000":{"seconds":3700,"last":1700000000}}')
 $r = App $rootA 'state'; Check 'play time read by program id' ($r.value.games[0].played -eq 3700 -and $r.value.games[0].last -eq 1700000000) ($r.value.games | ConvertTo-Json -Compress)
 Remove-Item "$rootA\Manager\playtime.json"
+$r = App $rootA 'game_reports' @{ file = 'Test Game [0400000000000000].nup' }; Check 'report form filled in' ($r.ok -and $r.value.form.StartsWith('https://github.com/tom-tour/forkbay-compat/issues/new?template=report.yml&') -and $r.value.form.Contains('title_id=0400000000000000') -and $r.value.site.Contains('#/find/0400000000000000/')) ($r | ConvertTo-Json -Compress -Depth 4)
 Check 'wizard pending' (-not $r.value.setupDone)
 Check 'no keys yet' (-not $r.value.keys)
 

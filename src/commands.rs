@@ -145,6 +145,13 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
             msg(art::fetch(art::Choice { kinds, source, replace, file: s_arg(a, "file") })?)
         }
         "game_images" => art::images(&s_arg(a, "file")),
+        "game_reports" => {
+            let file = s_arg(a, "file");
+            let emulator = game_emulator(&load_settings(), &file);
+            let (played, _) = crate::playtime::Times::read().of(&file);
+            let name = display_name(&file);
+            reports::game(&reports::Setup { name: &name, id: config::game_id(&file), emulator: &emulator, build: &emu::installed(&emulator), played })
+        }
         "remove_image" => { art::remove_image(&s_arg(a, "file"), &s_arg(a, "kind"))?; json!({}) }
         "emu_settings_get" => config::get(),
         "emu_settings_set" => { config::set(&s_arg(a, "key"), a["value"].as_u64().ok_or_else(|| anyhow!("Valeur refusée."))?)?; json!({}) }

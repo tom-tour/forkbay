@@ -141,7 +141,7 @@ pub fn any_running() -> bool {
     running_processes().iter().any(|p| names.iter().any(|n| p == n || (n.len() > 15 && n.starts_with(p.as_str()))))
 }
 
-fn installed(name: &str) -> String {
+pub(crate) fn installed(name: &str) -> String {
     fs::read_to_string(root().join(name).join("version.txt")).map(|s| s.trim().to_string()).unwrap_or_default()
 }
 

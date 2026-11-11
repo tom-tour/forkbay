@@ -634,7 +634,24 @@
   "Dernière partie": "Last played",
   "Temps de jeu": "Play time",
   "Rechercher un jeu": "Search games",
-  "Aucun jeu ne correspond à ta recherche.": "No game matches your search."
+  "Aucun jeu ne correspond à ta recherche.": "No game matches your search.",
+  "Rapports": "Reports",
+  "Lecture des rapports…": "Reading the reports…",
+  "Ton rapport": "Your report",
+  "Dis comment ce jeu tourne chez toi. Forkbay remplit le formulaire : jeu, émulateur et version, carte graphique, système et temps de jeu. Tu vérifies, tu choisis le résultat et tu envoies. Il faut un compte GitHub.": "Tell how this game runs for you. Forkbay fills in the form: game, emulator and version, graphics card, system and play time. You check it, pick the result and send it. A GitHub account is needed.",
+  "Envoyer un rapport": "Send a report",
+  "Voir les rapports de toutes les sources": "See the reports from every source",
+  "Le site de rapports de Lichii ne connaît pas ce jeu.": "The Lichii report site does not know this game.",
+  "Rapports Lichii": "Lichii reports",
+  "Meilleur résultat :": "Best result:",
+  "Seulement ma marque de carte graphique": "Only my graphics card brand",
+  "Aucun rapport récent.": "No recent report.",
+  "Tous les rapports de ce jeu sur le site de Lichii": "All of this game's reports on the Lichii site",
+  "Parfait": "Perfect",
+  "Jouable": "Playable",
+  "Tourne": "Runs",
+  "Se lance": "Loads",
+  "Injouable": "Unplayable"
  },
  "uiPatterns": [
   [
@@ -777,6 +794,10 @@
   [
    "^il y a (\\d+) jours$",
    "$1 days ago"
+  ],
+  [
+   "^(\\d+) rapport\\(s\\) de joueurs sur le site de Lichii\\.$",
+   "$1 player report(s) on the Lichii site."
   ]
  ],
  "messages": [
@@ -1451,6 +1472,10 @@
   [
    "^Ce raccourci sert déjà à une autre action\\.$",
    "This shortcut is already used by another action."
+  ],
+  [
+   "^Le site de rapports de Lichii ne répond pas : (.*)$",
+   "The Lichii report site does not answer: $1"
   ]
  ],
  "categories": {

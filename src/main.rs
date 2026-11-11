@@ -20,6 +20,7 @@ mod params;
 mod controls;
 mod hotkeys;
 mod playtime;
+mod reports;
 mod sdl;
 mod report;
 mod setup;
