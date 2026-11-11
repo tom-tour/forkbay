@@ -69,7 +69,7 @@ fn default_of(name: &str) -> String {
     String::new()
 }
 
-fn common_path() -> PathBuf {
+pub(crate) fn common_path() -> PathBuf {
     data_path().join("config").join("qt-config.ini")
 }
 
@@ -101,7 +101,7 @@ fn binding(lines: &[String], key: &str, name: &str) -> String {
     setting(lines, key).filter(|v| !v.is_empty()).unwrap_or_else(|| default_of(name))
 }
 
-fn quote(v: &str) -> String {
+pub(crate) fn quote(v: &str) -> String {
     if v.contains(SPECIAL) { format!("\"{v}\"") } else { v.to_string() }
 }
 

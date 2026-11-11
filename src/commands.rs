@@ -163,6 +163,9 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
         "controls_vibration" => { controls::set_vibration(p_arg(a)?, a["on"].as_bool(), a["strength"].as_u64().map(|v| v as u32))?; json!({}) }
         "controls_advanced" => { controls::set_advanced(&s_arg(a, "key"), a["on"].as_bool().unwrap_or(false))?; json!({}) }
         "controls_docked" => { controls::set_docked(a["on"].as_bool().unwrap_or(true))?; json!({}) }
+        "hotkeys_get" => hotkeys::get(),
+        "hotkeys_set" => { hotkeys::set(&s_arg(a, "id"), &s_arg(a, "field"), &s_arg(a, "value"))?; json!({}) }
+        "hotkeys_reset" => { hotkeys::reset()?; json!({}) }
         "controls_clear" => { controls::clear(p_arg(a)?)?; json!({}) }
         "controls_device" => { controls::use_device(p_arg(a)?, &a["device"])?; json!({}) }
         "controls_capture" => {

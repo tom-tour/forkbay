@@ -592,7 +592,39 @@
   "Inverser l'axe": "Invert axis",
   "Naviguer dans les menus de l'émulateur à la manette": "Navigate the emulator's menus with the controller",
   "Pilote Joy-Con de l'émulateur": "Emulator's Joy-Con driver",
-  "Pilote Pro Controller de l'émulateur": "Emulator's Pro Controller driver"
+  "Pilote Pro Controller de l'émulateur": "Emulator's Pro Controller driver",
+  "Raccourcis": "Shortcuts",
+  "Pendant la partie": "During a game",
+  "Pause et reprise": "Pause and resume",
+  "Mode TV ou portable": "TV or handheld mode",
+  "Couper ou remettre le son": "Mute or unmute",
+  "Baisser le volume": "Volume down",
+  "Monter le volume": "Volume up",
+  "Capture d'écran": "Screenshot",
+  "Infos de performance": "Performance info",
+  "Vitesse": "Speed",
+  "Coupée, le jeu tourne aussi vite que le PC le permet.": "When off, the game runs as fast as the PC allows.",
+  "Vitesse turbo": "Turbo speed",
+  "Vitesse lente": "Slow speed",
+  "Plein écran": "Fullscreen",
+  "Quitter le plein écran": "Leave fullscreen",
+  "Changer le filtre d'image": "Change the image filter",
+  "Changer la précision GPU": "Change GPU accuracy",
+  "Jeu": "Game",
+  "Pas dans tous les émulateurs.": "Not in every emulator.",
+  "Redémarrer le jeu": "Restart the game",
+  "Arrêter le jeu": "Stop the game",
+  "Quitter l'émulateur": "Quit the emulator",
+  "Clic du stick gauche": "Left stick click",
+  "Clic du stick droit": "Right stick click",
+  "non réglé": "not set",
+  "Appuie sur la combinaison…": "Press the combination…",
+  "Appuie sur une touche…": "Press a key…",
+  "Lecture des raccourcis…": "Reading the shortcuts…",
+  "Tout remettre par défaut": "Reset all to default",
+  "Raccourcis remis par défaut.": "Shortcuts reset to default.",
+  "Les mêmes dans tous les émulateurs. Les combinaisons de boutons marchent pendant une partie, avec la manette du joueur 1.": "The same in every emulator. Button combinations work during a game, on player 1's controller.",
+  "Sur une manette Xbox, HOME est le bouton Xbox. Si la Game Bar de Windows s'ouvre, coupe son ouverture par ce bouton dans les paramètres de Windows.": "On an Xbox controller, HOME is the Xbox button. If the Windows Game Bar opens, turn off opening it with this button in the Windows settings."
  },
  "uiPatterns": [
   [
@@ -1389,6 +1421,22 @@
   [
    "^SDL : (.+)$",
    "SDL: $1"
+  ],
+  [
+   "^Raccourci inconnu\\.$",
+   "Unknown shortcut."
+  ],
+  [
+   "^Combinaison de boutons inconnue\\.$",
+   "Unknown button combination."
+  ],
+  [
+   "^Touche inconnue\\.$",
+   "Unknown key."
+  ],
+  [
+   "^Ce raccourci sert déjà à une autre action\\.$",
+   "This shortcut is already used by another action."
   ]
  ],
  "categories": {

@@ -273,10 +273,18 @@ $r = App $rootG 'game_profile_set' @{ file = 'Run Game [0400000000000002].nup'; 
 $r = App $rootG 'game_profiles' @{ file = 'Run Game [0400000000000002].nup' }; Check 'game profile read back' ($r.value.players[0] -eq 'Salon' -and $r.value.players[1] -eq '')
 $r = App $rootG 'game_profile_set' @{ file = 'Run Game [0400000000000002].nup'; player = 0; name = '' }; $t = [IO.File]::ReadAllText($gc); Check 'game follows the common controls again' ($r.ok -and -not $t.Contains('player_0_')) $t
 $r = App $rootG 'profile_delete' @{ name = 'Salon' }; Check 'profile deleted' ($r.ok -and -not (Test-Path $pf))
+"-- shortcuts"
+$r = App $rootG 'hotkeys_get'; $h = @($r.value.list) | Where-Object { $_.id -eq 'Change Docked Mode' }; Check 'shortcuts read with the emulators defaults' ($r.ok -and $h.key -eq 'F10' -and $h.pad -eq 'Home+X') ($r | ConvertTo-Json -Compress -Depth 4)
+$r = App $rootG 'hotkeys_set' @{ id = 'Change Docked Mode'; field = 'pad'; value = 'Home+ZR' }; $t = [IO.File]::ReadAllText($ini); Check 'shortcut written like the emulators' ($r.ok -and $t.Contains("Shortcuts\Main%20Window\Change%20Docked%20Mode\Controller_KeySeq=Home+ZR") -and $t.Contains("Shortcuts\Main%20Window\Change%20Docked%20Mode\Controller_KeySeq\default=false")) $r.error
+$r = App $rootG 'hotkeys_set' @{ id = 'Exit Eglantine'; field = 'key'; value = 'Ctrl+=' }; $t = [IO.File]::ReadAllText($ini); Check 'quit written under every emulator name, quoted' ($r.ok -and $t.Contains("Shortcuts\Main%20Window\Exit%20Eglantine\KeySeq=`"Ctrl+=`"") -and $t.Contains("Shortcuts\Main%20Window\Exit%20Orchid\KeySeq=`"Ctrl+=`"")) $r.error
+$r = App $rootG 'hotkeys_set' @{ id = 'Fullscreen'; field = 'pad'; value = 'ZR+Home' }; Check 'shortcut already used refused' (-not $r.ok)
+$r = App $rootG 'hotkeys_set' @{ id = 'Fullscreen'; field = 'pad'; value = 'Home+Start' }; Check 'unknown button refused' (-not $r.ok)
+$r = App $rootG 'hotkeys_reset'; $r = App $rootG 'hotkeys_get'; $h = @($r.value.list) | Where-Object { $_.id -eq 'Change Docked Mode' }; $t = [IO.File]::ReadAllText($ini); Check 'shortcuts back to default' ($r.ok -and $h.pad -eq 'Home+X' -and $t.Contains("Shortcuts\Main%20Window\Change%20Docked%20Mode\Controller_KeySeq\default=true"))
 $p = StartG; Check 'running game known' ($s.value.session.file -like 'Run Game*' -and $s.value.session.emu -eq 'Fritchii') ($s | ConvertTo-Json -Compress -Depth 3)
 $t = Get-Content $ini -Raw; Check 'emulator update prompt turned off' ($t -match '(?m)^check_for_updates=false' -and $t -match '(?m)^other=keep') $t
 $r = App $rootG 'emu_settings_set' @{ key = 'language_index'; value = 3 }; Check 'settings refused while an emulator is open' (-not $r.ok)
 $r = App $rootG 'controls_set' @{ player = 0; name = 'button_a'; value = 'engine:keyboard,code:75,toggle:0' }; Check 'controls refused while an emulator is open' (-not $r.ok)
+$r = App $rootG 'hotkeys_set' @{ id = 'Fullscreen'; field = 'key'; value = 'F12' }; Check 'shortcuts refused while an emulator is open' (-not $r.ok)
 $r = App $rootG 'game_close' @{ force = $false }; Check 'close requested' $r.ok $r.error; Check 'game closed normally' (StopWait $p); $s = App $rootG 'game_session'; Check 'session ended' (-not $s.value.session)
 $p = StartG; $r = App $rootG 'game_close' @{ force = $true }; Check 'forced close' ($r.ok -and (StopWait $p)) $r.error
 $r = App $rootG 'game_close' @{ force = $true }; Check 'nothing to close' (-not $r.ok)

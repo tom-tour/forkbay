@@ -37,15 +37,15 @@ const GC=t=>t==5;
 
 function ctlPlayer(){if(!CTL)return null;const p=CTL.players[CTLTAB];return CTLTAB==0&&p.type==4?CTL.players[8]:p}
 
-async function loadControls(){const el=$('ctl');if(!el)return;try{[CTL,CTLDEV]=await Promise.all([call('controls_get'),call('controls_devices').catch(()=>[])])}catch(e){el.innerHTML=`<div class="card">${esc(e.message)}</div>`;return}renderControls();ctlLiveStart()}
-function stopControls(){ctlLiveStop();ctlCancel();ctlCloseMenu()}
+async function loadControls(){const el=$('ctl');if(!el)return;HK=null;try{[CTL,CTLDEV]=await Promise.all([call('controls_get'),call('controls_devices').catch(()=>[])])}catch(e){el.innerHTML=`<div class="card">${esc(e.message)}</div>`;return}renderControls();ctlLiveStart()}
+function stopControls(){ctlLiveStop();ctlCancel();ctlCloseMenu();if(HKCAP){HKCAP=null;window.PADHOLD=false}}
 
-function ctlTabs(){return`<div class="tabs ctltabs" id="ctlTabs">${[0,1,2,3,4,5,6,7].map(i=>`<button class="${CTLTAB===i?'on':''}${CTL.players[i==0&&CTL.players[0].type==4?8:i].connected?'':' off'}" onclick="ctlTab(${i})"><span>Joueur</span> ${i+1}</button>`).join('')}<button class="${CTLTAB=='adv'?'on':''}" onclick="ctlTab('adv')">Avancé</button></div>`}
-function ctlTab(t){ctlCancel();CTLTAB=t;renderControls()}
+function ctlTabs(){return`<div class="tabs ctltabs" id="ctlTabs">${[0,1,2,3,4,5,6,7].map(i=>`<button class="${CTLTAB===i?'on':''}${CTL.players[i==0&&CTL.players[0].type==4?8:i].connected?'':' off'}" onclick="ctlTab(${i})"><span>Joueur</span> ${i+1}</button>`).join('')}<button class="${CTLTAB=='adv'?'on':''}" onclick="ctlTab('adv')">Avancé</button><button class="${CTLTAB=='keys'?'on':''}" onclick="ctlTab('keys')">Raccourcis</button></div>`}
+function ctlTab(t){ctlCancel();if(HKCAP)HKCAP=null,window.PADHOLD=false;CTLTAB=t;renderControls()}
 
 function renderControls(){const el=$('ctl');if(!el||!CTL)return;ctlCloseMenu();
   const warn=CTL.running?'<div class="card" style="margin-bottom:14px"><b>Un émulateur est ouvert.</b><p class="muted small">Ferme-le avant de changer tes contrôles : il les remplacerait par les siens en se fermant.</p></div>':'';
-  el.innerHTML=warn+ctlTabs()+(CTLTAB=='adv'?ctlAdvanced():ctlPlayerHtml());ctlRefreshLive()}
+  el.innerHTML=warn+ctlTabs()+(CTLTAB=='adv'?ctlAdvanced():CTLTAB=='keys'?ctlHotkeys():ctlPlayerHtml());ctlRefreshLive()}
 
 function deviceOf(c){const seen=new Map();const add=t=>{const p=pParse(t);if(!p.engine||p.engine=='analog_from_button'){for(const d of['up','down','left','right','modifier'])if(p[d])add(p[d]);return}if(p.engine=='keyboard'||p.engine=='mouse'){seen.set('kb','kb');return}if(p.guid)seen.set(p.engine+p.guid+':'+(p.port||0),{guid:p.guid,port:Number(p.port||0)})};
   for(const g of['buttons','sticks','motions'])for(const k in c[g])if(!(g=='motions'&&pParse(c[g][k]).engine=='keyboard'))add(c[g][k]);
@@ -184,6 +184,44 @@ function ctlRefreshLive(){const T=ctlPlayer();if(!T||CTLTAB=='adv')return;const 
   // The drawing: pressed parts light up, and the sticks move.
   document.querySelectorAll('#ctl .padart [data-k]').forEach(e=>e.classList.toggle('live',ctlActive(c.buttons[e.dataset.k])));
   document.querySelectorAll('#ctl .padart [data-s]').forEach(e=>{const pos=ctlStickPos(c.sticks[e.dataset.s])||[0,0];const cap=e.querySelector('.cap');if(cap)cap.setAttribute('transform',`translate(${Math.max(-1,Math.min(1,pos[0]))*9} ${-Math.max(-1,Math.min(1,pos[1]))*9})`);e.classList.toggle('live',Math.hypot(pos[0],pos[1])>0.5)})}
+
+// --- Shortcuts, the same in every emulator (ConfigureHotkeys, ControllerShortcut) ---
+let HK=null,HKCAP=null;
+const HK_GROUPS=[['Pendant la partie',[['Continue/Pause Emulation','Pause et reprise'],['Change Docked Mode','Mode TV ou portable'],['Audio Mute/Unmute','Couper ou remettre le son'],['Audio Volume Down','Baisser le volume'],['Audio Volume Up','Monter le volume'],['Capture Screenshot','Capture d\'écran'],['Toggle Performance Overlay','Infos de performance']]],
+  ['Vitesse',[['Toggle Framerate Limit','Limite de vitesse','Coupée, le jeu tourne aussi vite que le PC le permet.'],['Toggle Turbo Speed','Vitesse turbo'],['Toggle Slow Speed','Vitesse lente']]],
+  ['Image',[['Fullscreen','Plein écran'],['Exit Fullscreen','Quitter le plein écran'],['Change Adapting Filter','Changer le filtre d\'image'],['Change GPU Mode','Changer la précision GPU']]],
+  ['Jeu',[['Load/Remove Amiibo','Amiibo','Pas dans tous les émulateurs.'],['Restart Emulation','Redémarrer le jeu'],['Stop Emulation','Arrêter le jeu'],['Exit Eglantine','Quitter l\'émulateur']]]];
+// The order the emulators write a combination in, and the control of player 1 behind each button.
+const HK_ORDER=['Home','Screenshot','L','R','ZL','ZR','Plus','Minus','A','B','X','Y','Dpad_Up','Dpad_Down','Dpad_Left','Dpad_Right','Left_Stick','Right_Stick'];
+const HK_CTL={A:'button_a',B:'button_b',X:'button_x',Y:'button_y',L:'button_l',R:'button_r',ZL:'button_zl',ZR:'button_zr',Dpad_Left:'button_dleft',Dpad_Right:'button_dright',Dpad_Up:'button_dup',Dpad_Down:'button_ddown',Left_Stick:'button_lstick',Right_Stick:'button_rstick',Minus:'button_minus',Plus:'button_plus',Home:'button_home',Screenshot:'button_screenshot'};
+const HK_KEYS={Esc:'Échap',Del:'Suppr',Ins:'Inser',Space:'Espace',Return:'Entrée',Enter:'Entrée (pavé)',PgUp:'Page préc.',PgDown:'Page suiv.',Shift:'Maj',Left:'Gauche',Right:'Droite',Up:'Haut',Down:'Bas',Home:'Début',End:'Fin',Backspace:'Retour arrière'};
+function hkParts(s){if(!s)return[];if(s=='+')return['+'];return s.endsWith('++')?[...s.slice(0,-2).split('+'),'+']:s.split('+')}
+function hkPadName(b){const d={Dpad_Up:'↑',Dpad_Down:'↓',Dpad_Left:'←',Dpad_Right:'→'}[b];if(d)return`<span>Croix</span> <span translate="no">${d}</span>`;
+  const t={Left_Stick:'Clic du stick gauche',Right_Stick:'Clic du stick droit',Screenshot:'Capture'}[b];if(t)return`<span>${t}</span>`;return`<span translate="no">${esc({Plus:'+',Minus:'−',Home:'HOME'}[b]||b)}</span>`}
+function hkHtml(v,f){const ps=hkParts(v);if(!ps.length)return'<span>non réglé</span>';return ps.map(p=>f=='pad'?hkPadName(p):HK_KEYS[p]?`<span>${HK_KEYS[p]}</span>`:`<span translate="no">${esc(p)}</span>`).join(' <span class="muted" translate="no">+</span> ')}
+async function hkLoad(){try{HK=await call('hotkeys_get')}catch(e){HK={error:e.message}}if(CTLTAB=='keys')renderControls()}
+function ctlHotkeys(){if(!HK){hkLoad();return'<div class="card muted">Lecture des raccourcis…</div>'}if(HK.error)return`<div class="card">${esc(HK.error)}</div>`;
+  const by=Object.fromEntries(HK.list.map(h=>[h.id,h]));
+  const btn=(h,f)=>`<button class="hkb${HKCAP&&HKCAP.id==h.id&&HKCAP.f==f?' wait':''}${h[f]!=h[f+'Default']?' own':''}" data-id="${attr(h.id)}" data-f="${f}" onclick="hkCapture(this)">${HKCAP&&HKCAP.id==h.id&&HKCAP.f==f?`<span>${f=='pad'?'Appuie sur la combinaison…':'Appuie sur une touche…'}</span>`:hkHtml(h[f],f)}</button><button class="bm" title="Effacer" data-id="${attr(h.id)}" data-f="${f}" onclick="hkSet(this.dataset.id,this.dataset.f,'')" ${h[f]?'':'disabled'}>×</button>`;
+  const row=([id,t,d])=>{const h=by[id];if(!h)return'';return`<div class="set hk"><div class="l"><b>${t}</b>${d?`<p class="muted small">${d}</p>`:''}</div><div class="v"><div class="hkc">${btn(h,'key')}</div><div class="hkc">${btn(h,'pad')}</div></div></div>`};
+  const head='<div class="set hk hkhead"><div class="l"></div><div class="v"><div class="hkc muted small">Clavier</div><div class="hkc muted small">Manette</div></div></div>';
+  return`<div class="card"><div class="row wrap" style="justify-content:space-between;gap:12px;align-items:flex-start"><div style="flex:1 1 320px"><h2 style="margin:0 0 6px">Raccourcis</h2><p class="muted small">Les mêmes dans tous les émulateurs. Les combinaisons de boutons marchent pendant une partie, avec la manette du joueur 1.</p><p class="muted small">Sur une manette Xbox, HOME est le bouton Xbox. Si la Game Bar de Windows s'ouvre, coupe son ouverture par ce bouton dans les paramètres de Windows.</p></div><button class="btn" onclick="hkReset()">Tout remettre par défaut</button></div></div>
+  <div class="cfgCards hkcards">${HK_GROUPS.map(([g,rows],i)=>`<div class="card" style="margin-top:14px"><h2>${g}</h2>${head}${rows.map(row).join('')}</div>`).join('')}</div>`}
+async function hkSet(id,field,value){if(await act('hotkeys_set',{id,field,value}))await hkLoad()}
+async function hkReset(){if(await act('hotkeys_reset')){toast('Raccourcis remis par défaut.');await hkLoad()}}
+async function hkCapture(el){if(CTL.running)return toast('Ferme d\'abord l\'émulateur.',true);if(HKCAP){const same=HKCAP.id==el.dataset.id&&HKCAP.f==el.dataset.f;hkStop();if(same)return}
+  HKCAP={id:el.dataset.id,f:el.dataset.f,until:Date.now()+6000,held:[],seen:false};window.PADHOLD=true;ctlLiveStop();renderControls();
+  if(HKCAP.f=='pad')hkPoll();else setTimeout(()=>{if(HKCAP&&Date.now()>HKCAP.until-100)hkStop()},6000)}
+function hkStop(){HKCAP=null;window.PADHOLD=false;renderControls();ctlLiveStart()}
+async function hkPoll(){const cap=HKCAP,c=CTL.players[0].controls.buttons;
+  while(HKCAP===cap){if(Date.now()>cap.until)return hkStop();try{CTLSTATES=await call('controls_states')}catch(e){CTLSTATES=[]}if(HKCAP!==cap)return;
+    const on=HK_ORDER.filter(b=>ctlActive(c[HK_CTL[b]]));
+    if(on.length){cap.seen=true;for(const b of on)if(!cap.held.includes(b)&&cap.held.length<4)cap.held.push(b)}
+    else if(cap.seen){const v=HK_ORDER.filter(b=>cap.held.includes(b)).join('+');HKCAP=null;window.PADHOLD=false;ctlLiveStart();return hkSet(cap.id,'pad',v)}
+    await new Promise(f=>setTimeout(f,40))}}
+function hkKeyName(e){const m={Escape:'Esc',Tab:'Tab',Backspace:'Backspace',Enter:e.location==3?'Enter':'Return',Insert:'Ins',Delete:'Del',Home:'Home',End:'End',PageUp:'PgUp',PageDown:'PgDown',ArrowLeft:'Left',ArrowUp:'Up',ArrowRight:'Right',ArrowDown:'Down',' ':'Space'};if(m[e.key])return m[e.key];if(/^F\d{1,2}$/.test(e.key))return e.key;if(e.key.length==1)return e.key.toUpperCase();return''}
+document.addEventListener('keydown',e=>{if(!HKCAP||HKCAP.f!='key')return;e.preventDefault();e.stopImmediatePropagation();const k=hkKeyName(e);if(!k)return;
+  const v=[e.ctrlKey&&'Ctrl',e.altKey&&'Alt',e.shiftKey&&'Shift',k].filter(Boolean).join('+');const cap=HKCAP;HKCAP=null;window.PADHOLD=false;ctlLiveStart();hkSet(cap.id,'key',v)},true);
 
 // --- A game's own profiles (ConfigureInputPerGame) ---
 async function loadGameCtl(){const el=$('gameCtl');if(!el)return;let g;try{g=await call('game_profiles',{file:IMGFILE})}catch(e){el.innerHTML='';return}

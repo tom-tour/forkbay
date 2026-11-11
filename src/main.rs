@@ -18,6 +18,7 @@ mod log;
 mod net;
 mod params;
 mod controls;
+mod hotkeys;
 mod sdl;
 mod report;
 mod setup;
