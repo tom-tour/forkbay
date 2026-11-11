@@ -624,7 +624,13 @@
   "Tout remettre par défaut": "Reset all to default",
   "Raccourcis remis par défaut.": "Shortcuts reset to default.",
   "Les mêmes dans tous les émulateurs. Les combinaisons de boutons marchent pendant une partie, avec la manette du joueur 1.": "The same in every emulator. Button combinations work during a game, on player 1's controller.",
-  "Sur une manette Xbox, HOME est le bouton Xbox. Si la Game Bar de Windows s'ouvre, coupe son ouverture par ce bouton dans les paramètres de Windows.": "On an Xbox controller, HOME is the Xbox button. If the Windows Game Bar opens, turn off opening it with this button in the Windows settings."
+  "Sur une manette Xbox, HOME est le bouton Xbox. Si la Game Bar de Windows s'ouvre, coupe son ouverture par ce bouton dans les paramètres de Windows.": "On an Xbox controller, HOME is the Xbox button. If the Windows Game Bar opens, turn off opening it with this button in the Windows settings.",
+  "moins d'une minute": "less than a minute",
+  "aujourd'hui": "today",
+  "hier": "yesterday",
+  "Temps de jeu :": "Play time:",
+  "Dernière partie :": "Last played:",
+  "Temps de jeu · Dernière partie": "Play time · Last played"
  },
  "uiPatterns": [
   [
@@ -763,6 +769,10 @@
   [
    "^Touche (\\d+)$",
    "Key $1"
+  ],
+  [
+   "^il y a (\\d+) jours$",
+   "$1 days ago"
   ]
  ],
  "messages": [

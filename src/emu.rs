@@ -625,10 +625,15 @@ pub fn run(emu: &str, game: Option<&Path>, key: &str) -> Result<()> {
     }
     crate::log::info(&format!("start {emu}{}", if full { " full screen" } else { "" }));
     let mut child = c.spawn()?;
+    let started = std::time::Instant::now();
     let exe_name = exe.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
     let _ = fs::create_dir_all(manager_dir());
     let _ = fs::write(session_file(), json!({ "file": key, "emu": emu, "exe": exe_name, "pid": child.id() }).to_string());
     let status = child.wait();
+    // Counted before the session ends, so that the list read when it ends already has it.
+    if let Err(e) = crate::playtime::add(key, started.elapsed().as_secs()) {
+        crate::log::error(&format!("play time: {e}"));
+    }
     let _ = fs::remove_file(session_file());
     let status = status?;
     if !status.success() { crate::log::error(&format!("{emu} stopped with {status}")); } else { crate::log::info(&format!("{emu} closed")); }
