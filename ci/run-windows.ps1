@@ -125,7 +125,7 @@ Check 'no computer name' ($txt -notmatch [regex]::Escape($env:COMPUTERNAME))
 Check 'no email' ($txt -notmatch 'example\.com'); Check 'no ip' ($txt -notmatch '192\.168')
 Check 'no key line' ($txt -notmatch 'AABBCC'); Check 'no token' ($txt -notmatch 'abc123')
 Check 'no folder path' ($txt -notmatch [regex]::Escape($rootA))
-Check 'useful data kept' (($txt -match 'BCF5E512E7B0DF65') -and ($txt -match '0400486024DEC000') -and ($txt -match 'Forkbay \d'))
+Check 'useful data kept' (($txt -match 'BCF5E512E7B0DF65') -and ($txt -match '0400486024DEC000') -and ($txt -match 'NX2 Launcher \d'))
 Check 'report file saved' (Test-Path "$rootA\Manager\bug-report.txt")
 $r = App $rootA 'report_collect' @{ game = ''; log = $false }; Check 'log can be left out' (($r.value.text -notmatch 'BCF5E512') )
 "-- data move"
@@ -137,7 +137,7 @@ Check 'old copy kept' (Test-Path "$rootA\Data.old")
 [IO.File]::WriteAllText("$rootA\Roms\Pokemon Pokopia [0400A3A01EE4C000].nup", 'x'); [IO.File]::WriteAllText("$rootA\Roms\Fire Emblem Fortunes Weave [04007EF01F8AE000].nup", 'x'); [IO.File]::WriteAllText("$rootA\Roms\The Legend of Zelda Ocarina of Time [0400486024DEC000][v131072].nup", 'x'); [IO.File]::WriteAllText("$work\bad.txt", 'x')
 "-- journal"
 $r = App $rootA 'install_firmware' @{ path = "$work\empty.zip" }
-$logf = "$rootA\Manager\logs\forkbay.log"; Check 'error logged' ((Get-Content $logf -Raw) -match 'install_firmware')
+$logf = "$rootA\Manager\logs\nx2-launcher.log"; Check 'error logged' ((Get-Content $logf -Raw) -match 'install_firmware')
 Check 'journal has no path' ((Get-Content $logf -Raw) -notmatch [regex]::Escape($env:USERPROFILE))
 $env:FORKBAY_SELFTEST = "$work\self.txt"; $null = App $rootA 'selftest_crash'; Remove-Item Env:\FORKBAY_SELFTEST
 $j = Get-Content $logf -Raw; Check 'crash logged' ($j -match 'CRASH test crash'); Check 'crash path cleaned' ($j -notmatch [regex]::Escape($rootA))
@@ -146,8 +146,8 @@ $r = App $rootA 'report_collect' @{ game = ''; log = $false }; Check 'journal in
 "-- steam tool shortcut"
 $vv = "$work\steam\userdata\2\config\shortcuts.vdf"; New-Item -ItemType Directory -Force (Split-Path $vv) | Out-Null
 $r = App $rootA 'steam_save' @{ account = '2'; games = @('Test Game [0400000000000000].nup'); tool = $true }; Check 'tool saved' $r.ok $r.error
-$r = App $rootA 'steam_load' @{ account = '2' }; Check 'tool found' $r.value.tool; Check 'game kept' (@($r.value.managed).Count -eq 1); Check 'tool not listed as game' (@($r.value.managed) -notcontains 'Forkbay')
-$tx = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($vv)); Check 'tool entry name' ($tx -match 'AppName\x00Forkbay'); Check 'Steam mode flag' ($tx -match '--steam-ui'); $lc = "$work\steam\userdata\2\config\forkbay-launcher.exe"; Check 'no powershell in shortcuts' ($tx -notmatch 'powershell'); Check 'launcher next to shortcuts' (Test-Path $lc); Check 'quoted game path' ($tx -match '--launch "Roms/Test Game'); $lv = "$work\launcher-version.txt"; Start-Process -FilePath $lc -ArgumentList '--find', "`"$($Bin.Substring(3))`"", '--version', "`"$lv`"" -Wait; Check 'launcher finds the program' (Test-Path $lv)
+$r = App $rootA 'steam_load' @{ account = '2' }; Check 'tool found' $r.value.tool; Check 'game kept' (@($r.value.managed).Count -eq 1); Check 'tool not listed as game' (@($r.value.managed) -notcontains 'NX2 Launcher')
+$tx = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($vv)); Check 'tool entry name' ($tx -match 'AppName\x00NX2 Launcher'); Check 'Steam mode flag' ($tx -match '--steam-ui'); $lc = "$work\steam\userdata\2\config\forkbay-launcher.exe"; Check 'no powershell in shortcuts' ($tx -notmatch 'powershell'); Check 'launcher next to shortcuts' (Test-Path $lc); Check 'quoted game path' ($tx -match '--launch "Roms/Test Game'); $lv = "$work\launcher-version.txt"; Start-Process -FilePath $lc -ArgumentList '--find', "`"$($Bin.Substring(3))`"", '--version', "`"$lv`"" -Wait; Check 'launcher finds the program' (Test-Path $lv)
 $r = App $rootA 'steam_save' @{ account = '2'; games = @(); tool = $false }; $r = App $rootA 'steam_load' @{ account = '2' }; Check 'tool removed' (-not $r.value.tool)
 
 "-- themes"
@@ -161,7 +161,7 @@ $r = App $rootA 'theme_import' @{ path = $out }; Check 'export can be imported' 
 $r = App $rootA 'theme_remove' @{ name = 'Sortie' }; $r = App $rootA 'state'; Check 'theme removed' (@($r.value.userThemes).Count -eq 1); Check 'falls back to preset' ($r.value.theme -eq 'aurora')
 $cfg = "$rootA\Manager\settings.json"; $c = Get-Content $cfg -Raw | ConvertFrom-Json; $c.theme = 'light'; $c | ConvertTo-Json -Depth 6 | Set-Content $cfg -Encoding UTF8; $r = App $rootA 'state'; Check 'old setting migrated' (($r.value.mode -eq 'light') -and ($r.value.theme -eq 'aurora')) ($r.value | Select-Object mode, theme | ConvertTo-Json -Compress)
 
-[IO.File]::WriteAllText($cfg, 'not json at all'); $r = App $rootA 'state'; Check 'damaged settings kept aside' (Test-Path "$cfg.damaged".Replace('.json.damaged','.json.damaged')) ; Check 'damaged settings logged' ((Get-Content "$rootA\Manager\logs\forkbay.log" -Raw) -match 'settings.json unreadable')
+[IO.File]::WriteAllText($cfg, 'not json at all'); $r = App $rootA 'state'; Check 'damaged settings kept aside' (Test-Path "$cfg.damaged".Replace('.json.damaged','.json.damaged')) ; Check 'damaged settings logged' ((Get-Content "$rootA\Manager\logs\nx2-launcher.log" -Raw) -match 'settings.json unreadable')
 [IO.File]::WriteAllText($cfg, '{"setupDone":true}')
 
 "-- covers"
@@ -332,20 +332,20 @@ $r = App $rootG 'art_source_add' @{ path = "$work\new-source.json" }; Check 'sam
 $r = App $rootG 'grid_key_test' @{ key = '' }; Check 'key test without a key refused' (-not $r.ok)
 "-- first start"
 Remove-Item Env:\FORKBAY_ROOT; $env:FORKBAY_INSTALLTEST = '1'; $env:FORKBAY_SHORTCUT_DIR = "$work\links"
-$dl = "$work\Downloads"; New-Item -ItemType Directory -Force $dl | Out-Null; Copy-Item $Bin "$dl\forkbay-windows-x86_64.exe"
+$dl = "$work\Downloads"; New-Item -ItemType Directory -Force $dl | Out-Null; Copy-Item $Bin "$dl\nx2-launcher-windows-x86_64.exe"
 function Inst([string]$exe, [string]$cmd, $arg = @{}) { $file = "$work\i.json"; if (Test-Path $file) { Remove-Item $file }; $json = ($arg | ConvertTo-Json -Compress -Depth 5).Replace('"', '\"'); Start-Process -FilePath $exe -ArgumentList '--cli', $cmd, "`"$json`"", "`"$file`"" -Wait -NoNewWindow; return Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json }
-$old = "$dl\forkbay-windows-x86_64.exe"
+$old = "$dl\nx2-launcher-windows-x86_64.exe"
 $r = Inst $old 'state'; Check 'new copy asks where to go' $r.value.installPrompt ($r | ConvertTo-Json -Compress -Depth 2); Check 'nothing created before the choice' (-not (Test-Path "$dl\Files\Data"))
 $r = Inst $old 'install_options'; Check 'downloads folder recognised' $r.value.temporary
 $r = Inst $old 'install_to' @{ kind = 'custom'; custom = ''; startMenu = $false; desktop = $false }; Check 'empty folder refused' (-not $r.ok)
-$r = Inst $old 'install_to' @{ kind = 'custom'; custom = "$work\apps"; startMenu = $true; desktop = $false }; $new = "$work\apps\Forkbay\Forkbay.exe"; Check 'program copied to the chosen folder' ($r.ok -and (Test-Path $new)) ($r | ConvertTo-Json -Compress)
-$lnk = (New-Object -ComObject WScript.Shell).CreateShortcut("$work\links\menu\Forkbay.lnk"); Check 'shortcut points at it' ($lnk.TargetPath -eq $new) $lnk.TargetPath; Check 'no shortcut where not asked' (-not (Test-Path "$work\links\desktop"))
+$r = Inst $old 'install_to' @{ kind = 'custom'; custom = "$work\apps"; startMenu = $true; desktop = $false }; $new = "$work\apps\NX2 Launcher\NX2 Launcher.exe"; Check 'program copied to the chosen folder' ($r.ok -and (Test-Path $new)) ($r | ConvertTo-Json -Compress)
+$lnk = (New-Object -ComObject WScript.Shell).CreateShortcut("$work\links\menu\NX2 Launcher.lnk"); Check 'shortcut points at it' ($lnk.TargetPath -eq $new) $lnk.TargetPath; Check 'no shortcut where not asked' (-not (Test-Path "$work\links\desktop"))
 $r = Inst $new 'state'; Check 'new place does not ask again' (-not $r.value.installPrompt)
 [IO.File]::WriteAllText("$dl\other.exe", 'not this program'); Start-Process -FilePath $new -ArgumentList '--cleanup-install', "`"$dl\other.exe`"", '--version', "`"$work\v.txt`"" -Wait; Check 'another file is never removed' (Test-Path "$dl\other.exe")
 New-Item -ItemType Directory -Force "$dl\Files\Manager" | Out-Null; Start-Process -FilePath $new -ArgumentList '--cleanup-install', "`"$old`"", '--version', "`"$work\v.txt`"" -Wait; Check 'old copy and its empty folder removed' (-not (Test-Path $old) -and -not (Test-Path "$dl\Files"))
-$keep = "$work\Keep"; New-Item -ItemType Directory -Force "$keep\Files\Data" | Out-Null; Copy-Item $Bin "$keep\Forkbay.exe"; $r = Inst "$keep\Forkbay.exe" 'state'; Check 'folder already in use does not ask' (-not $r.value.installPrompt)
-Start-Process -FilePath $new -ArgumentList '--cleanup-install', "`"$keep\Forkbay.exe`"", '--version', "`"$work\v.txt`"" -Wait; Check 'data of an old copy is kept' (Test-Path "$keep\Files\Data")
-$stay = "$work\Stay"; New-Item -ItemType Directory -Force $stay | Out-Null; Copy-Item $Bin "$stay\Forkbay.exe"; $r = Inst "$stay\Forkbay.exe" 'install_stay'; $r = Inst "$stay\Forkbay.exe" 'state'; Check 'staying here is remembered' ($r.ok -and -not $r.value.installPrompt -and (Test-Path "$stay\Files\Roms")) ($r | ConvertTo-Json -Compress -Depth 2)
+$keep = "$work\Keep"; New-Item -ItemType Directory -Force "$keep\Files\Data" | Out-Null; Copy-Item $Bin "$keep\NX2 Launcher.exe"; $r = Inst "$keep\NX2 Launcher.exe" 'state'; Check 'folder already in use does not ask' (-not $r.value.installPrompt)
+Start-Process -FilePath $new -ArgumentList '--cleanup-install', "`"$keep\NX2 Launcher.exe`"", '--version', "`"$work\v.txt`"" -Wait; Check 'data of an old copy is kept' (Test-Path "$keep\Files\Data")
+$stay = "$work\Stay"; New-Item -ItemType Directory -Force $stay | Out-Null; Copy-Item $Bin "$stay\NX2 Launcher.exe"; $r = Inst "$stay\NX2 Launcher.exe" 'install_stay'; $r = Inst "$stay\NX2 Launcher.exe" 'state'; Check 'staying here is remembered' ($r.ok -and -not $r.value.installPrompt -and (Test-Path "$stay\Files\Roms")) ($r | ConvertTo-Json -Compress -Depth 2)
 Remove-Item Env:\FORKBAY_INSTALLTEST, Env:\FORKBAY_SHORTCUT_DIR
 "-- renamed emulators"
 $rootH = "$work\H\Files"; New-Item -ItemType Directory -Force "$rootH\Roms", "$rootH\Lichii", "$rootH\Old Versions\Lichii frizti-v2", "$rootH\Data\cache\shaders\Lichii", "$rootH\Manager" | Out-Null

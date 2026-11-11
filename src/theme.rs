@@ -33,11 +33,11 @@ pub fn clean(v: &Value) -> Result<Value> {
 pub fn import(path: &Path) -> Result<Value> {
     let meta = fs::metadata(path).map_err(|_| anyhow!("Fichier introuvable : {}", path.display()))?;
     if meta.len() > MAX_SIZE {
-        bail!("Ce fichier ne ressemble pas à un thème Forkbay.");
+        bail!("Ce fichier ne ressemble pas à un thème NX2 Launcher.");
     }
-    let raw: Value = fs::read_to_string(path).ok().and_then(|t| serde_json::from_str(&t).ok()).ok_or_else(|| anyhow!("Ce fichier ne ressemble pas à un thème Forkbay."))?;
+    let raw: Value = fs::read_to_string(path).ok().and_then(|t| serde_json::from_str(&t).ok()).ok_or_else(|| anyhow!("Ce fichier ne ressemble pas à un thème NX2 Launcher."))?;
     if raw["forkbayTheme"].as_u64() != Some(1) {
-        bail!("Ce fichier ne ressemble pas à un thème Forkbay.");
+        bail!("Ce fichier ne ressemble pas à un thème NX2 Launcher.");
     }
     let theme = clean(&raw)?;
     let mut s = load_settings();

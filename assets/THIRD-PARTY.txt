@@ -1,4 +1,4 @@
-Forkbay includes the following open source libraries.
+NX2 Launcher includes the following open source libraries.
 Each one keeps its own license, reproduced below.
 
 ========================================================================

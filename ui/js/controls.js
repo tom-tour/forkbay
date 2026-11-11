@@ -35,7 +35,7 @@ function layout(type){const all={lstick:1,dpad:1,left:1,minus:1,right:1,plus:1,h
   return all}
 const GC=t=>t==5;
 
-// Forkbay's own controls: player 1's until they are set apart. Kept by Forkbay, the emulators never see them.
+// NX2 Launcher's own controls: player 1's until they are set apart. Kept by NX2 Launcher, the emulators never see them.
 const NAV_KEYS=['button_dup','button_ddown','button_dleft','button_dright','lstick','button_a','button_b','button_y','button_l','button_r'];
 function navMap(){if(CTL.nav)return CTL.nav;let P=CTL.players[0];if(P.type==4)P=CTL.players[8];const c=P.controls,m={};for(const k of NAV_KEYS)m[k]=k=='lstick'?c.sticks.lstick:c.buttons[k];return m}
 function navPlayer(){if(!CTL)return null;const m=navMap(),buttons={};for(const k of NAV_KEYS)if(k!='lstick')buttons[k]=m[k]||'[empty]';return{controls:{buttons,sticks:{lstick:m.lstick||'[empty]'},motions:{}}}}
@@ -44,7 +44,7 @@ function ctlPlayer(){if(!CTL)return null;if(CTLTAB=='nav')return navPlayer();con
 async function loadControls(){const el=$('ctl');if(!el)return;HK=null;try{[CTL,CTLDEV]=await Promise.all([call('controls_get'),call('controls_devices').catch(()=>[])])}catch(e){el.innerHTML=`<div class="card">${esc(e.message)}</div>`;return}renderControls();ctlLiveStart()}
 function stopControls(){ctlLiveStop();ctlCancel();ctlCloseMenu();if(HKCAP){HKCAP=null;window.PADHOLD=false}}
 
-function ctlTabs(){return`<div class="tabs ctltabs" id="ctlTabs"><button class="${CTLTAB=='nav'?'on':''}" onclick="ctlTab('nav')">Forkbay</button>${[0,1,2,3,4,5,6,7].map(i=>`<button class="${CTLTAB===i?'on':''}${CTL.players[i==0&&CTL.players[0].type==4?8:i].connected?'':' off'}" onclick="ctlTab(${i})"><span>Joueur</span> ${i+1}</button>`).join('')}<button class="${CTLTAB=='adv'?'on':''}" onclick="ctlTab('adv')">Avancé</button><button class="${CTLTAB=='keys'?'on':''}" onclick="ctlTab('keys')">Raccourcis</button></div>`}
+function ctlTabs(){return`<div class="tabs ctltabs" id="ctlTabs"><button class="${CTLTAB=='nav'?'on':''}" onclick="ctlTab('nav')">NX2 Launcher</button>${[0,1,2,3,4,5,6,7].map(i=>`<button class="${CTLTAB===i?'on':''}${CTL.players[i==0&&CTL.players[0].type==4?8:i].connected?'':' off'}" onclick="ctlTab(${i})"><span>Joueur</span> ${i+1}</button>`).join('')}<button class="${CTLTAB=='adv'?'on':''}" onclick="ctlTab('adv')">Avancé</button><button class="${CTLTAB=='keys'?'on':''}" onclick="ctlTab('keys')">Raccourcis</button></div>`}
 function ctlTab(t){ctlCancel();if(HKCAP)HKCAP=null,window.PADHOLD=false;CTLTAB=t;renderControls()}
 
 function renderControls(){const el=$('ctl');if(!el||!CTL)return;ctlCloseMenu();
@@ -94,10 +94,10 @@ function ctlPlayerHtml(){const P=CTL.players[CTLTAB],T=ctlPlayer(),c=T.controls,
   return top+`<div class="ctlpad${hasL&&hasR?'':' two'}">${hasL?`<div class="ctlside">${colL}</div>`:''}${center}${hasR?`<div class="ctlside">${colR}</div>`:''}</div>`+bottom}
 
 function ctlNavHtml(){const c=ctlPlayer().controls,own=!!CTL.nav,dis=own?'':' disabled';
-  // Forkbay reads controllers only: the keyboard has its arrow keys.
+  // NX2 Launcher reads controllers only: the keyboard has its arrow keys.
   const dev=deviceOf(c);const devs=CTLDEV.map(d=>['pad:'+d.guid+':'+d.port+(d.guid2?':'+d.guid2:''),d.name]);if(dev.startsWith('pad:')&&!devs.some(d=>d[0]==dev))devs.push([dev,'Manette débranchée']);
   const b=(label,name)=>`<div class="bind${own?'':' off'}"><span class="bl">${label}</span><button class="bv" data-k="${name}"${dis} onclick="ctlCapture(this)">${bindHtml(c.buttons[name])}</button></div>`;
-  return`<div class="card"><h2 style="margin:0 0 6px">Manette dans Forkbay</h2><p class="muted small">Les boutons qui servent à te déplacer dans Forkbay. Ils restent dans Forkbay : les émulateurs ne les voient pas, et tes contrôles de jeu ne changent pas.</p>
+  return`<div class="card"><h2 style="margin:0 0 6px">Manette dans NX2 Launcher</h2><p class="muted small">Les boutons qui servent à te déplacer dans NX2 Launcher. Ils restent dans NX2 Launcher : les émulateurs ne les voient pas, et tes contrôles de jeu ne changent pas.</p>
    <div class="row wrap" style="gap:14px;align-items:flex-end;margin-top:10px"><label class="check"><input type="checkbox" ${own?'':'checked'} onchange="ctlNavFollow(this.checked)"> <span>Mêmes boutons que le joueur 1</span></label>
    <div style="flex:1 1 220px"><p class="muted small">Manette utilisée</p><select id="ctlDev"${dis} onchange="ctlNavDevice(this.value)"><option value="pads" ${devs.some(d=>d[0]==dev)?'':'selected'}>Non choisie</option>${devs.map(([v,n])=>`<option value="${attr(v)}" ${v==dev?'selected':''} translate="no">${esc(n)}</option>`).join('')}</select></div>
    <button class="btn"${dis} onclick="ctlNavDefaults()">Valeurs par défaut</button></div>${CTLDEV.length?'':'<p class="muted small" style="margin-top:10px">Aucune manette détectée : branche-la, elle apparaîtra ici.</p>'}</div>
@@ -111,8 +111,8 @@ function ctlNavDefaults(){const v=$('ctlDev').value;if(!v.startsWith('pad:'))ret
 function ctlAdvanced(){const a=CTL.advanced;const row=(k,t,d)=>`<div class="set"><div class="l"><b>${t}</b>${d?`<p class="muted small">${d}</p>`:''}</div><div class="v"><input type="checkbox" ${a[k]?'checked':''} onchange="ctlAdv('${k}',this.checked)"></div></div>`;
   return`<div class="card"><h2>Console</h2><div class="set"><div class="l"><b>Mode de la console</b><p class="muted small">Le mode portable va avec le type de manette « Portable » du joueur 1.</p></div><div class="v"><div class="seg small"><button class="${CTL.docked?'on':''}" onclick="ctlDocked(true)">TV</button><button class="${CTL.docked?'':'on'}" onclick="ctlDocked(false)">Portable</button></div></div></div></div>
   <div class="card" style="margin-top:14px"><h2>Pour tous les joueurs</h2>${row('vibration_enabled','Vibrations')}${row('enable_accurate_vibrations','Vibrations précises','Plus fidèles, mais certaines manettes vibrent moins bien.')}${row('motion_enabled','Gyroscope')}${row('controller_navigation','Naviguer dans les menus de l\'émulateur à la manette')}</div>
-  <div class="card" style="margin-top:14px"><h2>Pilotes</h2><p class="muted small">À changer seulement si une manette n'est pas reconnue. Forkbay les applique aussi à sa propre lecture des manettes.</p>${row('enable_joycon_driver','Pilote Joy-Con de l\'émulateur','Gère lui-même les Joy-Con, avec le gyroscope.')}${row('enable_procon_driver','Pilote Pro Controller de l\'émulateur')}${row('enable_raw_input','Entrée brute (Raw Input)','Pour plus de 4 manettes Xbox sous Windows.')}</div>
-  <div class="card" style="margin-top:14px"><h2>D'une manette à l'autre</h2><p class="muted small">Tes contrôles sont partagés par tous les émulateurs. Avant chaque partie, si la manette réglée n'est pas branchée mais qu'une du même modèle l'est, Forkbay lui passe tes contrôles : tu peux jouer avec l'une ou l'autre sans rien refaire.</p><p class="muted small">Un jeu peut avoir son propre profil par joueur, depuis l'engrenage sur sa jaquette.</p></div>`}
+  <div class="card" style="margin-top:14px"><h2>Pilotes</h2><p class="muted small">À changer seulement si une manette n'est pas reconnue. NX2 Launcher les applique aussi à sa propre lecture des manettes.</p>${row('enable_joycon_driver','Pilote Joy-Con de l\'émulateur','Gère lui-même les Joy-Con, avec le gyroscope.')}${row('enable_procon_driver','Pilote Pro Controller de l\'émulateur')}${row('enable_raw_input','Entrée brute (Raw Input)','Pour plus de 4 manettes Xbox sous Windows.')}</div>
+  <div class="card" style="margin-top:14px"><h2>D'une manette à l'autre</h2><p class="muted small">Tes contrôles sont partagés par tous les émulateurs. Avant chaque partie, si la manette réglée n'est pas branchée mais qu'une du même modèle l'est, NX2 Launcher lui passe tes contrôles : tu peux jouer avec l'une ou l'autre sans rien refaire.</p><p class="muted small">Un jeu peut avoir son propre profil par joueur, depuis l'engrenage sur sa jaquette.</p></div>`}
 
 // --- Changes ---
 async function ctlDo(cmd,args){const r=await act(cmd,args);if(r)await ctlReload();return r}

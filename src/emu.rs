@@ -25,7 +25,7 @@ pub struct Emu {
     pub user: bool,
     /// Repositories this emulator was published under before.
     pub old_repos: Vec<String>,
-    /// Names Forkbay gave this emulator before.
+    /// Names NX2 Launcher gave this emulator before.
     pub old_names: Vec<String>,
 }
 
@@ -65,7 +65,7 @@ pub fn list() -> Vec<Emu> {
     all
 }
 
-/// The name an emulator has now, for a name saved by an older Forkbay ("Lichii" is now "Fritchii").
+/// The name an emulator has now, for a name saved by an older NX2 Launcher ("Lichii" is now "Fritchii").
 /// A folder still holding an emulator under the old name keeps it.
 pub fn current_name(name: &str) -> String {
     let all = list();
@@ -222,7 +222,7 @@ pub fn status() -> Value {
         if let (true, Ok(r)) = (present, rels.as_ref()) {
             check_outside(&e.name, r);
         }
-        // Stays until Forkbay installs a version again: the one before was not kept.
+        // Stays until NX2 Launcher installs a version again: the one before was not kept.
         let outside = folder.join("outside.txt").exists();
         let inst = installed(&e.name);
         let mut row = json!({ "name": e.name, "about": e.about, "present": present, "installed": inst, "latest": "", "date": "", "size": 0, "page": page_url(e), "upToDate": false, "error": "", "user": e.user, "local": local, "notes": "", "old": old_versions(&e.name), "shaders": shader_cache_size(&data_path(), &e.name), "outside": outside });
@@ -281,7 +281,7 @@ fn tag_in_program(bytes: &[u8], tags: &[String]) -> Option<String> {
     best
 }
 
-/// Notices an emulator replaced outside Forkbay, and writes the version it now has.
+/// Notices an emulator replaced outside NX2 Launcher, and writes the version it now has.
 /// Returns that version when it changed.
 fn check_outside(name: &str, releases: &[Release]) -> Option<String> {
     let folder = root().join(name);
@@ -295,10 +295,10 @@ fn check_outside(name: &str, releases: &[Release]) -> Option<String> {
     let _ = fs::write(folder.join("stamp.txt"), &now);
     let inst = installed(name);
     match found {
-        // Without a stamp yet, this is only the first look at a version Forkbay installed itself.
+        // Without a stamp yet, this is only the first look at a version NX2 Launcher installed itself.
         Some(t) if t != inst => {
             let _ = fs::write(folder.join("version.txt"), &t);
-            crate::log::info(&format!("{name}: replaced outside Forkbay, {inst} -> {t}"));
+            crate::log::info(&format!("{name}: replaced outside NX2 Launcher, {inst} -> {t}"));
             if !saved.is_empty() || !inst.is_empty() {
                 let _ = fs::write(folder.join("outside.txt"), format!("{inst} -> {t}"));
             }
@@ -645,7 +645,7 @@ fn session_file() -> PathBuf {
     manager_dir().join("session.json")
 }
 
-/// What Forkbay started and is still running, on this PC.
+/// What NX2 Launcher started and is still running, on this PC.
 pub fn session() -> Option<Value> {
     let v: Value = serde_json::from_str(&fs::read_to_string(session_file()).ok()?).ok()?;
     let pid = v["pid"].as_u64()?;

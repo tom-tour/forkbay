@@ -7,7 +7,7 @@ use serde_json::{json, Value};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const EXE_NAME: &str = if cfg!(windows) { "Forkbay.exe" } else { "forkbay" };
+const EXE_NAME: &str = if cfg!(windows) { "NX2 Launcher.exe" } else { "nx2-launcher" };
 
 fn test_mode() -> bool {
     std::env::var("FORKBAY_INSTALLTEST").is_ok()
@@ -27,7 +27,7 @@ pub fn needed() -> bool {
 }
 
 fn recommended() -> PathBuf {
-    if cfg!(windows) { local_data_base().join("Programs").join("Forkbay") } else { local_data_base().join("forkbay") }
+    if cfg!(windows) { local_data_base().join("Programs").join("NX2 Launcher") } else { local_data_base().join("nx2-launcher") }
 }
 
 /// Folders people download to or clean up often.
@@ -48,7 +48,7 @@ pub fn stay() -> Result<()> {
     save_settings(&s)
 }
 
-/// A chosen folder gets its own Forkbay subfolder, because Files is created next to the program.
+/// A chosen folder gets its own NX2 Launcher subfolder, because Files is created next to the program.
 fn target_dir(kind: &str, custom: &str) -> Result<PathBuf> {
     if kind == "recommended" {
         return Ok(recommended());
@@ -57,7 +57,7 @@ fn target_dir(kind: &str, custom: &str) -> Result<PathBuf> {
         bail!("Choisis un dossier.");
     }
     let p = PathBuf::from(custom.trim());
-    if p.file_name().is_some_and(|n| n.to_string_lossy().eq_ignore_ascii_case("forkbay")) { Ok(p) } else { Ok(p.join("Forkbay")) }
+    if p.file_name().is_some_and(|n| n.to_string_lossy().eq_ignore_ascii_case("nx2 launcher") || n.to_string_lossy().eq_ignore_ascii_case("forkbay")) { Ok(p) } else { Ok(p.join("NX2 Launcher")) }
 }
 
 /// Copies the program, prepares its new place and returns the new program's path.
@@ -75,7 +75,7 @@ pub fn install(kind: &str, custom: &str, start_menu: bool, desktop: bool) -> Res
     fs::copy(&current, &tmp).map_err(|_| cannot())?;
     if fs::rename(&tmp, &target).is_err() {
         let _ = fs::remove_file(&tmp);
-        bail!("Un autre Forkbay est déjà ouvert dans {} : ferme-le, puis réessaie.", dir.display());
+        bail!("Un autre NX2 Launcher est déjà ouvert dans {} : ferme-le, puis réessaie.", dir.display());
     }
     // The new copy must not ask again.
     let manager = dir.join("Files").join("Manager");

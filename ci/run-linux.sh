@@ -83,11 +83,11 @@ printf '\377\330\377\340' > "$WORK/a.jpg"; G="$WORK/games/Sub/Other Game [040000
 "$BIN" --cli game_dir_remove "{\"path\":\"$WORK/games\"}" "$WORK/o.json"
 SteamGamepadUI=1 "$BIN" --cli steam_ui_detect '{}' "$WORK/o.json"; grep -q '"active":true' "$WORK/o.json" && echo "ok   Steam full-screen mode detected" || { echo "FAIL steam mode: $(cat "$WORK/o.json")"; FAIL=1; }
 env -u SteamGamepadUI -u GAMESCOPE_WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=GNOME "$BIN" --cli steam_ui_detect '{}' "$WORK/o.json"; grep -q '"active":false' "$WORK/o.json" && echo "ok   desktop mode detected" || { echo "FAIL desktop mode: $(cat "$WORK/o.json")"; FAIL=1; }
-mkdir -p "$WORK/dl"; cp "$BIN" "$WORK/dl/forkbay-linux-x86_64"; OLD="$WORK/dl/forkbay-linux-x86_64"
+mkdir -p "$WORK/dl"; cp "$BIN" "$WORK/dl/nx2-launcher-linux-x86_64"; OLD="$WORK/dl/nx2-launcher-linux-x86_64"
 I="env -u FORKBAY_ROOT FORKBAY_INSTALLTEST=1 FORKBAY_SHORTCUT_DIR=$WORK/links"
 $I "$OLD" --cli state '{}' "$WORK/o.json"; grep -q '"installPrompt":true' "$WORK/o.json" && echo "ok   new copy asks where to go" || { echo "FAIL first start: $(cat "$WORK/o.json")"; FAIL=1; }
-$I "$OLD" --cli install_to "{\"kind\":\"custom\",\"custom\":\"$WORK/apps\",\"startMenu\":true,\"desktop\":false}" "$WORK/o.json"; [ -x "$WORK/apps/Forkbay/forkbay" ] && [ -f "$WORK/links/menu/forkbay.desktop" ] && echo "ok   program copied, shortcut created" || { echo "FAIL install: $(cat "$WORK/o.json")"; FAIL=1; }
-$I "$WORK/apps/Forkbay/forkbay" --cleanup-install "$OLD" --version "$WORK/o.txt"; [ ! -e "$OLD" ] && echo "ok   old copy removed" || { echo "FAIL old copy still there"; FAIL=1; }
+$I "$OLD" --cli install_to "{\"kind\":\"custom\",\"custom\":\"$WORK/apps\",\"startMenu\":true,\"desktop\":false}" "$WORK/o.json"; [ -x "$WORK/apps/NX2 Launcher/nx2-launcher" ] && [ -f "$WORK/links/menu/nx2-launcher.desktop" ] && echo "ok   program copied, shortcut created" || { echo "FAIL install: $(cat "$WORK/o.json")"; FAIL=1; }
+$I "$WORK/apps/NX2 Launcher/nx2-launcher" --cleanup-install "$OLD" --version "$WORK/o.txt"; [ ! -e "$OLD" ] && echo "ok   old copy removed" || { echo "FAIL old copy still there"; FAIL=1; }
 FORKBAY_LANG=fr_FR.UTF-8 "$BIN" --cli state '{}' "$WORK/fr.json"
 grep -q '"language":"fr"' "$WORK/fr.json" && echo "ok   french detected" || { echo "FAIL french detection"; FAIL=1; }
 
@@ -106,7 +106,7 @@ import -window root "$OUT/first-run.png" || true
 if kill -0 "$APP" 2>/dev/null; then echo "ok   window still running"; else echo "FAIL window exited"; FAIL=1; fi
 if [ -f "$FORKBAY_SELFTEST" ]; then echo "ok   page script reached the program"; else echo "FAIL page never loaded"; FAIL=1; fi
 if grep -q "csp=blocked nav=blocked" "$FORKBAY_SELFTEST" 2>/dev/null; then echo "ok   page cannot reach or navigate to the web"; else echo "FAIL page protection: $(cat "$FORKBAY_SELFTEST" 2>/dev/null)"; FAIL=1; fi
-if grep -q "Forkbay" "$OUT/windows.txt"; then echo "ok   window on screen"; else echo "FAIL no window on screen"; FAIL=1; fi
+if grep -q "NX2 Launcher" "$OUT/windows.txt"; then echo "ok   window on screen"; else echo "FAIL no window on screen"; FAIL=1; fi
 COLORS=$(identify -format '%k' "$OUT/first-run.png" 2>/dev/null || echo 0)
 if [ "${COLORS:-0}" -gt 50 ]; then echo "ok   image has content ($COLORS colours)"; else echo "FAIL blank image ($COLORS colours)"; FAIL=1; fi
 kill "$APP" "$XVFB" 2>/dev/null

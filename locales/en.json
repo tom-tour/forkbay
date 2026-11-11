@@ -55,7 +55,7 @@
   "Retirer": "Remove",
   "Vider le cache de shaders": "Clear shader cache",
   "En cas d'écran noir ou de graphismes cassés après une mise à jour": "If you get a black screen or broken graphics after an update",
-  "Tes autres raccourcis ne changent pas. Après un déplacement du dossier de Forkbay, clique simplement sur Enregistrer dans Steam.": "Your other shortcuts do not change. After moving the Forkbay folder, simply click Apply to Steam.",
+  "Tes autres raccourcis ne changent pas. Après un déplacement du dossier de NX2 Launcher, clique simplement sur Enregistrer dans Steam.": "Your other shortcuts do not change. After moving the NX2 Launcher folder, simply click Apply to Steam.",
   "Compte Steam": "Steam account",
   "Jeux dans Steam": "Games in Steam",
   "Enregistrer dans Steam": "Apply to Steam",
@@ -108,7 +108,7 @@
   "Récupération des jaquettes...": "Downloading covers...",
   "Langue du système.": "System language.",
   "Langue enregistrée.": "Language saved.",
-  "Forkbay, un logiciel libre.": "Forkbay is free software.",
+  "NX2 Launcher, un logiciel libre.": "NX2 Launcher is free software.",
   "Version": "Version",
   "Mises à jour de l'outil": "Tool updates",
   "Vérifie sur GitHub si une nouvelle version existe.": "Checks GitHub for a new version.",
@@ -116,7 +116,7 @@
   "Installer la mise à jour": "Install update",
   "Vérifier au démarrage": "Check at startup",
   "Vérifier au démarrage, pour l'outil et les émulateurs": "Check at startup, for the tool and the emulators",
-  "Mis à jour en dehors de Forkbay : la version précédente n'a pas été gardée.": "Updated outside Forkbay: the previous version was not kept.",
+  "Mis à jour en dehors de NX2 Launcher : la version précédente n'a pas été gardée.": "Updated outside NX2 Launcher: the previous version was not kept.",
   "Choisir une version": "Choose a version",
   "Recherche des versions...": "Looking for versions...",
   "Une version plus récente peut moins bien faire tourner un jeu. La version actuelle reste dans Old Versions, et une copie de tes sauvegardes est faite avant.": "A newer version can run a game worse. The current version stays in Old Versions, and your saves are copied first.",
@@ -235,9 +235,9 @@
   "Panneaux": "Panels",
   "Texte": "Text",
   "Accent": "Accent",
-  "Quitter Forkbay": "Quit Forkbay",
-  "Forkbay lui-même": "Forkbay itself",
-  "Le journal d'erreurs de Forkbay est toujours inclus, anonymisé lui aussi.": "Forkbay's error log is always included, with personal details removed too.",
+  "Quitter NX2 Launcher": "Quit NX2 Launcher",
+  "NX2 Launcher lui-même": "NX2 Launcher itself",
+  "Le journal d'erreurs de NX2 Launcher est toujours inclus, anonymisé lui aussi.": "NX2 Launcher's error log is always included, with personal details removed too.",
   "Ouvrir le journal": "Open log",
   "Mode": "Mode",
   "Thème": "Theme",
@@ -286,23 +286,23 @@
   "Image enregistrée.": "Image saved.",
   "Dépose l'image sur un jeu, dans la page Jeux.": "Drop the image on a game, on the Games page.",
   "Ce fichier n'est pas une image PNG, JPEG, WebP ou ICO.": "This file is not a PNG, JPEG, WebP or ICO image.",
-  "Aucun jeu pour l'instant : ajoute le dossier où ils se trouvent depuis la page Réglages, ou place-les dans le dossier des jeux de Forkbay.": "No games yet: add the folder they are in from the Settings page, or put them in Forkbay's games folder.",
+  "Aucun jeu pour l'instant : ajoute le dossier où ils se trouvent depuis la page Réglages, ou place-les dans le dossier des jeux de NX2 Launcher.": "No games yet: add the folder they are in from the Settings page, or put them in NX2 Launcher's games folder.",
   "Ajouter un dossier de jeux": "Add a games folder",
-  "Ouvrir le dossier des jeux de Forkbay": "Open Forkbay's games folder",
+  "Ouvrir le dossier des jeux de NX2 Launcher": "Open NX2 Launcher's games folder",
   "Dossier où se trouvent tes jeux": "Folder your games are in",
   "Dossier retiré de la liste. Tes jeux n'ont pas bougé.": "Folder removed from the list. Your games have not moved.",
   "Lancer les jeux en plein écran": "Launch games in full screen",
   "Pour les émulateurs de la liste fournie, aussi depuis Steam. Échap en sort par défaut.": "For the emulators in the built-in list, including from Steam. Esc leaves it by default.",
   "Dossiers de jeux": "Games folders",
-  "Forkbay lit les jeux là où ils sont, sans rien déplacer ni copier, sous-dossiers compris.": "Forkbay reads games where they are, subfolders included, without moving or copying anything.",
+  "NX2 Launcher lit les jeux là où ils sont, sans rien déplacer ni copier, sous-dossiers compris.": "NX2 Launcher reads games where they are, subfolders included, without moving or copying anything.",
   "Sources d'images": "Image sources",
   "Comment ajouter une source": "How to add a source",
   "Sources d'images :": "Image sources:",
   "Tu choisis ce que tu ajoutes, et c'est à toi de respecter les conditions de ces sites.": "You choose what you add, and you are responsible for following those sites' terms.",
   "Un raccourci vers l'outil dans Steam. En plein écran dans Big Picture et en mode Jeu, en fenêtre sinon. F11 passe de l'un à l'autre.": "A shortcut to the tool in Steam. Full screen in Big Picture and Gaming Mode, a window otherwise. F11 switches between them.",
-  "Indique le dossier où se trouvent déjà tes jeux : rien n'est déplacé ni copié. Tu peux aussi placer tes fichiers .nup, .nsp ou .xci dans le dossier des jeux de Forkbay.": "Choose the folder your games are already in: nothing is moved or copied. You can also put your .nup, .nsp or .xci files in Forkbay's games folder.",
+  "Indique le dossier où se trouvent déjà tes jeux : rien n'est déplacé ni copié. Tu peux aussi placer tes fichiers .nup, .nsp ou .xci dans le dossier des jeux de NX2 Launcher.": "Choose the folder your games are already in: nothing is moved or copied. You can also put your .nup, .nsp or .xci files in NX2 Launcher's games folder.",
   "Avec une clé gratuite SteamGridDB (Preferences, puis API sur leur site), l'outil récupère les images de tes jeux. Sinon, ajoute les tiennes depuis la page Jeux, avec le bouton Images.": "With a free SteamGridDB key (Preferences, then API on their site), the tool downloads images for your games. Otherwise, add your own from the Games page, with the Images button.",
-  "Où installer Forkbay ?": "Where should Forkbay go?",
+  "Où installer NX2 Launcher ?": "Where should NX2 Launcher go?",
   "Il garde ses émulateurs et ses données dans un dossier Files, à côté de lui. Choisis un endroit où il peut rester.": "It keeps its emulators and data in a Files folder next to itself. Choose a place where it can stay.",
   "Ici": "Here",
   "Attention : ce dossier sert plutôt aux fichiers temporaires, et il est souvent vidé.": "Careful: this folder is usually for temporary files, and it often gets emptied.",
@@ -310,19 +310,19 @@
   "À l'endroit conseillé": "In the recommended place",
   "Dans ton compte, sans droits d'administrateur, sur le disque système.": "In your account, without administrator rights, on the system drive.",
   "Dans un autre dossier": "In another folder",
-  "Par exemple sur un disque avec plus de place. Un sous-dossier Forkbay y sera créé.": "For example on a drive with more room. A Forkbay subfolder will be created there.",
+  "Par exemple sur un disque avec plus de place. Un sous-dossier NX2 Launcher y sera créé.": "For example on a drive with more room. A NX2 Launcher subfolder will be created there.",
   "Raccourci dans le menu Démarrer": "Start menu shortcut",
   "Raccourci sur le Bureau": "Desktop shortcut",
   "Installation...": "Installing...",
-  "Forkbay s'ouvre à son nouvel emplacement...": "Forkbay is opening in its new place...",
+  "NX2 Launcher s'ouvre à son nouvel emplacement...": "NX2 Launcher is opening in its new place...",
   "Raccourci dans le menu des applications": "Applications menu shortcut",
-  "Un émulateur est ouvert hors de Forkbay.": "An emulator is open outside Forkbay.",
+  "Un émulateur est ouvert hors de NX2 Launcher.": "An emulator is open outside NX2 Launcher.",
   "Émulateur ouvert :": "Emulator open:",
   "Forcer la fermeture": "Force close",
   "Fermeture...": "Closing...",
   "En cours": "Running",
   "Confirmer : une partie non sauvegardée sera perdue": "Confirm: unsaved progress will be lost",
-  "La couverture dans Forkbay et dans Steam": "The cover in Forkbay and in Steam",
+  "La couverture dans NX2 Launcher et dans Steam": "The cover in NX2 Launcher and in Steam",
   "La bannière horizontale de Steam": "The horizontal banner in Steam",
   "Le grand fond de la page du jeu dans Steam": "The large background on the game's Steam page",
   "Le logo posé sur ce fond dans Steam": "The logo shown over that background in Steam",
@@ -402,7 +402,7 @@
   "Réglages des jeux": "Game settings",
   "Pour tous tes jeux, quel que soit l'émulateur : ils partagent le même dossier de données. Un jeu peut avoir ses propres réglages, depuis l'engrenage sur sa jaquette. Ferme l'émulateur avant de changer un réglage.": "For all your games, whatever the emulator: they share the same data folder. A game can have its own settings, from the gear on its cover. Close the emulator before changing a setting.",
   "Émulateur :": "Emulator:",
-  "Le nom du fichier de ce jeu ne contient pas son identifiant, comme [0100000000010000] : Forkbay ne sait pas où l'émulateur range ses réglages. Change-les directement dans l'émulateur.": "This game's file name does not contain its ID, such as [0100000000010000], so Forkbay does not know where the emulator keeps its settings. Change them in the emulator itself.",
+  "Le nom du fichier de ce jeu ne contient pas son identifiant, comme [0100000000010000] : NX2 Launcher ne sait pas où l'émulateur range ses réglages. Change-les directement dans l'émulateur.": "This game's file name does not contain its ID, such as [0100000000010000], so NX2 Launcher does not know where the emulator keeps its settings. Change them in the emulator itself.",
   "Télécharger des images pour ce jeu": "Download images for this game",
   "Comme partout": "Common",
   "Comme partout :": "Common:",
@@ -410,7 +410,7 @@
   "Manette": "Controller",
   "Joueur": "Player",
   "Réglés dans l'émulateur": "Set in the emulator",
-  "Ce jeu a aussi ses propres valeurs pour ces réglages. Forkbay ne sait pas les changer : modifie-les dans l'émulateur, ou remets-les comme partout.": "This game also has its own values for these settings. Forkbay cannot change them: edit them in the emulator, or set them back to common.",
+  "Ce jeu a aussi ses propres valeurs pour ces réglages. NX2 Launcher ne sait pas les changer : modifie-les dans l'émulateur, ou remets-les comme partout.": "This game also has its own values for these settings. NX2 Launcher cannot change them: edit them in the emulator, or set them back to common.",
   "Mémoire émulée": "Emulated memory",
   "Processeur multicœur": "Multicore CPU",
   "Précision du processeur": "CPU accuracy",
@@ -449,7 +449,7 @@
   "Illisible :": "Unreadable:",
   "Ajouter une source": "Add a source",
   "Comment écrire une source": "How to write a source",
-  "Avec « Toutes », Forkbay essaie tes sources dans l'ordre, puis SteamGridDB. Pour retirer une source, désactive-la ou supprime son fichier dans le dossier.": "With “All”, Forkbay tries your sources in order, then SteamGridDB. To remove a source, turn it off or delete its file in the folder.",
+  "Avec « Toutes », NX2 Launcher essaie tes sources dans l'ordre, puis SteamGridDB. Pour retirer une source, désactive-la ou supprime son fichier dans le dossier.": "With “All”, NX2 Launcher tries your sources in order, then SteamGridDB. To remove a source, turn it off or delete its file in the folder.",
   "Test de la clé...": "Testing the key...",
   "Colle d'abord ta clé SteamGridDB.": "Paste your SteamGridDB key first.",
   "Système": "System",
@@ -551,12 +551,12 @@
   "Vibrations précises": "Accurate vibration",
   "Plus fidèles, mais certaines manettes vibrent moins bien.": "More faithful, but some controllers vibrate less well.",
   "Pilotes": "Drivers",
-  "À changer seulement si une manette n'est pas reconnue. Forkbay les applique aussi à sa propre lecture des manettes.": "Change these only if a controller is not recognized. Forkbay also follows them when it reads controllers.",
+  "À changer seulement si une manette n'est pas reconnue. NX2 Launcher les applique aussi à sa propre lecture des manettes.": "Change these only if a controller is not recognized. NX2 Launcher also follows them when it reads controllers.",
   "Gère lui-même les Joy-Con, avec le gyroscope.": "Handles Joy-Cons itself, with motion.",
   "Entrée brute (Raw Input)": "Raw Input",
   "Pour plus de 4 manettes Xbox sous Windows.": "For more than 4 Xbox controllers on Windows.",
   "D'une manette à l'autre": "From one controller to another",
-  "Tes contrôles sont partagés par tous les émulateurs. Avant chaque partie, si la manette réglée n'est pas branchée mais qu'une du même modèle l'est, Forkbay lui passe tes contrôles : tu peux jouer avec l'une ou l'autre sans rien refaire.": "Your controls are shared by every emulator. Before each game, if the controller they were set with is not plugged in but one of the same model is, Forkbay moves your controls to it: you can play with either one without setting anything again.",
+  "Tes contrôles sont partagés par tous les émulateurs. Avant chaque partie, si la manette réglée n'est pas branchée mais qu'une du même modèle l'est, NX2 Launcher lui passe tes contrôles : tu peux jouer avec l'une ou l'autre sans rien refaire.": "Your controls are shared by every emulator. Before each game, if the controller they were set with is not plugged in but one of the same model is, NX2 Launcher moves your controls to it: you can play with either one without setting anything again.",
   "Un jeu peut avoir son propre profil par joueur, depuis l'engrenage sur sa jaquette.": "A game can have its own profile per player, from the gear on its cover.",
   "Manette pour ce jeu": "Controller for this game",
   "Un profil donné à un joueur ne sert que pour ce jeu. Les profils se créent sur la page Manette.": "A profile given to a player is only used for this game. Profiles are created on the Controller page.",
@@ -638,7 +638,7 @@
   "Rapports": "Reports",
   "Lecture des rapports…": "Reading the reports…",
   "Ton rapport": "Your report",
-  "Dis comment ce jeu tourne chez toi. Forkbay remplit le formulaire : jeu, émulateur et version, carte graphique, système et temps de jeu. Tu vérifies, tu choisis le résultat et tu envoies. Il faut un compte GitHub.": "Tell how this game runs for you. Forkbay fills in the form: game, emulator and version, graphics card, system and play time. You check it, pick the result and send it. A GitHub account is needed.",
+  "Dis comment ce jeu tourne chez toi. NX2 Launcher remplit le formulaire : jeu, émulateur et version, carte graphique, système et temps de jeu. Tu vérifies, tu choisis le résultat et tu envoies. Il faut un compte GitHub.": "Tell how this game runs for you. NX2 Launcher fills in the form: game, emulator and version, graphics card, system and play time. You check it, pick the result and send it. A GitHub account is needed.",
   "Envoyer un rapport": "Send a report",
   "Voir les rapports de toutes les sources": "See the reports from every source",
   "Le site de rapports de Lichii ne connaît pas ce jeu.": "The Lichii report site does not know this game.",
@@ -652,8 +652,8 @@
   "Tourne": "Runs",
   "Se lance": "Loads",
   "Injouable": "Unplayable",
-  "Manette dans Forkbay": "Controller in Forkbay",
-  "Les boutons qui servent à te déplacer dans Forkbay. Ils restent dans Forkbay : les émulateurs ne les voient pas, et tes contrôles de jeu ne changent pas.": "The buttons that move you around Forkbay. They stay in Forkbay: the emulators never see them, and your game controls do not change.",
+  "Manette dans NX2 Launcher": "Controller in NX2 Launcher",
+  "Les boutons qui servent à te déplacer dans NX2 Launcher. Ils restent dans NX2 Launcher : les émulateurs ne les voient pas, et tes contrôles de jeu ne changent pas.": "The buttons that move you around NX2 Launcher. They stay in NX2 Launcher: the emulators never see them, and your game controls do not change.",
   "Mêmes boutons que le joueur 1": "Same buttons as player 1",
   "Se déplacer": "Moving around",
   "Stick": "Stick",
@@ -884,8 +884,8 @@
    "Cannot write to $1: choose another folder."
   ],
   [
-   "^Un autre Forkbay est déjà ouvert dans (.+) : ferme-le, puis réessaie\\.$",
-   "Another Forkbay is already open in $1: close it, then try again."
+   "^Un autre NX2 Launcher est déjà ouvert dans (.+) : ferme-le, puis réessaie\\.$",
+   "Another NX2 Launcher is already open in $1: close it, then try again."
   ],
   [
    "^(.+) est un dossier normal alors qu'un lien est attendu : déplace son contenu dans Data, puis supprime-le\\.$",
@@ -1304,8 +1304,8 @@
    "Cancel"
   ],
   [
-   "^Forkbay : conflit de sauvegarde$",
-   "Forkbay: save conflict"
+   "^NX2 Launcher : conflit de sauvegarde$",
+   "NX2 Launcher: save conflict"
   ],
   [
    "(?s)^Les deux versions ont changé depuis la dernière synchronisation\\.\\n\\nVersion locale \\(ce PC\\) : (.*)\\nVersion du cloud \\((.*)\\) : (.*)\\n\\nCelle que tu ne gardes pas.*$",
@@ -1320,8 +1320,8 @@
    "This file contains no valid colors."
   ],
   [
-   "^Ce fichier ne ressemble pas à un thème Forkbay\\.$",
-   "This file does not look like a Forkbay theme."
+   "^Ce fichier ne ressemble pas à un thème NX2 Launcher\\.$",
+   "This file does not look like a NX2 Launcher theme."
   ],
   [
    "^Thème exporté : (.+)$",
@@ -1340,8 +1340,8 @@
    "Unknown type: $1"
   ],
   [
-   "^Dossier de Forkbay introuvable\\. Branche le disque, ou ouvre Forkbay depuis son nouvel emplacement et clique sur Enregistrer dans Steam\\.$",
-   "Forkbay folder not found. Plug in the drive, or open Forkbay from its new location and click Apply to Steam."
+   "^Dossier de NX2 Launcher introuvable\\. Branche le disque, ou ouvre NX2 Launcher depuis son nouvel emplacement et clique sur Enregistrer dans Steam\\.$",
+   "NX2 Launcher folder not found. Plug in the drive, or open NX2 Launcher from its new location and click Apply to Steam."
   ],
   [
    "(?s)^Copie automatique impossible :\\n(.*)\\n\\nJouer quand même \\?$",
@@ -1384,8 +1384,8 @@
    "No checksum available: update rejected."
   ],
   [
-   "^Le nom du fichier de ce jeu ne contient pas son identifiant, comme \\[0100000000010000\\] : Forkbay ne sait pas où l'émulateur range ses réglages\\.$",
-   "This game's file name does not contain its ID, such as [0100000000010000], so Forkbay does not know where the emulator keeps its settings."
+   "^Le nom du fichier de ce jeu ne contient pas son identifiant, comme \\[0100000000010000\\] : NX2 Launcher ne sait pas où l'émulateur range ses réglages\\.$",
+   "This game's file name does not contain its ID, such as [0100000000010000], so NX2 Launcher does not know where the emulator keeps its settings."
   ],
   [
    "^Ce fichier ne contient ni « url » ni « direct »\\.$",

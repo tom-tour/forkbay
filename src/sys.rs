@@ -205,10 +205,10 @@ fn known_desktop() -> Result<PathBuf> {
 pub fn write_shortcut(dir: &Path, target: &Path) -> Result<()> {
     use std::os::unix::fs::PermissionsExt;
     fs::create_dir_all(dir)?;
-    let icon = target.with_file_name("forkbay.png");
+    let icon = target.with_file_name("nx2-launcher.png");
     fs::write(&icon, include_bytes!("../assets/icon.png"))?;
-    let text = format!("[Desktop Entry]\nType=Application\nName=Forkbay\nComment=Switch 2 emulator manager\nExec=\"{}\"\nPath={}\nIcon={}\nTerminal=false\nCategories=Game;\n", target.display(), target.parent().unwrap_or(target).display(), icon.display());
-    let file = dir.join("forkbay.desktop");
+    let text = format!("[Desktop Entry]\nType=Application\nName=NX2 Launcher\nComment=Switch 2 emulator manager\nExec=\"{}\"\nPath={}\nIcon={}\nTerminal=false\nCategories=Game;\n", target.display(), target.parent().unwrap_or(target).display(), icon.display());
+    let file = dir.join("nx2-launcher.desktop");
     fs::write(&file, text)?;
     fs::set_permissions(&file, fs::Permissions::from_mode(0o755))?;
     Ok(())
@@ -263,7 +263,7 @@ pub fn write_shortcut(dir: &Path, target: &Path) -> Result<()> {
     fn wide(p: &std::ffi::OsStr) -> Vec<u16> { p.encode_wide().chain([0]).collect() }
 
     fs::create_dir_all(dir)?;
-    let file = wide(dir.join("Forkbay.lnk").as_os_str());
+    let file = wide(dir.join("NX2 Launcher.lnk").as_os_str());
     let exe = wide(target.as_os_str());
     let work = wide(target.parent().unwrap_or(target).as_os_str());
     let about = wide(std::ffi::OsStr::new("Switch 2 emulator manager"));

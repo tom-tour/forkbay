@@ -2,7 +2,7 @@
 
 **[Français](#français)**
 
-Forkbay can download game images from sources you add yourself. It ships with none, apart from the optional SteamGridDB key.
+NX2 Launcher can download game images from sources you add yourself. It ships with none, apart from the optional SteamGridDB key.
 
 A source is a small text file that describes where to look. It contains no code. Images are downloaded on your PC, only when you click **Download covers**, and stay in `Files/Covers`. You choose the source and the image types, and existing images stay unless you tick **Replace**.
 
@@ -57,7 +57,7 @@ Addresses must use `https`. Files that are not PNG, JPEG, WebP or ICO images, or
 
 # Français
 
-Forkbay peut télécharger les images de tes jeux depuis des sources que tu ajoutes toi-même. Il n'en fournit aucune, à part la clé SteamGridDB facultative.
+NX2 Launcher peut télécharger les images de tes jeux depuis des sources que tu ajoutes toi-même. Il n'en fournit aucune, à part la clé SteamGridDB facultative.
 
 Une source est un petit fichier texte qui indique où chercher. Elle ne contient aucun code. Les images sont téléchargées sur ton PC, seulement quand tu cliques sur **Récupérer les jaquettes**, et restent dans `Files/Covers`. Tu choisis la source et les types d'images, et les images existantes restent sauf si tu coches **Remplacer**.
 

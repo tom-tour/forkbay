@@ -26,7 +26,7 @@ type Response = ureq::http::Response<ureq::Body>;
 
 fn agent() -> ureq::Agent {
     let secs = |s| Some(std::time::Duration::from_secs(s));
-    ureq::Agent::new_with_config(ureq::Agent::config_builder().user_agent("Forkbay").timeout_connect(secs(20)).timeout_per_read(secs(120)).build())
+    ureq::Agent::new_with_config(ureq::Agent::config_builder().user_agent("NX2 Launcher").timeout_connect(secs(20)).timeout_per_read(secs(120)).build())
 }
 
 fn run(r: std::result::Result<Response, ureq::Error>) -> Result<Response> {

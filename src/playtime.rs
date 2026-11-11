@@ -1,4 +1,4 @@
-// Time played and last game, per game: Forkbay counts from the launch to the emulator closing.
+// Time played and last game, per game: NX2 Launcher counts from the launch to the emulator closing.
 // Kept in Manager/playtime.json as { "<program id, or file>": { "seconds": n, "last": unix time } }.
 
 use crate::core::manager_dir;

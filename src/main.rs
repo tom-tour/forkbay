@@ -1,4 +1,4 @@
-// Forkbay: one window for Switch 2 emulators, on Windows and Linux.
+// NX2 Launcher: one window for Switch 2 emulators, on Windows and Linux.
 #![cfg_attr(not(test), windows_subsystem = "windows")]
 #![recursion_limit = "256"]
 mod art;
@@ -61,11 +61,11 @@ pub static FULLSCREEN: std::sync::atomic::AtomicBool = std::sync::atomic::Atomic
 pub const FULLSCREEN_EVENT: &str = "\u{1}fullscreen";
 
 fn notify(text: &str) {
-    rfd::MessageDialog::new().set_title("Forkbay").set_description(i18n::t(text)).set_level(rfd::MessageLevel::Warning).show();
+    rfd::MessageDialog::new().set_title("NX2 Launcher").set_description(i18n::t(text)).set_level(rfd::MessageLevel::Warning).show();
 }
 
 fn confirm(text: &str) -> bool {
-    matches!(rfd::MessageDialog::new().set_title("Forkbay").set_description(i18n::t(text)).set_buttons(rfd::MessageButtons::YesNo).show(), rfd::MessageDialogResult::Yes)
+    matches!(rfd::MessageDialog::new().set_title("NX2 Launcher").set_description(i18n::t(text)).set_buttons(rfd::MessageButtons::YesNo).show(), rfd::MessageDialogResult::Yes)
 }
 
 /// Launches a game on its emulator, with cloud sync when enabled. No window of its own.
@@ -140,7 +140,7 @@ fn run_gui(fullscreen: bool) -> Result<()> {
     FULLSCREEN.store(fullscreen, std::sync::atomic::Ordering::Relaxed);
     let event_loop = EventLoopBuilder::<String>::with_user_event().build();
     let _ = PROXY.set(event_loop.create_proxy());
-    let window = WindowBuilder::new().with_title("Forkbay").with_inner_size(LogicalSize::new(1120.0, 760.0)).with_min_inner_size(LogicalSize::new(900.0, 600.0)).with_window_icon(window_icon()).with_fullscreen(fullscreen.then_some(tao::window::Fullscreen::Borderless(None))).build(&event_loop)?;
+    let window = WindowBuilder::new().with_title("NX2 Launcher").with_inner_size(LogicalSize::new(1120.0, 760.0)).with_min_inner_size(LogicalSize::new(900.0, 600.0)).with_window_icon(window_icon()).with_fullscreen(fullscreen.then_some(tao::window::Fullscreen::Borderless(None))).build(&event_loop)?;
     let mut context = WebContext::new(Some(manager_dir().join("webview")));
     let builder = WebViewBuilder::new_with_web_context(&mut context).with_html(HTML).with_devtools(false).with_navigation_handler(|url| {
         // The page is the only thing this window ever shows: links open in the browser.

@@ -1,5 +1,5 @@
 // Controllers, read through SDL3 and set up as the emulators set it up (their
-// src/input_common/drivers/sdl_driver.cpp, the same in Eden and its forks). Forkbay then sees the
+// src/input_common/drivers/sdl_driver.cpp, the same in Eden and its forks). NX2 Launcher then sees the
 // same controllers, with the same ids, ports and button numbers, and the controls it writes work
 // in every emulator.
 // SDL lives on a thread of its own, started on first use and stopped after a minute unused.
@@ -243,7 +243,7 @@ impl Sdl {
         let set = |name: *const c_char, value: &CStr| unsafe { SDL_SetHint(name, value.as_ptr()); };
         let on_off = |b: bool| if b { c"1" } else { c"0" };
         unsafe {
-            set(SDL_HINT_APP_NAME, c"Forkbay");
+            set(SDL_HINT_APP_NAME, c"NX2 Launcher");
             set(SDL_HINT_JOYSTICK_RAWINPUT, on_off(o.raw_input));
             if cfg!(windows) && o.disable_wgi_xinput {
                 SDL_SetHintWithPriority(SDL_HINT_JOYSTICK_RAWINPUT_CORRELATE_XINPUT, c"0".as_ptr(), SDL_HINT_OVERRIDE);

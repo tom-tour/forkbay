@@ -51,7 +51,7 @@ fn game_ini(file: &str) -> Option<PathBuf> {
 
 fn game_path(file: &str) -> Result<PathBuf> {
     if !rom_files().iter().any(|f| f == file) { bail!("Jeu introuvable : {file}"); }
-    game_ini(file).ok_or_else(|| anyhow!("Le nom du fichier de ce jeu ne contient pas son identifiant, comme [0100000000010000] : Forkbay ne sait pas où l'émulateur range ses réglages."))
+    game_ini(file).ok_or_else(|| anyhow!("Le nom du fichier de ce jeu ne contient pas son identifiant, comme [0100000000010000] : NX2 Launcher ne sait pas où l'émulateur range ses réglages."))
 }
 
 pub(crate) fn section_range(lines: &[String], section: &str) -> Option<(usize, usize)> {
@@ -121,7 +121,7 @@ fn follow_common(lines: &mut Vec<String>, section: &str, key: &str) {
     group(lines, section, key);
 }
 
-/// Forkbay updates the emulators itself: their own update prompt is turned off before each start,
+/// NX2 Launcher updates the emulators itself: their own update prompt is turned off before each start,
 /// so that a version is never replaced without being checked and kept.
 pub fn turn_off_emulator_updates() -> Result<()> {
     let path = common_path();

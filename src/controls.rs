@@ -405,12 +405,12 @@ pub fn set_game_profile(file: &str, player: usize, name: &str) -> Result<()> {
     save(&path, &lines, crlf)
 }
 
-// --- Moving around Forkbay ---
+// --- Moving around NX2 Launcher ---
 
-/// The controls Forkbay itself reads: the D-pad, the left stick, and the buttons it gives a use to.
+/// The controls NX2 Launcher itself reads: the D-pad, the left stick, and the buttons it gives a use to.
 pub const NAV: [&str; 10] = ["button_dup", "button_ddown", "button_dleft", "button_dright", "lstick", "button_a", "button_b", "button_y", "button_l", "button_r"];
 
-/// Forkbay's own controls, kept with its settings: the emulators never see them. None goes back to player 1's.
+/// NX2 Launcher's own controls, kept with its settings: the emulators never see them. None goes back to player 1's.
 pub fn set_nav(controls: &Value) -> Result<()> {
     let mut s = crate::core::load_settings();
     s.nav_controls = match controls.as_object() {
@@ -428,7 +428,7 @@ pub fn set_nav(controls: &Value) -> Result<()> {
     crate::core::save_settings(&s)
 }
 
-/// Forkbay's own controls filled from a controller, as choosing it fills a player's.
+/// NX2 Launcher's own controls filled from a controller, as choosing it fills a player's.
 pub fn nav_device(device: &Value) -> Result<()> {
     let guid = device["guid"].as_str().ok_or_else(|| anyhow!("Manette inconnue."))?.to_string();
     let port = device["port"].as_u64().unwrap_or(0) as usize;

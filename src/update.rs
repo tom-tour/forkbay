@@ -5,10 +5,10 @@ use serde_json::{json, Value};
 use std::fs;
 use std::path::PathBuf;
 
-pub const REPO_URL: &str = "https://github.com/tom-tour/forkbay";
+pub const REPO_URL: &str = "https://github.com/tom-tour/nx2-launcher";
 pub const KOFI_URL: &str = "https://ko-fi.com/tom_t";
-const API: &str = "https://api.github.com/repos/tom-tour/forkbay/releases/latest";
-const ASSET: &str = if cfg!(windows) { "forkbay-windows-x86_64.exe" } else { "forkbay-linux-x86_64" };
+const API: &str = "https://api.github.com/repos/tom-tour/nx2-launcher/releases/latest";
+const ASSET: &str = if cfg!(windows) { "nx2-launcher-windows-x86_64.exe" } else { "nx2-launcher-linux-x86_64" };
 
 pub fn version() -> &'static str {
     env!("CARGO_PKG_VERSION")

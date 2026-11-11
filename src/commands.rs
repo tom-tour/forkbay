@@ -104,12 +104,12 @@ fn run_command(cmd: &str, a: &Value) -> Result<Value> {
         "set_default_emu" => { let mut s = load_settings(); s.default_emulator = s_arg(a, "emu"); save_settings(&s)?; json!({}) }
         "set_theme" => { theme::set(a)?; json!({}) }
         "theme_import" => {
-            let p = if a["path"].is_string() { Some(PathBuf::from(s_arg(a, "path"))) } else { rfd::FileDialog::new().add_filter("Forkbay", &["json"]).pick_file() };
+            let p = if a["path"].is_string() { Some(PathBuf::from(s_arg(a, "path"))) } else { rfd::FileDialog::new().add_filter("NX2 Launcher", &["json"]).pick_file() };
             match p { Some(p) => json!({ "theme": theme::import(&p)? }), None => json!({}) }
         }
         "theme_export" => {
             let safe: String = a["theme"]["name"].as_str().unwrap_or("theme").chars().filter(|c| c.is_alphanumeric() || " _-".contains(*c)).collect();
-            let p = if a["path"].is_string() { Some(PathBuf::from(s_arg(a, "path"))) } else { rfd::FileDialog::new().add_filter("Forkbay", &["json"]).set_file_name(format!("{safe}.forkbay-theme.json")).save_file() };
+            let p = if a["path"].is_string() { Some(PathBuf::from(s_arg(a, "path"))) } else { rfd::FileDialog::new().add_filter("NX2 Launcher", &["json"]).set_file_name(format!("{safe}.nx2-theme.json")).save_file() };
             match p { Some(p) => msg(theme::export(&p, &a["theme"])?), None => json!({}) }
         }
         "theme_remove" => { theme::remove(&s_arg(a, "name"))?; json!({}) }

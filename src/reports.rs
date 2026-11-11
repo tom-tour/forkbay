@@ -1,5 +1,5 @@
-// Game reports: the Lichii report site, read live, and the shared report site of Forkbay (forkbay-compat),
-// where a report is sent through a GitHub form that Forkbay fills in.
+// Game reports: the Lichii report site, read live, and the shared report site of NX2 Launcher (forkbay-compat),
+// where a report is sent through a GitHub form that NX2 Launcher fills in.
 
 use crate::net::encode;
 use anyhow::Result;
@@ -72,13 +72,13 @@ pub struct Setup<'a> {
     pub played: u64,
 }
 
-/// The address of the report form, filled in with what Forkbay knows. GitHub fills each field from its id.
+/// The address of the report form, filled in with what NX2 Launcher knows. GitHub fills each field from its id.
 pub fn form_url(s: &Setup, gpu: &str, cpu: &str, os: &str) -> String {
     let mut fields = vec![("template", "report.yml".to_string()), ("title", format!("[Report] {}", s.name)), ("game", s.name.to_string())];
     if let Some(id) = &s.id { fields.push(("title_id", id.clone())); }
     fields.extend([("emulator", s.emulator.to_string()), ("build", s.build.to_string()), ("gpu", main_gpu(gpu)), ("cpu", cpu.to_string()), ("os", os.to_string())]);
     if s.played > 0 { fields.push(("played", duration(s.played))); }
-    fields.push(("forkbay", format!("Forkbay {}", env!("CARGO_PKG_VERSION"))));
+    fields.push(("forkbay", format!("NX2 Launcher {}", env!("CARGO_PKG_VERSION"))));
     let query: Vec<String> = fields.iter().filter(|(_, v)| !v.is_empty()).map(|(k, v)| format!("{k}={}", encode(v))).collect();
     format!("{FORM}?{}", query.join("&"))
 }
@@ -115,6 +115,6 @@ mod tests {
         assert!(url.contains("&title_id=0400C3F00006E000&"));
         assert!(url.contains("&gpu=NVIDIA%20GeForce%20RTX%204070&"));
         assert!(url.contains("&played=1%20h%2002&"));
-        assert!(url.contains("&forkbay=Forkbay%20"));
+        assert!(url.contains("&forkbay=NX2%20Launcher%20"));
     }
 }

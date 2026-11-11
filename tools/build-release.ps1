@@ -11,7 +11,7 @@ try {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 } finally { Pop-Location }
 
-$exe = Join-Path $repo 'target\release\forkbay.exe'
+$exe = Join-Path $repo 'target\release\nx2-launcher.exe'
 $text = [Text.Encoding]::GetEncoding(28591).GetString([IO.File]::ReadAllBytes($exe))
 $found = 0
 foreach ($p in @([regex]::Escape($env:USERPROFILE), [regex]::Escape($repo), [regex]::Escape('\' + $env:USERNAME + '\'), '[A-Za-z]:\\Users\\', [regex]::Escape($env:COMPUTERNAME))) {

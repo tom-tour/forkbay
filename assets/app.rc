@@ -14,12 +14,12 @@ BEGIN
     BLOCK "040904B0"
     BEGIN
       VALUE "CompanyName", "tom-tour"
-      VALUE "FileDescription", "Forkbay - Switch 2 emulator manager"
-      VALUE "InternalName", "Forkbay"
-      VALUE "ProductName", "Forkbay"
+      VALUE "FileDescription", "NX2 Launcher - Switch 2 emulator manager"
+      VALUE "InternalName", "NX2 Launcher"
+      VALUE "ProductName", "NX2 Launcher"
       VALUE "FileVersion", "0.14.0"
       VALUE "ProductVersion", "0.14.0"
-      VALUE "OriginalFilename", "Forkbay.exe"
+      VALUE "OriginalFilename", "NX2 Launcher.exe"
       VALUE "LegalCopyright", "Copyright (C) 2026 tom-tour. GPL-3.0-or-later."
     END
   END

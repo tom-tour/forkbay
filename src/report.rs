@@ -63,7 +63,7 @@ pub fn collect(game: &str, include_log: bool) -> Result<Value> {
     let data = data_path();
     let (os, cpu, gpu, ram) = system_info();
     let mut t = String::new();
-    t += &format!("Forkbay {}\nOS: {os}\nCPU: {cpu}\nGPU: {gpu}\nRAM: {ram}\nLanguage: {}\nData mode: {}\n", crate::update::version(), crate::i18n::current(), s.data_location);
+    t += &format!("NX2 Launcher {}\nOS: {os}\nCPU: {cpu}\nGPU: {gpu}\nRAM: {ram}\nLanguage: {}\nData mode: {}\n", crate::update::version(), crate::i18n::current(), s.data_location);
     t += &format!("Keys present: {}\nFirmware files: {}\nCloud: {} ({})\n", has_keys(&data), firmware_count(&data), s.sync.enabled, s.sync.provider);
     t += "\nEmulators:\n";
     for e in crate::emu::list() {

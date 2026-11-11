@@ -12,9 +12,9 @@ document.addEventListener('focusout',e=>{if(PADSEL&&e.target==PADSEL.sel)padSelC
 function padPage(d){if($('wiz').style.display=='block')return;const i=pages.findIndex(([p])=>$('p-'+p).classList.contains('on'));const n=(i+d+pages.length)%pages.length;go(pages[n][0]);const b=$('n-'+pages[n][0]);b.focus()}
 window.padAction=name=>{document.documentElement.dataset.pad='1';const cur=document.activeElement;if(PADSEL&&PADSEL.sel!=cur)padSelClose(false);if(PADSEL){if(name=='a'||name=='b')return padSelClose(name=='a');if(name=='left'||name=='up')return padCycle(cur,-1);if(name=='right'||name=='down')return padCycle(cur,1);return}if(['up','down','left','right'].includes(name))return padMove(name);if(name=='a'){if(cur&&cur.tagName=='SELECT'&&padItems().includes(cur))return padSelOpen(cur);if(cur&&padItems().includes(cur))cur.click();else padMove('down');return}if(name=='y'){const g=cur&&cur.closest&&cur.closest('.game');if(g)g.querySelector('.gear').click();return}if(name=='b'){if($('imgBox').style.display=='block')return closeBox();if($('wiz').style.display=='block'){if(wi>0)wiz(-1);return}const n=document.querySelector('nav button.on');if(n)n.focus();return}if(name=='lb')padPage(-1);if(name=='rb')padPage(1)};
 const PAD_MAP={12:'up',13:'down',14:'left',15:'right',0:'a',1:'b',3:'y',4:'lb',5:'rb'};let padHeld={},padSeen=false;
-// The controller is read by Forkbay itself, with its own controls from the Controller page, which are
-// player 1's until they are set apart: A in Forkbay is then the button that is A in the games. The browser's own reading stays for a controller those
-// controls do not use. The controller is let go while a game runs and while Forkbay is not in front.
+// The controller is read by NX2 Launcher itself, with its own controls from the Controller page, which are
+// player 1's until they are set apart: A in NX2 Launcher is then the button that is A in the games. The browser's own reading stays for a controller those
+// controls do not use. The controller is let go while a game runs and while NX2 Launcher is not in front.
 const NAV_CTL={up:'button_dup',down:'button_ddown',left:'button_dleft',right:'button_dright',a:'button_a',b:'button_b',y:'button_y',lb:'button_l',rb:'button_r'};
 let NAVSTATES=null,navBusy=false,navAt=0,navCtlAt=0,navHeld=false;
 function navFree(){return document.hasFocus()&&!SESSION&&!OTHER&&!(window.NAVPAUSE>Date.now())}
@@ -35,7 +35,7 @@ function padPoll(now){if(window.PADHOLD){padHeld={};requestAnimationFrame(padPol
   const on=document.hasFocus()?(navFromSdl()||navFromBrowser()):null;
   if(on){if(!padSeen){padSeen=true;$('padHint').textContent='A / B / Y / L / R';}for(const n in on){const h=padHeld[n];const move=['up','down','left','right'].includes(n);if(!h||(move&&now-h.t>(h.r?140:420))){padAction(n);padHeld[n]={t:now,r:!!h}}}for(const n in padHeld)if(!on[n])delete padHeld[n]}else padHeld={};
   requestAnimationFrame(padPoll)}
-// Controls changed in an emulator's own window are read again when Forkbay comes back in front.
+// Controls changed in an emulator's own window are read again when NX2 Launcher comes back in front.
 window.addEventListener('focus',()=>{if(!$('p-pad').classList.contains('on'))call('controls_get').then(c=>{CTL=c}).catch(()=>{})});
 requestAnimationFrame(padPoll);
 document.addEventListener('keydown',e=>{if(e.key=='F11'){e.preventDefault();return toggleFs()}if(e.key=='Escape'&&!PADSEL&&$('imgBox').style.display=='block')return closeBox();const t=e.target;if(t&&(t.tagName=='TEXTAREA'||(t.tagName=='INPUT'&&t.type!='checkbox'&&t.type!='radio')))return;if(t&&t.tagName=='SELECT'&&(e.key=='Enter'||(PADSEL&&e.key=='Escape'))){e.preventDefault();e.stopPropagation();return padAction(e.key=='Enter'?'a':'b')}const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[e.key];if(!m)return;e.preventDefault();padAction(m)});

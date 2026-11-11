@@ -7,7 +7,7 @@ use std::path::PathBuf;
 const MAX_SIZE: u64 = 256 * 1024;
 
 pub fn path() -> PathBuf {
-    manager_dir().join("logs").join("forkbay.log")
+    manager_dir().join("logs").join("nx2-launcher.log")
 }
 
 fn stamp() -> String {

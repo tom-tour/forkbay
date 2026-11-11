@@ -29,11 +29,11 @@ cargo test
 The other tests run the real program on throwaway folders:
 
 ```bash
-pwsh ci/run-windows.ps1 -Bin target/release/forkbay.exe
+pwsh ci/run-windows.ps1 -Bin target/release/nx2-launcher.exe
 ```
 
 ```bash
-bash ci/run-linux.sh target/release/forkbay screenshots
+bash ci/run-linux.sh target/release/nx2-launcher screenshots
 ```
 
 ## Where things are
@@ -80,11 +80,11 @@ cargo test
 Les autres tests lancent le vrai programme sur des dossiers jetables :
 
 ```bash
-pwsh ci/run-windows.ps1 -Bin target/release/forkbay.exe
+pwsh ci/run-windows.ps1 -Bin target/release/nx2-launcher.exe
 ```
 
 ```bash
-bash ci/run-linux.sh target/release/forkbay screenshots
+bash ci/run-linux.sh target/release/nx2-launcher screenshots
 ```
 
 ## Où trouver quoi

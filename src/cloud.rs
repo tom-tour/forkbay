@@ -189,7 +189,7 @@ pub fn google_connect() -> Result<String> {
     let head = String::from_utf8_lossy(&buf[..n]).into_owned();
     let line = head.lines().next().unwrap_or("");
     let param = |k: &str| Regex::new(&format!(r"[?&]{k}=([^& ]+)")).unwrap().captures(line).map(|c| decode(&c[1]));
-    let page = "<html><body style='font-family:sans-serif;background:#12141c;color:#eee;padding:40px'><h2>Forkbay</h2><p>Tu peux fermer cet onglet et revenir à l'outil.</p></body></html>";
+    let page = "<html><body style='font-family:sans-serif;background:#12141c;color:#eee;padding:40px'><h2>NX2 Launcher</h2><p>Tu peux fermer cet onglet et revenir à l'outil.</p></body></html>";
     let _ = write!(stream, "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{page}", page.len());
     if param("state").as_deref() != Some(state) { bail!("Réponse Google non reconnue : connexion refusée."); }
     let Some(code) = param("code") else { bail!("Connexion refusée par Google."); };
@@ -336,7 +336,7 @@ pub fn ask_conflict(local: u64, remote: u64, machine: &str, can_cancel: bool) ->
     let (a, b, c) = (t("Garder la version locale"), t("Garder la version du cloud"), t("Annuler"));
     let text = t(&format!("Les deux versions ont changé depuis la dernière synchronisation.\n\nVersion locale (ce PC) : {}\nVersion du cloud ({machine}) : {}\n\nCelle que tu ne gardes pas est remplacée. Si c'est la version locale, une copie reste dans Save Backups.", format_date(local), format_date(remote)));
     let buttons = if can_cancel { rfd::MessageButtons::YesNoCancelCustom(a.clone(), b.clone(), c) } else { rfd::MessageButtons::OkCancelCustom(a.clone(), b.clone()) };
-    let r = rfd::MessageDialog::new().set_title(t("Forkbay : conflit de sauvegarde")).set_description(text).set_level(rfd::MessageLevel::Warning).set_buttons(buttons).show();
+    let r = rfd::MessageDialog::new().set_title(t("NX2 Launcher : conflit de sauvegarde")).set_description(text).set_level(rfd::MessageLevel::Warning).set_buttons(buttons).show();
     match r {
         rfd::MessageDialogResult::Custom(t) if t == a => Choice::Local,
         rfd::MessageDialogResult::Custom(t) if t == b => Choice::Remote,

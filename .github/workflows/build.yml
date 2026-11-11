@@ -20,12 +20,17 @@ jobs:
       - run: cargo test --release --locked
       - name: Test the app
         shell: pwsh
-        run: ./ci/run-windows.ps1 -Bin target/release/forkbay.exe
-      - run: Copy-Item target/release/forkbay.exe forkbay-windows-x86_64.exe
+        run: ./ci/run-windows.ps1 -Bin target/release/nx2-launcher.exe
+      # The forkbay- copy is what versions from before the new name look for when they update.
+      - run: |
+          Copy-Item target/release/nx2-launcher.exe nx2-launcher-windows-x86_64.exe
+          Copy-Item target/release/nx2-launcher.exe forkbay-windows-x86_64.exe
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: forkbay-windows
-          path: forkbay-windows-x86_64.exe
+          name: build-windows
+          path: |
+            nx2-launcher-windows-x86_64.exe
+            forkbay-windows-x86_64.exe
 
   linux:
     # Built on an older Ubuntu so that it runs on newer distributions.
@@ -47,7 +52,7 @@ jobs:
       - name: Test the app on a virtual screen
         run: |
           sudo apt-get install -y xvfb imagemagick x11-utils dbus
-          bash ci/run-linux.sh target/release/forkbay screenshots
+          bash ci/run-linux.sh target/release/nx2-launcher screenshots
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
@@ -55,16 +60,19 @@ jobs:
           path: screenshots
       - name: Package
         run: |
-          mkdir -p dist/forkbay
-          cp target/release/forkbay README.md LICENSE dist/forkbay/
-          tar -C dist -czf forkbay-linux-x86_64.tar.gz forkbay
-          cp target/release/forkbay forkbay-linux-x86_64
+          mkdir -p dist/nx2-launcher
+          cp target/release/nx2-launcher README.md LICENSE dist/nx2-launcher/
+          tar -C dist -czf nx2-launcher-linux-x86_64.tar.gz nx2-launcher
+          cp target/release/nx2-launcher nx2-launcher-linux-x86_64
+          # What versions from before the new name look for when they update.
+          cp target/release/nx2-launcher forkbay-linux-x86_64
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: forkbay-linux
+          name: build-linux
           path: |
+            nx2-launcher-linux-x86_64
+            nx2-launcher-linux-x86_64.tar.gz
             forkbay-linux-x86_64
-            forkbay-linux-x86_64.tar.gz
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -76,7 +84,7 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist
-          pattern: forkbay-*
+          pattern: build-*
           merge-multiple: true
       - name: Publish
         env:
@@ -85,5 +93,5 @@ jobs:
           if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
             gh release upload "$GITHUB_REF_NAME" dist/* --clobber --repo "$GITHUB_REPOSITORY"
           else
-            gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --title "Forkbay ${GITHUB_REF_NAME#v}" --generate-notes
+            gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --title "NX2 Launcher ${GITHUB_REF_NAME#v}" --generate-notes
           fi

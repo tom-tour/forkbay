@@ -1,13 +1,13 @@
 [package]
-name = "forkbay"
+name = "nx2-launcher"
 version = "0.14.0"
 edition = "2021"
 description = "Switch 2 emulator manager: launch, update, share data, Steam and cloud saves"
 license = "GPL-3.0-or-later"
-repository = "https://github.com/tom-tour/forkbay"
+repository = "https://github.com/tom-tour/nx2-launcher"
 
 [[bin]]
-name = "forkbay"
+name = "nx2-launcher"
 path = "src/main.rs"
 
 [dependencies]

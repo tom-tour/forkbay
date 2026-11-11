@@ -166,7 +166,7 @@ pub fn find_and_run() {
             }
         }
     }
-    rfd::MessageDialog::new().set_title("Forkbay").set_description(crate::i18n::t("Dossier de Forkbay introuvable. Branche le disque, ou ouvre Forkbay depuis son nouvel emplacement et clique sur Enregistrer dans Steam.")).set_level(rfd::MessageLevel::Warning).show();
+    rfd::MessageDialog::new().set_title("NX2 Launcher").set_description(crate::i18n::t("Dossier de NX2 Launcher introuvable. Branche le disque, ou ouvre NX2 Launcher depuis son nouvel emplacement et clique sur Enregistrer dans Steam.")).set_level(rfd::MessageLevel::Warning).show();
 }
 
 fn exe_path() -> PathBuf { std::env::current_exe().unwrap_or_default() }
@@ -219,7 +219,7 @@ fn new_entry(file: &str, launcher: &Path) -> Node {
 
 fn tool_entry(launcher: &Path) -> Node {
     let (exe, opts) = tool_exe_and_options(launcher);
-    build_entry("Forkbay".to_string(), exe, opts, exe_path().to_string_lossy().into_owned())
+    build_entry("NX2 Launcher".to_string(), exe, opts, exe_path().to_string_lossy().into_owned())
 }
 
 fn build_entry(name: String, exe: String, opts: String, icon: String) -> Node {

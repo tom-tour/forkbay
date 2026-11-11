@@ -1,8 +1,8 @@
 <img src="assets/icon.png" width="64" alt="" align="right">
 
-# Forkbay
+# NX2 Launcher
 
-**Switch 2 emulator manager**
+**Launcher, updater and fork manager for Switch 2 emulators: Eglantine, Lichii, Orchid and the other Eden NX2 forks.** Formerly called Forkbay.
 
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/tom_t)
 [![License: GPL v3+](https://img.shields.io/badge/License-GPLv3+-blue.svg)](LICENSE)
@@ -39,15 +39,15 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 - **One data folder:** every emulator uses the same saves, keys, firmware and settings.
 - **Portable or installed:** keep your data next to the tool, in your user folder, or anywhere you choose.
 - **One emulator per game:** pick it once, and Steam follows your choice.
-- **Updates:** tells you at startup when an emulator has a new version, shows the release notes first, and keeps the previous version so you can roll back. You can also install any published version of an emulator, older ones included. The emulators' own update prompt is turned off, so that every update is checked and the previous version kept; if an emulator is replaced anyway, Forkbay notices it and shows the version it now has. On Windows, downloads are also scanned with Microsoft Defender.
+- **Updates:** tells you at startup when an emulator has a new version, shows the release notes first, and keeps the previous version so you can roll back. You can also install any published version of an emulator, older ones included. The emulators' own update prompt is turned off, so that every update is checked and the previous version kept; if an emulator is replaced anyway, NX2 Launcher notices it and shows the version it now has. On Windows, downloads are also scanned with Microsoft Defender.
 - **A shader cache per emulator:** a cache left by another fork can give a black screen, so each emulator keeps its own, across its updates. A button empties it if an update ever breaks the graphics.
 - **Automatic copies:** saves, profile and settings are copied before you play and before an emulator changes version, with or without the cloud. You can restore them from **Settings**.
 - **Your own emulators:** add one from a GitHub repository or from a local program. On Linux, an emulator installed by your package manager (AUR, for example) is used where it is, with the same shared data.
 - **Steam:** adds games to your library and leaves your other shortcuts alone.
-- **Controller page:** set your controls once for every emulator, the way their own Controls window does it: 8 players, controller type, buttons filled in from the controller you pick, each control set by pressing it, stick deadzone and range, motion, vibration, input profiles, and a profile per game. Controls light up as you press them. Forkbay reads controllers with the same SDL release as the emulators, so what it writes works in all of them. Before each game, controls set with a controller that is not plugged in move to a plugged-in one of the same model.
+- **Controller page:** set your controls once for every emulator, the way their own Controls window does it: 8 players, controller type, buttons filled in from the controller you pick, each control set by pressing it, stick deadzone and range, motion, vibration, input profiles, and a profile per game. Controls light up as you press them. NX2 Launcher reads controllers with the same SDL release as the emulators, so what it writes works in all of them. Before each game, controls set with a controller that is not plugged in move to a plugged-in one of the same model.
 - **Shortcuts for every emulator:** pause, TV or handheld mode, volume, speed, screenshot, fullscreen, stop and quit, on the keyboard and as a button combination on the controller (HOME + a button). Set them once in the Controller page, and every emulator uses them.
-- **Play time:** Forkbay counts the time you spend in each game and shows it with the date of your last game, in the list and in the game sheet. The list can be searched, and sorted by name, last game or play time.
-- **Game reports:** the game sheet shows the latest player reports from the [Lichii report site](https://lichii.zortos.me), and can show only those made with your graphics card brand. A button opens [Forkbay Compat](https://tom-tour.github.io/forkbay-compat/), which gathers the reports of every source, and another sends your own report, with the game, emulator, version, graphics card, system and play time already filled in.
+- **Play time:** NX2 Launcher counts the time you spend in each game and shows it with the date of your last game, in the list and in the game sheet. The list can be searched, and sorted by name, last game or play time.
+- **Game reports:** the game sheet shows the latest player reports from the [Lichii report site](https://lichii.zortos.me), and can show only those made with your graphics card brand. A button opens [NX2 Compat](https://tom-tour.github.io/forkbay-compat/), which gathers the reports of every source, and another sends your own report, with the game, emulator, version, graphics card, system and play time already filled in.
 - **Game details:** the gear on a cover opens the game's settings and images.
 - **Console and picture settings:** game language, region, handheld or TV mode, resolution, vertical sync, speed limit, graphics engine and volume, on the **Emulators** page for all your games, or for one game only from its details.
 - **Running games:** a game in progress shows as running, with a button to close it.
@@ -133,9 +133,11 @@ GPL-3.0-or-later. See [LICENSE](LICENSE).
 
 # Français
 
+**Lanceur, outil de mise à jour et gestionnaire de forks pour les émulateurs Switch 2 : Eglantine, Lichii, Orchid et les autres forks d'Eden NX2.** S'appelait avant Forkbay.
+
 Une seule fenêtre pour tes émulateurs Switch 2 sous Windows et Linux : lancer les jeux, garder les émulateurs à jour, partager un seul dossier de données, ajouter les jeux à Steam et synchroniser tes sauvegardes. C'est un seul petit programme, écrit en Rust.
 
-Les captures d'écran sont [en haut de la page](#forkbay).
+Les captures d'écran sont [en haut de la page](#nx2-launcher).
 
 ## Ce que fait l'outil
 
@@ -144,15 +146,15 @@ Les captures d'écran sont [en haut de la page](#forkbay).
 - **Un seul dossier de données :** tous les émulateurs utilisent les mêmes sauvegardes, clés, firmware et réglages.
 - **Portable ou installé :** tes données restent à côté de l'outil, dans ton dossier utilisateur, ou où tu veux.
 - **Un émulateur par jeu :** tu le choisis une fois, et Steam suit ce choix.
-- **Mises à jour :** te prévient au démarrage quand un émulateur a une nouvelle version, affiche d'abord les notes de version et garde la précédente pour pouvoir y revenir. Tu peux aussi installer n'importe quelle version publiée d'un émulateur, y compris les plus anciennes. La fenêtre de mise à jour intégrée aux émulateurs est désactivée, pour que chaque mise à jour soit vérifiée et la version précédente gardée ; si un émulateur est quand même remplacé, Forkbay s'en aperçoit et affiche la version qu'il a maintenant. Sous Windows, les téléchargements sont aussi analysés avec Microsoft Defender.
+- **Mises à jour :** te prévient au démarrage quand un émulateur a une nouvelle version, affiche d'abord les notes de version et garde la précédente pour pouvoir y revenir. Tu peux aussi installer n'importe quelle version publiée d'un émulateur, y compris les plus anciennes. La fenêtre de mise à jour intégrée aux émulateurs est désactivée, pour que chaque mise à jour soit vérifiée et la version précédente gardée ; si un émulateur est quand même remplacé, NX2 Launcher s'en aperçoit et affiche la version qu'il a maintenant. Sous Windows, les téléchargements sont aussi analysés avec Microsoft Defender.
 - **Un cache de shaders par émulateur :** un cache laissé par un autre fork peut donner un écran noir, donc chaque émulateur garde le sien, d'une mise à jour à l'autre. Un bouton le vide si une mise à jour casse un jour les graphismes.
 - **Copies automatiques :** les sauvegardes, le profil et les réglages sont copiés avant de jouer et avant qu'un émulateur change de version, avec ou sans cloud. Tu peux les restaurer depuis **Réglages**.
 - **Tes propres émulateurs :** ajoutes-en un depuis un dépôt GitHub ou depuis un programme local. Sous Linux, un émulateur installé par ton gestionnaire de paquets (AUR, par exemple) est utilisé sur place, avec les mêmes données partagées.
 - **Steam :** ajoute les jeux à ta bibliothèque sans toucher à tes autres raccourcis.
-- **Page Manette :** règle tes contrôles une fois pour tous les émulateurs, comme le fait leur propre fenêtre Contrôles : 8 joueurs, type de manette, touches remplies selon la manette choisie, chaque touche réglée en appuyant dessus, zone morte et portée des sticks, gyroscope, vibrations, profils, et un profil par jeu. Les touches s'allument quand tu appuies. Forkbay lit les manettes avec la même version de SDL que les émulateurs : ce qu'il écrit marche dans tous. Avant chaque partie, des contrôles réglés avec une manette qui n'est pas branchée passent à une manette branchée du même modèle.
+- **Page Manette :** règle tes contrôles une fois pour tous les émulateurs, comme le fait leur propre fenêtre Contrôles : 8 joueurs, type de manette, touches remplies selon la manette choisie, chaque touche réglée en appuyant dessus, zone morte et portée des sticks, gyroscope, vibrations, profils, et un profil par jeu. Les touches s'allument quand tu appuies. NX2 Launcher lit les manettes avec la même version de SDL que les émulateurs : ce qu'il écrit marche dans tous. Avant chaque partie, des contrôles réglés avec une manette qui n'est pas branchée passent à une manette branchée du même modèle.
 - **Raccourcis pour tous les émulateurs :** pause, mode TV ou portable, volume, vitesse, capture d'écran, plein écran, arrêter et quitter, au clavier et en combinaison de boutons sur la manette (HOME + un bouton). Règle-les une fois dans la page Manette, et tous les émulateurs s'en servent.
-- **Temps de jeu :** Forkbay compte le temps passé dans chaque jeu et l'affiche avec la date de ta dernière partie, dans la liste et dans la fiche du jeu. La liste se cherche, et se trie par nom, dernière partie ou temps de jeu.
-- **Rapports de jeu :** la fiche du jeu montre les derniers rapports de joueurs du [site de rapports de Lichii](https://lichii.zortos.me), et peut n'afficher que ceux faits avec ta marque de carte graphique. Un bouton ouvre [Forkbay Compat](https://tom-tour.github.io/forkbay-compat/), qui rassemble les rapports de toutes les sources, et un autre envoie ton propre rapport, avec le jeu, l'émulateur, la version, la carte graphique, le système et le temps de jeu déjà remplis.
+- **Temps de jeu :** NX2 Launcher compte le temps passé dans chaque jeu et l'affiche avec la date de ta dernière partie, dans la liste et dans la fiche du jeu. La liste se cherche, et se trie par nom, dernière partie ou temps de jeu.
+- **Rapports de jeu :** la fiche du jeu montre les derniers rapports de joueurs du [site de rapports de Lichii](https://lichii.zortos.me), et peut n'afficher que ceux faits avec ta marque de carte graphique. Un bouton ouvre [NX2 Compat](https://tom-tour.github.io/forkbay-compat/), qui rassemble les rapports de toutes les sources, et un autre envoie ton propre rapport, avec le jeu, l'émulateur, la version, la carte graphique, le système et le temps de jeu déjà remplis.
 - **Fiche du jeu :** l'engrenage sur une jaquette ouvre les réglages et les images du jeu.
 - **Réglages de console et d'image :** langue des jeux, région, mode portable ou TV, résolution, synchronisation verticale, limite de vitesse, moteur graphique et volume, dans la page **Émulateurs** pour tous tes jeux, ou pour un seul jeu depuis sa fiche.
 - **Jeux en cours :** un jeu lancé est indiqué comme en cours, avec un bouton pour le fermer.

@@ -45,7 +45,7 @@ pub struct Settings {
     pub art_source: String,
     pub art_replace: bool,
     pub art_disabled: Vec<String>,
-    /// The controls that move around Forkbay itself. None: those of player 1.
+    /// The controls that move around NX2 Launcher itself. None: those of player 1.
     pub nav_controls: Option<BTreeMap<String, String>>,
 }
 
@@ -143,7 +143,11 @@ pub fn home() -> PathBuf {
 
 pub fn data_path_for(s: &Settings) -> PathBuf {
     match s.data_location.as_str() {
-        "local" => local_data_base().join("Forkbay").join("Data"),
+        "local" => {
+            // Kept where it was when the program was still called Forkbay.
+            let old = local_data_base().join("Forkbay").join("Data");
+            if old.is_dir() { old } else { local_data_base().join("NX2 Launcher").join("Data") }
+        }
         "custom" if !s.custom_data_path.is_empty() => PathBuf::from(&s.custom_data_path),
         _ => root().join("Data"),
     }
