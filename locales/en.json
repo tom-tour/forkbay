@@ -630,7 +630,11 @@
   "hier": "yesterday",
   "Temps de jeu :": "Play time:",
   "Dernière partie :": "Last played:",
-  "Temps de jeu · Dernière partie": "Play time · Last played"
+  "Temps de jeu · Dernière partie": "Play time · Last played",
+  "Dernière partie": "Last played",
+  "Temps de jeu": "Play time",
+  "Rechercher un jeu": "Search games",
+  "Aucun jeu ne correspond à ta recherche.": "No game matches your search."
  },
  "uiPatterns": [
   [
