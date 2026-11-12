@@ -661,6 +661,10 @@ pub fn run(emu: &str, game: Option<&Path>, key: &str) -> Result<()> {
     let _ = fs::remove_file(session_file());
     let status = status?;
     if !status.success() { crate::log::error(&format!("{emu} stopped with {status}")); } else { crate::log::info(&format!("{emu} closed")); }
+    // The emulator has written its settings while closing: what was changed meanwhile goes on top.
+    if !any_running() {
+        if let Err(e) = crate::config::apply_pending() { crate::log::error(&format!("waiting settings: {e}")); }
+    }
     Ok(())
 }
 

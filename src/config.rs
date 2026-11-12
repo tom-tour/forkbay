@@ -36,8 +36,63 @@ fn keys() -> Vec<&'static str> {
     FIELDS.iter().map(|f| f.0).chain(["speed", "volume"]).collect()
 }
 
-fn common_path() -> PathBuf {
+fn real_common_path() -> PathBuf {
     data_path().join("config").join("qt-config.ini")
+}
+
+/// Where a change made while an emulator runs waits: the file as wanted, and the file as it was when the wait began.
+fn pending_dir() -> PathBuf {
+    manager_dir().join("pending")
+}
+
+/// The common settings file to read and write. While an emulator runs and a change waits, it is the waiting copy,
+/// so that the pages show what will be applied. Once every emulator is closed, the change is applied first.
+pub(crate) fn common_path() -> PathBuf {
+    let want = pending_dir().join("qt-config.ini");
+    if want.exists() {
+        if crate::emu::any_running() { return want; }
+        if let Err(e) = apply_pending() { crate::log::error(&format!("waiting settings: {e}")); return want; }
+    }
+    real_common_path()
+}
+
+/// The lines of a settings file that hold a value, by section and name.
+fn values(lines: &[String]) -> std::collections::BTreeMap<(String, String), String> {
+    let mut out = std::collections::BTreeMap::new();
+    let mut section = String::new();
+    for l in lines {
+        let t = l.trim();
+        if t.starts_with('[') && t.ends_with(']') { section = t[1..t.len() - 1].to_string(); continue; }
+        if t.starts_with(';') || t.starts_with('#') { continue; }
+        if let Some((k, _)) = l.split_once('=') { out.insert((section.clone(), k.to_string()), l.clone()); }
+    }
+    out
+}
+
+/// Applies what changed while an emulator ran onto the file it wrote when it closed: only those values,
+/// so that what was changed in the emulator meanwhile stays.
+pub(crate) fn apply_pending() -> Result<()> {
+    let dir = pending_dir();
+    let want_path = dir.join("qt-config.ini");
+    if !want_path.exists() { return Ok(()); }
+    let (base, _) = load(&dir.join("base.ini"));
+    let (want, _) = load(&want_path);
+    let (base, want) = (values(&base), values(&want));
+    let real = real_common_path();
+    let (mut lines, crlf) = load(&real);
+    for ((s, k), line) in &want {
+        if base.get(&(s.clone(), k.clone())) != Some(line) { put(&mut lines, s, &format!("{k}="), line.clone()); }
+    }
+    for (s, k) in base.keys().filter(|key| !want.contains_key(*key)) {
+        if let Some((start, end)) = section_range(&lines, s) {
+            let prefix = format!("{k}=");
+            if let Some(i) = lines[start..end].iter().position(|l| l.starts_with(&prefix)) { lines.remove(start + i); }
+        }
+    }
+    save(&real, &lines, crlf)?;
+    fs::remove_dir_all(&dir)?;
+    crate::log::info("waiting settings applied");
+    Ok(())
 }
 
 /// The program id in the file name, such as "[0100000000010000]".
@@ -293,15 +348,30 @@ pub(crate) fn game_ini_path(file: &str) -> Result<PathBuf> {
     game_path(file)
 }
 
-/// The emulators rewrite their common settings file when a game starts and when they close: it must not be changed while they run.
-pub(crate) fn not_running() -> Result<()> {
-    if crate::emu::any_running() { bail!("Ferme d'abord l'émulateur : il écraserait ce réglage en se fermant."); }
+/// The emulators rewrite their common settings file when a game starts and when they close, from what they hold:
+/// a change made while one runs waits in a copy, and is applied once they are all closed.
+pub(crate) fn prepare_common_edit() -> Result<()> {
+    if !crate::emu::any_running() { return Ok(()); }
+    let dir = pending_dir();
+    if !dir.join("qt-config.ini").exists() {
+        fs::create_dir_all(&dir)?;
+        let real = real_common_path();
+        let text = fs::read(&real).unwrap_or_default();
+        fs::write(dir.join("base.ini"), &text)?;
+        fs::write(dir.join("qt-config.ini"), &text)?;
+    }
+    crate::emit_status("Réglage gardé : il sera appliqué à la fermeture de l'émulateur, pour sa prochaine partie.");
     Ok(())
+}
+
+/// Whether a change waits for the emulators to close.
+pub fn pending() -> bool {
+    pending_dir().join("qt-config.ini").exists()
 }
 
 /// Changes one common setting.
 pub fn set(key: &str, value: u64) -> Result<()> {
-    not_running()?;
+    prepare_common_edit()?;
     let value = u32::try_from(value).map_err(|_| anyhow!("Valeur refusée."))?;
     check(key, value)?;
     let path = common_path();

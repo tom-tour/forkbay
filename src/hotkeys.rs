@@ -2,7 +2,7 @@
 // [UI] Shortcuts\Main%20Window\<name>\KeySeq for the keyboard and \Controller_KeySeq for a
 // combination on player 1's controller (QtConfig::SaveShortcutValues, ControllerShortcut::SetKey).
 
-use crate::config::{load, not_running, put, read, save};
+use crate::config::{load, prepare_common_edit, put, read, save};
 use crate::controls::{common_path, quote};
 use anyhow::{anyhow, bail, Result};
 use serde_json::{json, Value};
@@ -87,7 +87,7 @@ pub fn set(id: &str, field: &str, v: &str) -> Result<()> {
         "pad" => { check_pad(v)?; ("Controller_KeySeq", *p) }
         _ => bail!("Raccourci inconnu."),
     };
-    not_running()?;
+    prepare_common_edit()?;
     let path = common_path();
     let (mut lines, crlf) = load(&path);
     if !v.is_empty() {
@@ -108,7 +108,7 @@ fn sorted(v: &str) -> Vec<&str> {
 
 /// Puts every shortcut of the list back to the emulators' defaults.
 pub fn reset() -> Result<()> {
-    not_running()?;
+    prepare_common_edit()?;
     let path = common_path();
     let (mut lines, crlf) = load(&path);
     for (names, k, p) in LIST.iter() {

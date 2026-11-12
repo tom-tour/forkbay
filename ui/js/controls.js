@@ -48,7 +48,7 @@ function ctlTabs(){const b=(k,label,cls='',extra='')=>`<button class="${CTLTAB==
 function ctlTab(t){ctlCancel();if(HKCAP)HKCAP=null,window.PADHOLD=false;CTLTAB=t;renderControls()}
 
 function renderControls(){const el=$('ctl');if(!el||!CTL)return;ctlCloseMenu();
-  const warn=CTL.running?'<div class="card" style="margin-bottom:14px"><b>Un émulateur est ouvert.</b><p class="muted small">Ferme-le avant de changer tes contrôles : il les remplacerait par les siens en se fermant.</p></div>':'';
+  const warn=CTL.running?'<div class="card" style="margin-bottom:14px"><b>Un émulateur est ouvert.</b><p class="muted small">Tu peux changer tes contrôles : ils seront appliqués dès qu\'il se fermera, pour sa prochaine partie. Pour changer les touches de la partie en cours, passe par la fenêtre Contrôles de l\'émulateur.</p></div>':'';
   el.innerHTML=warn+ctlTabs()+(CTLTAB=='adv'?ctlAdvanced():CTLTAB=='keys'?ctlHotkeys():CTLTAB=='nav'?ctlNavHtml():ctlPlayerHtml());ctlRefreshLive()}
 
 function deviceOf(c){const seen=new Map();const add=t=>{const p=pParse(t);if(!p.engine||p.engine=='analog_from_button'){for(const d of['up','down','left','right','modifier'])if(p[d])add(p[d]);return}if(p.engine=='keyboard'||p.engine=='mouse'){seen.set('kb','kb');return}if(p.guid)seen.set(p.engine+p.guid+':'+(p.port||0),{guid:p.guid,port:Number(p.port||0)})};
@@ -141,7 +141,7 @@ async function ctlProfileDrop(name){if(await act('profile_delete',{name})){await
 
 // --- Waiting for a control (HandleClick and SetPollingResult) ---
 function ctlTarget(el){return el.dataset.s?{stick:el.dataset.s,dir:el.dataset.d}:el.dataset.m?{motion:el.dataset.m}:{button:el.dataset.k}}
-async function ctlCapture(el){if(CTLCAP)return;if(CTL.running)return toast('Ferme d\'abord l\'émulateur.',true);ctlCloseMenu();const t=ctlTarget(el);
+async function ctlCapture(el){if(CTLCAP)return;ctlCloseMenu();const t=ctlTarget(el);
   const kind=t.motion?'motion':t.stick&&t.dir!='modifier'?'stick':'button';const dev=$('ctlDev').value;
   const pads=dev!='kb',keys=dev==''||dev=='kb';const parts=dev.split(':');const args={kind};if(parts[0]=='pad'&&!parts[3]){args.guid=parts[1];args.port=Number(parts[2])}
   el.innerHTML='<span>'+(kind=='motion'?'Secoue la manette…':kind=='stick'?'Bouge le stick…':'Appuie…')+'</span>';el.classList.add('wait');document.querySelectorAll(t.stick?`#ctl .padart [data-s="${t.stick}"]`:t.button?`#ctl .padart [data-k="${t.button}"]`:'#ctl .none').forEach(x=>x.classList.add('wait'));
@@ -228,7 +228,7 @@ function ctlHotkeys(){if(!HK){hkLoad();return'<div class="card muted">Lecture de
   <div class="cfgCards hkcards">${HK_GROUPS.map(([g,rows],i)=>`<div class="card" style="margin-top:14px"><h2>${g}</h2>${head}${rows.map(row).join('')}</div>`).join('')}</div>`}
 async function hkSet(id,field,value){if(await act('hotkeys_set',{id,field,value}))await hkLoad()}
 async function hkReset(){if(await act('hotkeys_reset')){toast('Raccourcis remis par défaut.');await hkLoad()}}
-async function hkCapture(el){if(CTL.running)return toast('Ferme d\'abord l\'émulateur.',true);if(HKCAP){const same=HKCAP.id==el.dataset.id&&HKCAP.f==el.dataset.f;hkStop();if(same)return}
+async function hkCapture(el){if(HKCAP){const same=HKCAP.id==el.dataset.id&&HKCAP.f==el.dataset.f;hkStop();if(same)return}
   HKCAP={id:el.dataset.id,f:el.dataset.f,until:Date.now()+6000,held:[],seen:false};window.PADHOLD=true;ctlLiveStop();renderControls();
   if(HKCAP.f=='pad')hkPoll();else setTimeout(()=>{if(HKCAP&&Date.now()>HKCAP.until-100)hkStop()},6000)}
 function hkStop(){HKCAP=null;window.PADHOLD=false;renderControls();ctlLiveStart()}

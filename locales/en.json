@@ -525,6 +525,8 @@
   "Un émulateur est ouvert.": "An emulator is open.",
   "Ferme-le avant de changer tes contrôles : il les remplacerait par les siens en se fermant.": "Close it before changing your controls: it would replace them with its own when it closes.",
   "Ferme d'abord l'émulateur.": "Close the emulator first.",
+  "Tu peux changer tes contrôles : ils seront appliqués dès qu'il se fermera, pour sa prochaine partie. Pour changer les touches de la partie en cours, passe par la fenêtre Contrôles de l'émulateur.": "You can change your controls: they are applied as soon as it closes, for its next game. To change the buttons of the game being played, use the emulator's own Controls window.",
+  "Réglage gardé : il sera appliqué à la fermeture de l'émulateur, pour sa prochaine partie.": "Setting kept: it is applied when the emulator closes, for its next game.",
   "Effacer": "Clear",
   "Inverser le bouton": "Invert button",
   "Ne plus inverser": "Stop inverting",

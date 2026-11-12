@@ -3,7 +3,7 @@
 // Read and written the way the emulators do it (src/frontend_common/config.cpp,
 // src/qt_common/config/qt_config.cpp and src/yuzu/configuration/configure_input*.cpp in Eden and
 // its forks), so that a change made here is what any of them would have written.
-use crate::config::{load, not_running, put, save, section_range};
+use crate::config::{load, prepare_common_edit, put, save, section_range};
 use crate::core::*;
 use crate::params::{float, Params};
 use crate::sdl;
@@ -70,7 +70,7 @@ fn default_of(name: &str) -> String {
 }
 
 pub(crate) fn common_path() -> PathBuf {
-    data_path().join("config").join("qt-config.ini")
+    crate::config::common_path()
 }
 
 fn profiles_dir() -> PathBuf {
@@ -172,11 +172,11 @@ pub fn get() -> Value {
     let players: Vec<Value> = (0..PLAYERS).map(|p| player_of(&lines, p)).collect();
     let advanced: serde_json::Map<String, Value> = ADVANCED.iter().map(|(k, d)| (k.to_string(), json!(flag(&lines, k, *d)))).collect();
     let docked = crate::config::docked(&lines);
-    json!({ "players": players, "profiles": profile_names(), "advanced": advanced, "docked": docked, "running": crate::emu::any_running(), "nav": crate::core::load_settings().nav_controls })
+    json!({ "players": players, "profiles": profile_names(), "advanced": advanced, "docked": docked, "running": crate::emu::any_running(), "pending": crate::config::pending(), "nav": crate::core::load_settings().nav_controls })
 }
 
 fn change(f: impl FnOnce(&mut Vec<String>) -> Result<()>) -> Result<()> {
-    not_running()?;
+    prepare_common_edit()?;
     let path = common_path();
     let (mut lines, crlf) = load(&path);
     f(&mut lines)?;

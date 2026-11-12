@@ -286,10 +286,16 @@ $r = App $rootG 'hotkeys_set' @{ id = 'Fullscreen'; field = 'pad'; value = 'Home
 $r = App $rootG 'hotkeys_reset'; $r = App $rootG 'hotkeys_get'; $h = @($r.value.list) | Where-Object { $_.id -eq 'Change Docked Mode' }; $t = [IO.File]::ReadAllText($ini); Check 'shortcuts back to default' ($r.ok -and $h.pad -eq 'Home+X' -and $t.Contains("Shortcuts\Main%20Window\Change%20Docked%20Mode\Controller_KeySeq\default=true"))
 $p = StartG; Check 'running game known' ($s.value.session.file -like 'Run Game*' -and $s.value.session.emu -eq 'Fritchii') ($s | ConvertTo-Json -Compress -Depth 3)
 $t = Get-Content $ini -Raw; Check 'emulator update prompt turned off' ($t -match '(?m)^check_for_updates=false' -and $t -match '(?m)^other=keep') $t
-$r = App $rootG 'emu_settings_set' @{ key = 'language_index'; value = 3 }; Check 'settings refused while an emulator is open' (-not $r.ok)
-$r = App $rootG 'controls_set' @{ player = 0; name = 'button_a'; value = 'engine:keyboard,code:75,toggle:0' }; Check 'controls refused while an emulator is open' (-not $r.ok)
-$r = App $rootG 'hotkeys_set' @{ id = 'Fullscreen'; field = 'key'; value = 'F12' }; Check 'shortcuts refused while an emulator is open' (-not $r.ok)
+$before = [IO.File]::ReadAllText($ini)
+$r = App $rootG 'emu_settings_set' @{ key = 'language_index'; value = 3 }; Check 'setting kept while an emulator is open' ($r.ok -and [IO.File]::ReadAllText($ini) -eq $before -and (Test-Path "$rootG\Manager\pending\qt-config.ini")) $r.error
+$r = App $rootG 'emu_settings_get'; Check 'the page shows the waiting value' ($r.value.language_index -eq 3) ($r | ConvertTo-Json -Compress)
+$r = App $rootG 'controls_set' @{ player = 0; name = 'button_a'; value = 'engine:keyboard,code:75,toggle:0' }; Check 'controls kept while an emulator is open' $r.ok $r.error
+$r = App $rootG 'hotkeys_set' @{ id = 'Fullscreen'; field = 'key'; value = 'F12' }; Check 'shortcuts kept while an emulator is open' $r.ok $r.error
+# The emulator writes its own file as it closes, with a value changed in its window meanwhile.
+[IO.File]::WriteAllText($ini, $before.Replace('region_index=1', 'region_index=2'))
 $r = App $rootG 'game_close' @{ force = $false }; Check 'close requested' $r.ok $r.error; Check 'game closed normally' (StopWait $p); $s = App $rootG 'game_session'; Check 'session ended' (-not $s.value.session)
+$t = [IO.File]::ReadAllText($ini); Check 'waiting changes applied when it closed, over its own' ($t -match '(?m)^language_index=3' -and $t -match '(?m)^region_index=2' -and $t.Contains('Fullscreen\KeySeq=F12') -and -not (Test-Path "$rootG\Manager\pending")) $t
+$r = App $rootG 'emu_settings_set' @{ key = 'language_index'; value = 2 }; $r = App $rootG 'hotkeys_reset'
 $p = StartG; $r = App $rootG 'game_close' @{ force = $true }; Check 'forced close' ($r.ok -and (StopWait $p)) $r.error
 $r = App $rootG 'game_close' @{ force = $true }; Check 'nothing to close' (-not $r.ok)
 [IO.File]::WriteAllText("$rootG\Manager\session.json", '{"file":"x","emu":"Fritchii","exe":"emu.exe","pid":4000000}'); $s = App $rootG 'game_session'; Check 'stale session ignored' ((-not $s.value.session) -and -not (Test-Path "$rootG\Manager\session.json"))
