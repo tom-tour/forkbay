@@ -183,6 +183,15 @@ fn change(f: impl FnOnce(&mut Vec<String>) -> Result<()>) -> Result<()> {
     save(&path, &lines, crlf)
 }
 
+/// A change to the players' controls: during a game, emulators that can read them again apply it at once.
+fn change_players(f: impl FnOnce(&mut Vec<String>) -> Result<()>) -> Result<()> {
+    change(f)?;
+    if crate::config::push_controls_live() {
+        crate::emit_status("Touches appliquées tout de suite dans la partie.");
+    }
+    Ok(())
+}
+
 fn check_player(p: usize) -> Result<()> {
     if p >= PLAYERS { bail!("Joueur inconnu."); }
     Ok(())
@@ -203,14 +212,14 @@ pub fn set_control(player: usize, name: &str, value: &str) -> Result<()> {
     if !is_control(name) { bail!("Réglage inconnu."); }
     check_value(value)?;
     let v = Params::parse(value).serialize();
-    change(|lines| { write_binding(lines, &format!("player_{player}_{name}"), &v); Ok(()) })
+    change_players(|lines| { write_binding(lines, &format!("player_{player}_{name}"), &v); Ok(()) })
 }
 
 /// Connects a player, with every player before it, or disconnects it with every player after it,
 /// as the emulators keep players in order.
 pub fn set_connected(player: usize, on: bool) -> Result<()> {
     check_player(player)?;
-    change(|lines| {
+    change_players(|lines| {
         let handheld = number(lines, "player_0_type", 0) == TYPE_HANDHELD;
         let range: Vec<usize> = if on { (0..=player).collect() } else { (player..8).collect() };
         for p in range {
@@ -227,7 +236,7 @@ pub fn set_connected(player: usize, on: bool) -> Result<()> {
 pub fn set_type(player: usize, kind: u32) -> Result<()> {
     check_player(player)?;
     if kind > 10 || (kind == TYPE_HANDHELD && player != 0) { bail!("Valeur refusée."); }
-    change(|lines| {
+    change_players(|lines| {
         write(lines, &format!("player_{player}_type"), kind.to_string(), kind == 0);
         if player == 0 {
             let was = number(lines, "player_8_type", 0) == TYPE_HANDHELD || number(lines, "player_0_type", 0) == TYPE_HANDHELD;
@@ -248,7 +257,7 @@ pub fn set_type(player: usize, kind: u32) -> Result<()> {
 
 pub fn set_vibration(player: usize, on: Option<bool>, strength: Option<u32>) -> Result<()> {
     check_player(player)?;
-    change(|lines| {
+    change_players(|lines| {
         if let Some(on) = on { write(lines, &format!("player_{player}_vibration_enabled"), on.to_string(), on); }
         if let Some(s) = strength {
             if s > 100 { bail!("Valeur refusée."); }
@@ -271,7 +280,7 @@ pub fn set_docked(docked: bool) -> Result<()> {
 /// Clears every control of a player, as "Clear" does.
 pub fn clear(player: usize) -> Result<()> {
     check_player(player)?;
-    change(|lines| {
+    change_players(|lines| {
         for n in BUTTONS.iter().chain(&STICKS).chain(&MOTIONS) { write_binding(lines, &format!("player_{player}_{n}"), "[empty]"); }
         Ok(())
     })
@@ -343,7 +352,7 @@ pub fn load_profile(name: &str, player: usize) -> Result<()> {
     let path = profile_path(name)?;
     if !path.is_file() { bail!("Ce profil n'existe plus."); }
     let (profile, _) = load(&path);
-    change(|lines| {
+    change_players(|lines| {
         let target = if player == 0 && number(lines, "player_0_type", 0) == TYPE_HANDHELD { HANDHELD } else { player };
         for n in BUTTONS.iter().chain(&STICKS).chain(&MOTIONS) {
             write_binding(lines, &format!("player_{target}_{n}"), &binding(&profile, n, n));

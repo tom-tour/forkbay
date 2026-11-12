@@ -69,21 +69,30 @@ fn values(lines: &[String]) -> std::collections::BTreeMap<(String, String), Stri
     out
 }
 
+/// The end of a game, the watch of NX2 Launcher and a change during a game may all write the emulators' file: one at a time.
+static WRITING: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 /// Applies what changed while an emulator ran onto the file it wrote when it closed: only those values,
 /// so that what was changed in the emulator meanwhile stays.
 pub(crate) fn apply_pending() -> Result<()> {
-    // The end of a game and the watch of NX2 Launcher may both get here: one at a time.
-    static ONE: std::sync::Mutex<()> = std::sync::Mutex::new(());
-    let _one = ONE.lock().unwrap_or_else(|e| e.into_inner());
+    let _one = WRITING.lock().unwrap_or_else(|e| e.into_inner());
     let dir = pending_dir();
     let want_path = dir.join("qt-config.ini");
     if !want_path.exists() { return Ok(()); }
     let (base, _) = load(&dir.join("base.ini"));
     let (want, _) = load(&want_path);
     let (base, want) = (values(&base), values(&want));
+    merge_into_real(&base, &want)?;
+    fs::remove_dir_all(&dir)?;
+    crate::log::info("waiting settings applied");
+    Ok(())
+}
+
+/// Writes onto the emulators' own file only the values that changed in the waiting copy.
+fn merge_into_real(base: &std::collections::BTreeMap<(String, String), String>, want: &std::collections::BTreeMap<(String, String), String>) -> Result<()> {
     let real = real_common_path();
     let (mut lines, crlf) = load(&real);
-    for ((s, k), line) in &want {
+    for ((s, k), line) in want {
         if base.get(&(s.clone(), k.clone())) != Some(line) { put(&mut lines, s, &format!("{k}="), line.clone()); }
     }
     for (s, k) in base.keys().filter(|key| !want.contains_key(*key)) {
@@ -92,10 +101,38 @@ pub(crate) fn apply_pending() -> Result<()> {
             if let Some(i) = lines[start..end].iter().position(|l| l.starts_with(&prefix)) { lines.remove(start + i); }
         }
     }
-    save(&real, &lines, crlf)?;
-    fs::remove_dir_all(&dir)?;
-    crate::log::info("waiting settings applied");
-    Ok(())
+    save(&real, &lines, crlf)
+}
+
+/// Emulators that know the "reload-controls" request apply new controls during the game: the players' controls
+/// go to their file at once, and the request asks them to read it again. They remove the request once done.
+/// The waiting copy stays: it still brings the other settings when they close. Returns whether it was applied.
+pub(crate) fn push_controls_live() -> bool {
+    if !pending() || !crate::emu::any_running() { return false; }
+    // Asked once already during this game and not taken: the emulator does not know the request.
+    let unknown = pending_dir().join("no-reload-request");
+    if unknown.exists() { return false; }
+    {
+        let _one = WRITING.lock().unwrap_or_else(|e| e.into_inner());
+        let dir = pending_dir();
+        let (base, _) = load(&dir.join("base.ini"));
+        let (want, _) = load(&dir.join("qt-config.ini"));
+        let player = |k: &(String, String)| k.0 == "Controls" && k.1.starts_with("player_");
+        let base = values(&base);
+        let want: std::collections::BTreeMap<_, _> = values(&want).into_iter().filter(|(k, _)| player(k)).collect();
+        let base = base.into_iter().filter(|(k, _)| player(k)).collect();
+        if let Err(e) = merge_into_real(&base, &want) { crate::log::error(&format!("controls during the game: {e}")); return false; }
+    }
+    let request = data_path().join("config").join("reload-controls");
+    if fs::write(&request, b"").is_err() { return false; }
+    for _ in 0..20 {
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        if !request.exists() { return true; }
+    }
+    // This emulator does not know the request yet: the controls wait for it to close, as the other settings.
+    let _ = fs::remove_file(&request);
+    let _ = fs::write(&unknown, b"");
+    false
 }
 
 /// The program id in the file name, such as "[0100000000010000]".

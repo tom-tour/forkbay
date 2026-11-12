@@ -528,6 +528,7 @@
   "Tu peux changer tes contrôles : ils seront appliqués dès qu'il se fermera, pour sa prochaine partie. Pour changer les touches de la partie en cours, passe par la fenêtre Contrôles de l'émulateur.": "You can change your controls: they are applied as soon as it closes, for its next game. To change the buttons of the game being played, use the emulator's own Controls window.",
   "Réglage gardé : il sera appliqué à la fermeture de l'émulateur, pour sa prochaine partie.": "Setting kept: it is applied when the emulator closes, for its next game.",
   "Les réglages gardés pendant la partie sont appliqués.": "The settings kept during the game are now applied.",
+  "Touches appliquées tout de suite dans la partie.": "Controls applied right away in the game.",
   "Effacer": "Clear",
   "Inverser le bouton": "Invert button",
   "Ne plus inverser": "Stop inverting",
