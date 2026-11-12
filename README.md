@@ -11,15 +11,17 @@ One window for your Switch 2 emulators on Windows and Linux: launch games, keep 
 
 **[Français](#français)**
 
-![The games library](docs/screenshots/games.png)
+![The games library: sort, search, then a game's settings, images and player reports](docs/screenshots/library.gif)
 
-**Each game has its own settings and images**
+**Sort and search your games, then open a game for its own settings, its images and the latest player reports**
 
-![A game's settings and images](docs/screenshots/game-details.gif)
+![The Controller page: every controller type, the controls used in NX2 Launcher, and the shortcuts](docs/screenshots/controller.gif)
 
-**Dark, light or black, with the theme of your choice**
+**One controller setup for every emulator: Pro Controller, Joy-Cons, handheld or GameCube, plus the controls of NX2 Launcher itself and the shortcuts**
 
 ![Switching themes](docs/screenshots/themes.gif)
+
+**Dark, light or black, with the theme of your choice**
 
 <table>
   <tr>
