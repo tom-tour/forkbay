@@ -190,6 +190,16 @@ fn run_gui(fullscreen: bool) -> Result<()> {
     });
     #[cfg(windows)]
     let webview = builder.build(&window)?;
+    // A change made while an emulator runs waits for it to close, wherever it was started from.
+    std::thread::spawn(|| loop {
+        std::thread::sleep(std::time::Duration::from_secs(3));
+        if config::pending() && !emu::any_running() {
+            match config::apply_pending() {
+                Ok(()) => emit_status("Les réglages gardés pendant la partie sont appliqués."),
+                Err(e) => log::error(&format!("waiting settings: {e}")),
+            }
+        }
+    });
     #[cfg(not(windows))]
     let webview = {
         use tao::platform::unix::WindowExtUnix;

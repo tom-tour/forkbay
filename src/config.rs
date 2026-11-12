@@ -72,6 +72,9 @@ fn values(lines: &[String]) -> std::collections::BTreeMap<(String, String), Stri
 /// Applies what changed while an emulator ran onto the file it wrote when it closed: only those values,
 /// so that what was changed in the emulator meanwhile stays.
 pub(crate) fn apply_pending() -> Result<()> {
+    // The end of a game and the watch of NX2 Launcher may both get here: one at a time.
+    static ONE: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    let _one = ONE.lock().unwrap_or_else(|e| e.into_inner());
     let dir = pending_dir();
     let want_path = dir.join("qt-config.ini");
     if !want_path.exists() { return Ok(()); }
