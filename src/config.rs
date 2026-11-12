@@ -232,7 +232,7 @@ fn others(lines: &[String]) -> usize {
 
 /// Makes a game follow the common value again for a setting the page does not show.
 pub fn game_other_common(file: &str, section: &str, key: &str) -> Result<()> {
-    not_running()?;
+    // A game's own file is written by the emulators only from their own game properties window: it can change while they run.
     let path = game_path(file)?;
     let (mut lines, crlf) = load(&path);
     if !other_list(&lines).iter().any(|(s, k)| s == section && k == key) { bail!("Réglage inconnu."); }
@@ -293,7 +293,7 @@ pub(crate) fn game_ini_path(file: &str) -> Result<PathBuf> {
     game_path(file)
 }
 
-/// The emulators rewrite these files when they close, so they must not be open.
+/// The emulators rewrite their common settings file when a game starts and when they close: it must not be changed while they run.
 pub(crate) fn not_running() -> Result<()> {
     if crate::emu::any_running() { bail!("Ferme d'abord l'émulateur : il écraserait ce réglage en se fermant."); }
     Ok(())
@@ -312,7 +312,7 @@ pub fn set(key: &str, value: u64) -> Result<()> {
 
 /// Gives a game its own value, or makes it follow the common one again (None).
 pub fn game_set(file: &str, key: &str, value: Option<u64>) -> Result<()> {
-    not_running()?;
+    // A game's own file is written by the emulators only from their own game properties window: it can change while they run.
     let path = game_path(file)?;
     let (mut lines, crlf) = load(&path);
     match value {

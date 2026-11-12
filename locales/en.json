@@ -666,6 +666,18 @@
  },
  "uiPatterns": [
   [
+   "^(.+) : nouveau fichier publié sous le même numéro, installé \\(vérifié : somme de contrôle SHA-256\\)\\. L'ancien est gardé dans Old Versions\\.$",
+   "$1: a new file was published under the same number, installed (verified: SHA-256 checksum). The old one is kept in Old Versions."
+  ],
+  [
+   "^(.+) : nouveau fichier publié sous le même numéro, installé \\(vérifié : taille\\)\\. L'ancien est gardé dans Old Versions\\.$",
+   "$1: a new file was published under the same number, installed (verified: size). The old one is kept in Old Versions."
+  ],
+  [
+   "^GitHub limite le nombre de vérifications par heure : réessaie dans (\\d+) min\\.$",
+   "GitHub limits the number of checks per hour: try again in $1 min."
+  ],
+  [
    "^Joueur (\\d+)$",
    "Player $1"
   ],

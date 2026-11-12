@@ -375,7 +375,7 @@ pub fn game_profiles(file: &str) -> Result<Value> {
 /// copied into the game's settings with the player connected, as the emulators do.
 pub fn set_game_profile(file: &str, player: usize, name: &str) -> Result<()> {
     if player >= 8 { bail!("Joueur inconnu."); }
-    not_running()?;
+    // A game's own file: it can change while the emulators run.
     let path = crate::config::game_ini_path(file)?;
     let (mut lines, crlf) = load(&path);
     let pre = format!("player_{player}_");

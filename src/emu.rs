@@ -141,12 +141,24 @@ pub fn any_running() -> bool {
     running_processes().iter().any(|p| names.iter().any(|n| p == n || (n.len() > 15 && n.starts_with(p.as_str()))))
 }
 
+/// What tells two files of one version apart: the checksum GitHub gives, or else the size.
+fn fingerprint(r: &Release) -> String {
+    if r.digest.is_empty() { format!("size:{}", r.size) } else { r.digest.clone() }
+}
+
+/// Whether the installed copy is this release: the same version, and the same file when NX2 Launcher knows it.
+/// A version published again with another file is then offered as an update.
+fn is_installed(name: &str, r: &Release) -> bool {
+    let saved = fs::read_to_string(root().join(name).join("digest.txt")).map(|s| s.trim().to_string()).unwrap_or_default();
+    installed(name) == r.tag && (saved.is_empty() || saved == fingerprint(r))
+}
+
 pub(crate) fn installed(name: &str) -> String {
     fs::read_to_string(root().join(name).join("version.txt")).map(|s| s.trim().to_string()).unwrap_or_default()
 }
 
 fn api_url(e: &Emu) -> String {
-    if e.source == "forgejo" { format!("{}/api/v1/repos/{}/releases?limit=40", e.base, e.repo) } else { format!("https://api.github.com/repos/{}/releases?per_page=40", e.repo) }
+    if e.source == "forgejo" { format!("{}/api/v1/repos/{}/releases?limit=50", e.base, e.repo) } else { format!("https://api.github.com/repos/{}/releases?per_page=100", e.repo) }
 }
 
 fn page_url(e: &Emu) -> String {
@@ -235,7 +247,7 @@ pub fn status() -> Value {
                     row["size"] = json!(l.size);
                     row["notes"] = json!(l.notes);
                     if !l.page.is_empty() { row["page"] = json!(l.page); }
-                    row["upToDate"] = json!(present && inst == l.tag);
+                    row["upToDate"] = json!(present && is_installed(&e.name, l));
                 }
                 Err(err) => row["error"] = json!(err.to_string()),
             }
@@ -298,6 +310,7 @@ fn check_outside(name: &str, releases: &[Release]) -> Option<String> {
         // Without a stamp yet, this is only the first look at a version NX2 Launcher installed itself.
         Some(t) if t != inst => {
             let _ = fs::write(folder.join("version.txt"), &t);
+            let _ = fs::remove_file(folder.join("digest.txt"));
             crate::log::info(&format!("{name}: replaced outside NX2 Launcher, {inst} -> {t}"));
             if !saved.is_empty() || !inst.is_empty() {
                 let _ = fs::write(folder.join("outside.txt"), format!("{inst} -> {t}"));
@@ -325,7 +338,7 @@ pub fn install(name: &str, tag: &str) -> Result<String> {
     let folder = root().join(&e.name);
     let present = find_exe(&folder).is_some();
     let inst = installed(&e.name);
-    if present && inst == rel.tag {
+    if present && is_installed(&e.name, &rel) {
         return Ok(if tag.is_empty() { format!("{name} est déjà à jour ({inst}).") } else { format!("{name} est déjà en version {inst}.") });
     }
     if !rel.url.starts_with("https://") {
@@ -373,7 +386,7 @@ pub fn install(name: &str, tag: &str) -> Result<String> {
     crate::sys::virus_scan(&new_dir)?;
     let label = if inst.is_empty() { "inconnue".to_string() } else { inst };
     if folder.exists() {
-        let old = retire(&folder, &e.name, &label)?;
+        let old = retire(&folder, &e.name, &label, true)?;
         if let Err(err) = move_dir(&new_dir, &folder, &work) {
             fs::rename(&old, &folder)?;
             set_emulator_link(&folder, &data_path())?;
@@ -383,6 +396,7 @@ pub fn install(name: &str, tag: &str) -> Result<String> {
         move_dir(&new_dir, &folder, &work)?;
     }
     fs::write(folder.join("version.txt"), &rel.tag)?;
+    let _ = fs::write(folder.join("digest.txt"), fingerprint(&rel));
     fs::write(folder.join("exe.txt"), &exe_name)?;
     let _ = fs::write(folder.join("stamp.txt"), program_stamp(&folder));
     set_emulator_link(&folder, &data_path())?;
@@ -392,11 +406,11 @@ pub fn install(name: &str, tag: &str) -> Result<String> {
     if pruned > 0 {
         crate::log::info(&format!("{}: {pruned} old version(s) removed, the {KEEP_OLD} newest are kept", e.name));
     }
-    Ok(if present { format!("{name} : {label} -> {} (vérifié : {checked}). Ancienne version gardée dans Old Versions.", rel.tag) } else { format!("{name} {} installé (vérifié : {checked}).", rel.tag) })
+    Ok(if present && label == rel.tag { format!("{name} {label} : nouveau fichier publié sous le même numéro, installé (vérifié : {checked}). L'ancien est gardé dans Old Versions.") } else if present { format!("{name} : {label} -> {} (vérifié : {checked}). Ancienne version gardée dans Old Versions.", rel.tag) } else { format!("{name} {} installé (vérifié : {checked}).", rel.tag) })
 }
 
 /// Moves an emulator to Old Versions, and returns where it went.
-fn retire(folder: &Path, name: &str, label: &str) -> Result<PathBuf> {
+fn retire(folder: &Path, name: &str, label: &str, replace_same: bool) -> Result<PathBuf> {
     // The link goes first: an old version must never point at the data.
     let link = folder.join("user");
     if let Ok(m) = fs::symlink_metadata(&link) {
@@ -408,6 +422,16 @@ fn retire(folder: &Path, name: &str, label: &str) -> Result<PathBuf> {
     let old_root = root().join("Old Versions");
     fs::create_dir_all(&old_root)?;
     let mut old = old_root.join(format!("{name} {label}"));
+    // On an install, an older copy of this same version is replaced: it would only take one of the kept places.
+    // Not on a rollback, which may be bringing that very copy back.
+    // It never holds data of its own: a real user folder there means something unexpected, so it stays.
+    if replace_same && old.exists() {
+        match fs::symlink_metadata(old.join("user")) {
+            Ok(m) if !is_link(&m) => {}
+            Ok(_) => { if remove_link(&old.join("user")).is_ok() { let _ = fs::remove_dir_all(&old); } }
+            Err(_) => { let _ = fs::remove_dir_all(&old); }
+        }
+    }
     let mut n = 2;
     while old.exists() {
         old = old_root.join(format!("{name} {label} ({n})"));
@@ -474,7 +498,7 @@ pub fn rollback(name: &str, version: &str) -> Result<String> {
     crate::backup::auto()?;
     let folder = root().join(name);
     let label = match installed(name).as_str() { "" => "inconnue".to_string(), v => v.to_string() };
-    let parked = if folder.exists() { Some(retire(&folder, name, &label)?) } else { None };
+    let parked = if folder.exists() { Some(retire(&folder, name, &label, false)?) } else { None };
     if let Err(err) = fs::rename(&old, &folder) {
         if let Some(p) = parked {
             fs::rename(p, &folder)?;

@@ -67,11 +67,22 @@ pub fn get_json_cached(url: &str, fresh_secs: u64) -> Result<Value> {
         let _ = fs::create_dir_all(&dir);
         let _ = fs::write(&file, serde_json::json!({ "url": url, "time": now, "etag": etag, "body": body }).to_string());
     };
-    let mut r = agent().get(url);
+    let mut r = agent().get(url).config().http_status_as_error(false).build();
     if let Some(tag) = saved.as_ref().and_then(|s| s["etag"].as_str()).filter(|t| !t.is_empty()) {
         r = r.header("If-None-Match", tag);
     }
-    match run(r.call()) {
+    // GitHub says when its hourly limit ends: the message gives the wait.
+    let mut wait_min = 0u64;
+    let answer = match r.call() {
+        Ok(resp) if resp.status().as_u16() >= 400 => {
+            let h = |k: &str| resp.headers().get(k).and_then(|v| v.to_str().ok()).and_then(|v| v.trim().parse::<u64>().ok());
+            let secs = h("retry-after").or_else(|| h("x-ratelimit-reset").map(|at| at.saturating_sub(now)));
+            wait_min = secs.map(|s| s.div_ceil(60).max(1)).unwrap_or(0);
+            Err(HttpStatus(resp.status().as_u16()).into())
+        }
+        other => run(other),
+    };
+    match answer {
         Ok(resp) if resp.status().as_u16() == 304 && saved.is_some() => {
             let s = saved.unwrap();
             save(s["etag"].as_str().unwrap_or(""), &s["body"]);
@@ -88,6 +99,7 @@ pub fn get_json_cached(url: &str, fresh_secs: u64) -> Result<Value> {
                 crate::log::info(&format!("{url}: {e}, last copy used"));
                 Ok(s["body"].clone())
             }
+            None if matches!(status(&e), Some(403 | 429)) && wait_min > 0 => Err(anyhow!("GitHub limite le nombre de vérifications par heure : réessaie dans {wait_min} min.")),
             None if matches!(status(&e), Some(403 | 429)) => Err(anyhow!("GitHub limite le nombre de vérifications par heure : réessaie un peu plus tard.")),
             None => Err(e),
         },
@@ -109,21 +121,52 @@ pub fn get_bytes(url: &str, limit: u64) -> Result<Vec<u8>> {
 }
 
 /// Saves an answer to a file. `progress` receives the percentage when the size is known.
+/// A cut connection or a busy server is tried again, up to 4 times, from where the file stopped when the server allows it.
 pub fn download(url: &str, auth: Option<&str>, out: &Path, size: u64, progress: &dyn Fn(u64)) -> Result<()> {
-    let mut reader = get(url, auth)?.into_body().into_reader();
     let mut file = fs::File::create(out)?;
-    let mut buf = vec![0u8; 256 * 1024];
     let (mut done, mut last) = (0u64, 0u64);
+    let mut attempt = 0;
+    loop {
+        attempt += 1;
+        match download_part(url, auth, &mut file, &mut done, &mut last, size, progress) {
+            Ok(()) => return Ok(()),
+            Err(e) => {
+                // A refused or missing file does not come back by asking again.
+                let retry = attempt < 4 && status(&e).is_none_or(|c| c == 429 || c >= 500);
+                if !retry { return Err(e); }
+                crate::log::info(&format!("download: {e}, try {} from {done} bytes", attempt + 1));
+                std::thread::sleep(std::time::Duration::from_secs([2, 5, 10][attempt - 1]));
+            }
+        }
+    }
+}
+
+fn download_part(url: &str, auth: Option<&str>, file: &mut fs::File, done: &mut u64, last: &mut u64, size: u64, progress: &dyn Fn(u64)) -> Result<()> {
+    use std::io::{Seek, SeekFrom, Write};
+    let mut r = agent().get(url);
+    if let Some(token) = auth { r = r.header("Authorization", format!("Bearer {token}")); }
+    if *done > 0 { r = r.header("Range", format!("bytes={done}-")); }
+    let resp = run(r.call())?;
+    // Without a partial answer, the server sends the whole file again: it starts over.
+    if resp.status().as_u16() != 206 && *done > 0 {
+        *done = 0;
+        file.set_len(0)?;
+    }
+    file.seek(SeekFrom::Start(*done))?;
+    let mut reader = resp.into_body().into_reader();
+    let mut buf = vec![0u8; 256 * 1024];
     loop {
         let n = reader.read(&mut buf)?;
         if n == 0 { break; }
-        std::io::Write::write_all(&mut file, &buf[..n])?;
-        done += n as u64;
-        if size > 0 && done * 100 / size != last {
-            last = done * 100 / size;
-            progress(last);
+        file.write_all(&buf[..n])?;
+        *done += n as u64;
+        if size > 0 && *done * 100 / size != *last {
+            *last = *done * 100 / size;
+            progress(*last);
         }
     }
+    // A connection closed early ends the answer without an error: the size tells it.
+    if size > 0 && *done < size { anyhow::bail!("connexion coupée à {} %", *done * 100 / size); }
     Ok(())
 }
 
@@ -150,5 +193,73 @@ mod tests {
     fn encode_keeps_safe_characters() {
         assert_eq!(super::encode("Mario Kart-8_v1.0~"), "Mario%20Kart-8_v1.0~");
         assert_eq!(super::encode("é&="), "%C3%A9%26%3D");
+    }
+
+    use std::io::{Read, Write};
+    use std::net::TcpListener;
+
+    type Answer = Box<dyn Fn(&str) -> Vec<u8> + Send>;
+
+    /// A one-off local server: each closure answers one connection, given the request it received.
+    fn serve(answers: Vec<Answer>) -> String {
+        let l = TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}/f", l.local_addr().unwrap());
+        std::thread::spawn(move || {
+            for answer in answers {
+                let (mut s, _) = l.accept().unwrap();
+                let mut req = vec![];
+                let mut b = [0u8; 1];
+                while !req.ends_with(b"\r\n\r\n") && s.read(&mut b).unwrap_or(0) == 1 { req.push(b[0]); }
+                let _ = s.write_all(&answer(&String::from_utf8_lossy(&req).to_lowercase()));
+            }
+        });
+        url
+    }
+
+    fn body() -> Vec<u8> { (0..1000u32).map(|i| (i % 251) as u8).collect() }
+
+    #[test]
+    fn download_resumes_after_a_cut() {
+        let url = serve(vec![
+            Box::new(|_| [b"HTTP/1.1 200 OK\r\nContent-Length: 1000\r\nConnection: close\r\n\r\n".as_slice(), &body()[..400]].concat()),
+            Box::new(|req| {
+                assert!(req.contains("range: bytes=400-"), "{req}");
+                [b"HTTP/1.1 206 Partial Content\r\nContent-Length: 600\r\nContent-Range: bytes 400-999/1000\r\nConnection: close\r\n\r\n".as_slice(), &body()[400..]].concat()
+            }),
+        ]);
+        let out = std::env::temp_dir().join(format!("nx2-dl-resume-{}", std::process::id()));
+        super::download(&url, None, &out, 1000, &|_| {}).unwrap();
+        assert_eq!(std::fs::read(&out).unwrap(), body());
+        let _ = std::fs::remove_file(out);
+    }
+
+    #[test]
+    fn download_starts_over_when_the_server_cannot_resume() {
+        let url = serve(vec![
+            Box::new(|_| [b"HTTP/1.1 200 OK\r\nContent-Length: 1000\r\nConnection: close\r\n\r\n".as_slice(), &body()[..300]].concat()),
+            Box::new(|_| [b"HTTP/1.1 200 OK\r\nContent-Length: 1000\r\nConnection: close\r\n\r\n".as_slice(), &body()].concat()),
+        ]);
+        let out = std::env::temp_dir().join(format!("nx2-dl-again-{}", std::process::id()));
+        super::download(&url, None, &out, 1000, &|_| {}).unwrap();
+        assert_eq!(std::fs::read(&out).unwrap(), body());
+        let _ = std::fs::remove_file(out);
+    }
+
+    #[test]
+    fn download_does_not_ask_again_for_a_missing_file() {
+        let url = serve(vec![Box::new(|_| b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".to_vec())]);
+        let out = std::env::temp_dir().join(format!("nx2-dl-404-{}", std::process::id()));
+        let t = std::time::Instant::now();
+        assert_eq!(super::status(&super::download(&url, None, &out, 1000, &|_| {}).unwrap_err()), Some(404));
+        assert!(t.elapsed().as_secs() < 2);
+        let _ = std::fs::remove_file(out);
+    }
+
+    #[test]
+    fn rate_limit_says_how_long_to_wait() {
+        let reset = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() + 600;
+        let url = serve(vec![Box::new(move |_| format!("HTTP/1.1 403 Forbidden\r\nx-ratelimit-reset: {reset}\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{{}}").into_bytes())]);
+        let err = super::get_json_cached(&url, 300).unwrap_err().to_string();
+        assert!(err.contains("réessaie dans 10 min") || err.contains("réessaie dans 9 min"), "{err}");
     }
 }
