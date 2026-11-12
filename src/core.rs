@@ -47,6 +47,8 @@ pub struct Settings {
     pub art_disabled: Vec<String>,
     /// The controls that move around NX2 Launcher itself. None: those of player 1.
     pub nav_controls: Option<BTreeMap<String, String>>,
+    /// The window's size when it was last closed, in logical pixels, and whether it was maximized.
+    pub window: Option<(f64, f64, bool)>,
 }
 
 impl Default for Settings {
@@ -78,6 +80,7 @@ impl Default for Settings {
             art_replace: false,
             art_disabled: vec![],
             nav_controls: None,
+            window: None,
         }
     }
 }

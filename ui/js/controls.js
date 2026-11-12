@@ -44,7 +44,7 @@ function ctlPlayer(){if(!CTL)return null;if(CTLTAB=='nav')return navPlayer();con
 async function loadControls(){const el=$('ctl');if(!el)return;HK=null;try{[CTL,CTLDEV]=await Promise.all([call('controls_get'),call('controls_devices').catch(()=>[])])}catch(e){el.innerHTML=`<div class="card">${esc(e.message)}</div>`;return}renderControls();ctlLiveStart()}
 function stopControls(){ctlLiveStop();ctlCancel();ctlCloseMenu();if(HKCAP){HKCAP=null;window.PADHOLD=false}}
 
-function ctlTabs(){return`<div class="tabs ctltabs" id="ctlTabs"><button class="${CTLTAB=='nav'?'on':''}" onclick="ctlTab('nav')">NX2 Launcher</button>${[0,1,2,3,4,5,6,7].map(i=>`<button class="${CTLTAB===i?'on':''}${CTL.players[i==0&&CTL.players[0].type==4?8:i].connected?'':' off'}" onclick="ctlTab(${i})"><span>Joueur</span> ${i+1}</button>`).join('')}<button class="${CTLTAB=='adv'?'on':''}" onclick="ctlTab('adv')">Avancé</button><button class="${CTLTAB=='keys'?'on':''}" onclick="ctlTab('keys')">Raccourcis</button></div>`}
+function ctlTabs(){const b=(k,label,cls='',extra='')=>`<button class="${CTLTAB===k?'on':''}${cls}" onclick="ctlTab(${typeof k=='number'?k:`'${k}'`})"${extra}>${label}</button>`;return`<div class="ctlbar" id="ctlTabs">${b('nav','NX2 Launcher')}<span class="sep"></span><div class="pl"><b>Joueurs</b>${[0,1,2,3,4,5,6,7].map(i=>b(i,i+1,' pn'+(CTL.players[i==0&&CTL.players[0].type==4?8:i].connected?'':' off'),` title="Joueur ${i+1}" aria-label="Joueur ${i+1}"`)).join('')}</div><div class="end">${b('adv','Avancé')}${b('keys','Raccourcis')}</div></div>`}
 function ctlTab(t){ctlCancel();if(HKCAP)HKCAP=null,window.PADHOLD=false;CTLTAB=t;renderControls()}
 
 function renderControls(){const el=$('ctl');if(!el||!CTL)return;ctlCloseMenu();

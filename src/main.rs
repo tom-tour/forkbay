@@ -136,11 +136,33 @@ fn window_icon() -> Option<Icon> {
     }
 }
 
+/// Keeps the window's size for the next start. A maximized or full screen window keeps the size it had before.
+fn remember_window(window: &tao::window::Window) {
+    if window.fullscreen().is_some() { return; }
+    let mut s = load_settings();
+    let maximized = window.is_maximized();
+    let size = window.inner_size().to_logical::<f64>(window.scale_factor());
+    s.window = Some(match (maximized, s.window) {
+        (true, Some((w, h, _))) => (w, h, true),
+        (true, None) => (0.0, 0.0, true),
+        (false, _) => (size.width.round(), size.height.round(), false),
+    });
+    let _ = save_settings(&s);
+}
+
 fn run_gui(fullscreen: bool) -> Result<()> {
     FULLSCREEN.store(fullscreen, std::sync::atomic::Ordering::Relaxed);
     let event_loop = EventLoopBuilder::<String>::with_user_event().build();
     let _ = PROXY.set(event_loop.create_proxy());
-    let window = WindowBuilder::new().with_title("NX2 Launcher").with_inner_size(LogicalSize::new(1120.0, 760.0)).with_min_inner_size(LogicalSize::new(900.0, 600.0)).with_window_icon(window_icon()).with_fullscreen(fullscreen.then_some(tao::window::Fullscreen::Borderless(None))).build(&event_loop)?;
+    // The size it had last time; the first time, most of the screen.
+    let screen = event_loop.primary_monitor().map(|m| m.size().to_logical::<f64>(m.scale_factor())).map(|s| (s.width, s.height)).unwrap_or((1366.0, 860.0));
+    let first = ((screen.0 * 0.86).clamp(1120.0, 1680.0).min(screen.0), (screen.1 * 0.86).clamp(760.0, 1050.0).min(screen.1 - 40.0));
+    let (w, h, maximized) = match load_settings().window {
+        Some((w, h, m)) if w >= 900.0 && h >= 600.0 => (w.min(screen.0), h.min(screen.1 - 40.0), m),
+        Some((_, _, m)) => (first.0, first.1, m),
+        None => (first.0, first.1, false),
+    };
+    let window = WindowBuilder::new().with_title("NX2 Launcher").with_inner_size(LogicalSize::new(w, h)).with_maximized(maximized).with_min_inner_size(LogicalSize::new(900.0, 600.0)).with_window_icon(window_icon()).with_fullscreen(fullscreen.then_some(tao::window::Fullscreen::Borderless(None))).build(&event_loop)?;
     let mut context = WebContext::new(Some(manager_dir().join("webview")));
     let builder = WebViewBuilder::new_with_web_context(&mut context).with_html(HTML).with_devtools(false).with_navigation_handler(|url| {
         // The page is the only thing this window ever shows: links open in the browser.
@@ -182,7 +204,10 @@ fn run_gui(fullscreen: bool) -> Result<()> {
                 window.set_fullscreen(on.then_some(tao::window::Fullscreen::Borderless(None)));
             }
             Event::UserEvent(js) => { let _ = webview.evaluate_script(&js); }
-            Event::WindowEvent { event: WindowEvent::CloseRequested, .. } => *flow = ControlFlow::Exit,
+            Event::WindowEvent { event: WindowEvent::CloseRequested, .. } => {
+                remember_window(&window);
+                *flow = ControlFlow::Exit
+            }
             _ => {}
         }
     })

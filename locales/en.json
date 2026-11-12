@@ -409,6 +409,7 @@
   "Propre au jeu": "This game only",
   "Manette": "Controller",
   "Joueur": "Player",
+  "Joueurs": "Players",
   "Réglés dans l'émulateur": "Set in the emulator",
   "Ce jeu a aussi ses propres valeurs pour ces réglages. NX2 Launcher ne sait pas les changer : modifie-les dans l'émulateur, ou remets-les comme partout.": "This game also has its own values for these settings. NX2 Launcher cannot change them: edit them in the emulator, or set them back to common.",
   "Mémoire émulée": "Emulated memory",
@@ -664,6 +665,10 @@
   "Gauche ou droite pour choisir, A pour garder, B pour annuler.": "Left or right to choose, A to keep, B to cancel."
  },
  "uiPatterns": [
+  [
+   "^Joueur (\\d+)$",
+   "Player $1"
+  ],
   [
    "^Carte (\\d+)$",
    "Card $1"
