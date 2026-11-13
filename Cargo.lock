@@ -1413,6 +1413,7 @@ version = "0.15.0"
 dependencies = [
  "anyhow",
  "base64",
+ "cc",
  "embed-resource",
  "getrandom 0.4.3",
  "png",
@@ -1424,6 +1425,7 @@ dependencies = [
  "sha2 0.11.1",
  "tao",
  "ureq",
+ "windows",
  "windows-sys 0.61.2",
  "winreg",
  "wry",

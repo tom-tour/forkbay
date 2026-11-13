@@ -640,8 +640,8 @@ pub fn run(emu: &str, game: Option<&Path>, key: &str) -> Result<()> {
         if let Err(e) = point_shader_cache(&data_path(), emu) {
             crate::log::error(&format!("shader cache: {e}"));
         }
-        if let Err(e) = crate::config::turn_off_emulator_updates() {
-            crate::log::error(&format!("emulator update prompt: {e}"));
+        if let Err(e) = crate::config::prepare_emulators() {
+            crate::log::error(&format!("emulator settings: {e}"));
         }
         if let Err(e) = crate::controls::follow_plugged() {
             crate::log::error(&format!("controllers: {e}"));

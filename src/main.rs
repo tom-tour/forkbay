@@ -14,6 +14,7 @@ mod games;
 mod i18n;
 mod import;
 mod install;
+mod live;
 mod log;
 mod net;
 mod params;
@@ -92,8 +93,8 @@ fn launch(game: Option<&str>, forced: Option<&str>) -> Result<()> {
     let idle = !emu::any_running();
     if idle {
         // Before the copy and the cloud check, so that this one-time change is not a new version of the data.
-        if let Err(e) = config::turn_off_emulator_updates() {
-            log::error(&format!("emulator update prompt: {e}"));
+        if let Err(e) = config::prepare_emulators() {
+            log::error(&format!("emulator settings: {e}"));
         }
         if let Err(e) = backup::auto() {
             log::error(&format!("automatic copy: {e}"));
@@ -191,12 +192,19 @@ fn run_gui(fullscreen: bool) -> Result<()> {
     #[cfg(windows)]
     let webview = builder.build(&window)?;
     // A change made while an emulator runs waits for it to close, wherever it was started from.
-    std::thread::spawn(|| loop {
-        std::thread::sleep(std::time::Duration::from_secs(3));
-        if config::pending() && !emu::any_running() {
-            match config::apply_pending() {
-                Ok(()) => emit_status("Les réglages gardés pendant la partie sont appliqués."),
-                Err(e) => log::error(&format!("waiting settings: {e}")),
+    std::thread::spawn(|| {
+        // Emulators started by the player read these too, once NX2 Launcher has run.
+        if !emu::any_running() {
+            if let Err(e) = config::prepare_emulators() { log::error(&format!("emulator settings: {e}")); }
+        }
+        loop {
+            std::thread::sleep(std::time::Duration::from_secs(3));
+            if config::pending() && !emu::any_running() {
+                match config::apply_pending() {
+                    Ok(()) => emit_status("Les réglages gardés pendant la partie sont appliqués."),
+                    Err(e) => log::error(&format!("waiting settings: {e}")),
+                }
+                if let Err(e) = config::prepare_emulators() { log::error(&format!("emulator settings: {e}")); }
             }
         }
     });
@@ -246,6 +254,8 @@ fn main() {
         // Test mode: --cli <command> <json> <output file>
         let a: Value = serde_json::from_str(args.get(2).map(String::as_str).unwrap_or("{}")).unwrap_or(Value::Null);
         let out = match commands::dispatch(args.get(1).map(String::as_str).unwrap_or(""), &a) { Ok(v) => json!({ "ok": true, "value": v }), Err(e) => json!({ "ok": false, "error": i18n::t(&e.to_string()) }) };
+        // A setting applied to a running game finishes before the result is written.
+        live::wait(std::time::Duration::from_secs(120));
         if let Some(f) = args.get(3) { let _ = std::fs::write(f, out.to_string()); }
         return;
     }

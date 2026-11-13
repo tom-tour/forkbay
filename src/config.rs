@@ -216,16 +216,79 @@ fn follow_common(lines: &mut Vec<String>, section: &str, key: &str) {
     group(lines, section, key);
 }
 
-/// NX2 Launcher updates the emulators itself: their own update prompt is turned off before each start,
-/// so that a version is never replaced without being checked and kept.
-pub fn turn_off_emulator_updates() -> Result<()> {
+/// What NX2 Launcher sets in the emulators' file while none runs, as they read it only when they start:
+/// - their own update prompt is off, since NX2 Launcher updates them itself and checks each version it keeps;
+/// - on Windows, their "Configure Current Game" shortcut is F13, a key no keyboard has: NX2 Launcher presses it
+///   to apply a setting during a game (see live.rs).
+pub fn prepare_emulators() -> Result<()> {
     let path = common_path();
     let (mut lines, crlf) = load(&path);
-    if read(&lines, "UI", "check_for_updates").as_deref() == Some("false") {
-        return Ok(());
+    let updates = read(&lines, "UI", "check_for_updates").as_deref() != Some("false");
+    let shortcut = cfg!(windows) && !live_shortcut_in(&lines);
+    if !updates && !shortcut { return Ok(()); }
+    if updates { write(&mut lines, "UI", "check_for_updates", "false", false); }
+    if shortcut {
+        put(&mut lines, "UI", &format!("{LIVE_SHORTCUT}="), format!("{LIVE_SHORTCUT}={LIVE_KEY}"));
+        put(&mut lines, "UI", &format!("{LIVE_SHORTCUT}\\default="), format!("{LIVE_SHORTCUT}\\default=false"));
     }
-    write(&mut lines, "UI", "check_for_updates", "false", false);
     save(&path, &lines, crlf)
+}
+
+const LIVE_SHORTCUT: &str = "Shortcuts\\Main%20Window\\Configure%20Current%20Game\\KeySeq";
+const LIVE_KEY: &str = "F13";
+
+fn live_shortcut_in(lines: &[String]) -> bool {
+    read(lines, "UI", LIVE_SHORTCUT).is_some_and(|v| v.trim_matches('"') == LIVE_KEY)
+}
+
+/// Whether the running emulators have the shortcut: they read it from their own file when they started,
+/// and NX2 Launcher writes it there only while none runs.
+pub(crate) fn live_shortcut_ready() -> bool {
+    live_shortcut_in(&load(&real_common_path()).0)
+}
+
+/// The settings of the page that an emulator takes during a game. The others (resolution, graphics API and card,
+/// language, region, full screen mode) are read when a game starts.
+pub(crate) const LIVE: [&str; 3] = ["speed", "volume", "use_docked_mode"];
+
+/// During a game, an emulator reads again only that game's own file, from its "Configure Current Game" window.
+/// So the common settings changed since it started, that this game follows, are written in it as the game's own
+/// for that moment. Returns what the file held before, to put back once the emulator has read it (None: nothing
+/// was added); the common file gets them when the emulator closes, as before.
+pub(crate) fn game_file_for_live(id: &str) -> Result<Option<Option<Vec<u8>>>> {
+    let _one = WRITING.lock().unwrap_or_else(|e| e.into_inner());
+    let path = game_ini_of(id);
+    let before = fs::read(&path).ok();
+    let (mut lines, crlf) = load(&path);
+    let (started, _) = load(&real_common_path());
+    let (wanted, _) = load(&common_path());
+    let mut added = false;
+    for key in LIVE {
+        let v = value(&wanted, key);
+        if !is_own(&lines, key) && v != value(&started, key) {
+            apply(&mut lines, key, v, true);
+            added = true;
+        }
+    }
+    if !added { return Ok(None); }
+    save(&path, &lines, crlf)?;
+    Ok(Some(before))
+}
+
+/// Puts a game's own file back as it was before game_file_for_live.
+pub(crate) fn put_back_game_file(id: &str, before: Option<Vec<u8>>) -> Result<()> {
+    let _one = WRITING.lock().unwrap_or_else(|e| e.into_inner());
+    let path = game_ini_of(id);
+    match before {
+        Some(bytes) => fs::write(&path, bytes)?,
+        None => { let _ = fs::remove_file(&path); }
+    }
+    Ok(())
+}
+
+/// A game's own settings file, by program id.
+pub(crate) fn game_ini_of(id: &str) -> PathBuf {
+    data_path().join("config").join("custom").join(format!("{id}.ini"))
 }
 
 pub(crate) fn load(path: &Path) -> (Vec<String>, bool) {
@@ -400,6 +463,7 @@ pub(crate) fn prepare_common_edit() -> Result<()> {
         fs::write(dir.join("base.ini"), &text)?;
         fs::write(dir.join("qt-config.ini"), &text)?;
     }
+    // A setting the game takes at once says so itself (live.rs), just after this one.
     crate::emit_status("Réglage gardé : il sera appliqué à la fermeture de l'émulateur, pour sa prochaine partie.");
     Ok(())
 }
@@ -417,7 +481,9 @@ pub fn set(key: &str, value: u64) -> Result<()> {
     let path = common_path();
     let (mut lines, crlf) = load(&path);
     apply(&mut lines, key, value, false);
-    save(&path, &lines, crlf)
+    save(&path, &lines, crlf)?;
+    if LIVE.contains(&key) { crate::live::request(None); }
+    Ok(())
 }
 
 /// Gives a game its own value, or makes it follow the common one again (None).
@@ -436,7 +502,9 @@ pub fn game_set(file: &str, key: &str, value: Option<u64>) -> Result<()> {
             for (s, k) in lines_of(key) { follow_common(&mut lines, s, k); }
         }
     }
-    save(&path, &lines, crlf)
+    save(&path, &lines, crlf)?;
+    if LIVE.contains(&key) { crate::live::request(Some(file)); }
+    Ok(())
 }
 
 #[cfg(test)]

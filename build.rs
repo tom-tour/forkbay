@@ -21,6 +21,29 @@ fn main() {
 
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
         embed_resource::compile("assets/app.rc", embed_resource::NONE).manifest_required().unwrap();
+        quiet_dll(&root, &out);
+    }
+}
+
+/// tools/nx2-quiet, built in: NX2 Launcher writes it next to its settings when it first applies a setting
+/// during a game. Without the MSVC compiler the file is empty, and settings wait for the emulator to close.
+fn quiet_dll(root: &str, out: &str) {
+    println!("cargo:rerun-if-changed=tools/nx2-quiet/quiet.c");
+    let dll = format!("{out}/nx2-quiet.dll");
+    let target = std::env::var("TARGET").unwrap();
+    let built = target.ends_with("-msvc")
+        && cc::windows_registry::find(&target, "cl.exe").is_some_and(|mut cl| {
+            cl.current_dir(out)
+                .args(["/nologo", "/O2", "/MT", "/LD", "/W3"])
+                .arg(format!("{root}/tools/nx2-quiet/quiet.c"))
+                .arg(format!("/Fe{dll}"))
+                .args(["/link", "user32.lib", "psapi.lib", "kernel32.lib", "dwmapi.lib"])
+                .status()
+                .is_ok_and(|s| s.success())
+        });
+    if !built {
+        println!("cargo:warning=nx2-quiet.dll not built (needs the MSVC compiler): settings changed during a game wait for the emulator to close");
+        std::fs::write(&dll, b"").unwrap();
     }
 }
 
